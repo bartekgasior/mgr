@@ -1,0 +1,21 @@
+﻿  Generate moc_predefs.h
+  Moc'ing glwidget.h...
+  Moc'ing mainwindow.h...
+  Rcc'ing myresources.qrc...
+  Uic'ing mainwindow.ui...
+  RCC: Warning: No resources in 'C:\Users\barte\Documents\projekt1\myresources.qrc'.
+  asf.cpp
+  bone.cpp
+  glwidget.cpp
+  main.cpp
+C:\Users\barte\Desktop\Dla studenta\include\Model3D.h(352): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data (compiling source file main.cpp)
+asf.cpp(145): warning C4018: '<': signed/unsigned mismatch
+asf.cpp(157): warning C4018: '<': signed/unsigned mismatch
+asf.cpp(172): warning C4018: '<': signed/unsigned mismatch
+  mainwindow.cpp
+  qrc_myresources.cpp
+glwidget.cpp(36): warning C4100: 'h': unreferenced formal parameter
+glwidget.cpp(36): warning C4100: 'w': unreferenced formal parameter
+  moc_glwidget.cpp
+  moc_mainwindow.cpp
+LINK : fatal error LNK1104: cannot open file 'Model3D.lib'
