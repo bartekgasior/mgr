@@ -11,10 +11,12 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QSlider>
+#include <QComboBox>
 
 #include "asf.h"
 #include "fileshandler.h"
 #include "glwidget.h"
+#include "sidemenubuilder.h"
 
 namespace Ui {
 class MainWindow;
@@ -37,12 +39,17 @@ public:
     QPushButton *addFrameButton;
 
     QGridLayout *gridLayout;//głowny layout aplikacji
-    QVBoxLayout *vboxLayout;//boczny panel - pionowy
+    QVBoxLayout *vboxLayout; //boczny panel - pionowy
     QGridLayout *gridChildLayout; // panel poziomy
 
-    QScrollArea *scrollArea;//widget umozliwiajacy scrollowanie layoutu
+    QScrollArea *scrollArea;//widget umozliwiajacy scrollowanie głównego layoutu
+	QScrollArea *scrollSideArea;//widget umozliwiajacy scrollowanie bocznego layoutu
     QWidget *scrollWidget;//widget do ktorego dodawane sa elementy dodawanego po wcisnieciu buttona
+	QWidget *scrollSideWidget;
     QWidget *windowLayout;//nowy widget dodawany  do gridLayout
+
+	//lista pozwalajaca wybrac numer klatki, na ktorej model bedzie modyfikowany
+	QComboBox *comboBoxFrameSelector;
 
     QVector<GLWidget*> glWidgetsVector;
     QVector<QPushButton*> minButtonsVector;
@@ -64,6 +71,39 @@ private slots:
     void buttonAddFramePressed();
     void updateGlobalListIterator(int value);
 
+	/*Operacje na modelu*/
+	void rotateModelXUp();
+	void rotateModelXDown();
+	void rotateModelYLeft();
+	void rotateModelYRight();
+
+	void rotateLeftUpLegX1();
+	void rotateLeftUpLegX2();
+	void rotateLeftUpLegY1();
+	void rotateLeftUpLegY2();
+	void rotateLeftUpLegZ1();
+	void rotateLeftUpLegZ2();
+
+	void rotateLeftLegX1();
+	void rotateLeftLegX2();
+	void rotateLeftLegY1();
+	void rotateLeftLegY2();
+	void rotateLeftLegZ1();
+	void rotateLeftLegZ2();
+
+	void rotateRightUpLegX1();
+	void rotateRightUpLegX2();
+	void rotateRightUpLegY1();
+	void rotateRightUpLegY2();
+	void rotateRightUpLegZ1();
+	void rotateRightUpLegZ2();
+
+	void rotateRightLegX1();
+	void rotateRightLegX2();
+	void rotateRightLegY1();
+	void rotateRightLegY2();
+	void rotateRightLegZ1();
+	void rotateRightLegZ2();
 private:
     Ui::MainWindow *ui;
 
@@ -72,6 +112,7 @@ private:
     void setImage1Label(QLabel *label, QString file);
 
     void addFrameMenu(int i);
+	void addGLWidgetMenu();
     void prepareFrameMenu(int i);
 
     void mapIncreaseButtonSlot(int i);

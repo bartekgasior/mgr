@@ -1,0 +1,88 @@
+# File created by Model3D module
+# Model virtual markers configuration file
+# Data/Time: Mon Feb 27 10:21:50 2012
+#--------------------------------------------------------
+:markers
+   begin
+      LFHD Head
+      RFHD Head
+      LBHD Head
+      RBHD Head
+      C7 Spine1_dum1
+      T10 Spine
+      CLAV Spine1_dum1
+      STRN Spine1_dum1
+      RBAK Spine1_dum1
+      LSHO LeftShoulder
+      LUPA LeftArm
+      LELB LeftArm
+      LFRM LeftForeArm
+      LWRA LeftHand_dum2
+      LWRB LeftHand_dum2
+      LFIN LeftHand_dum2
+      RSHO RightShoulder
+      RUPA RightArm
+      RELB RightArm
+      RFRM RightForeArm
+      RWRA RightHand_dum2
+      RWRB RightHand_dum2
+      RFIN RightHand_dum2
+      LASI Spine
+      RASI Spine
+      LPSI Spine
+      RPSI Spine
+      LTHI LeftUpLeg
+      LKNE LeftUpLeg
+      LTIB LeftLeg
+      LANK LeftLeg
+      LHEE LeftFoot
+      LTOE LeftFoot
+      RTHI RightUpLeg
+      RKNE RightUpLeg
+      RTIB RightLeg
+      RANK RightLeg
+      RHEE RightFoot
+      RTOE RightFoot
+   end
+:positions
+   begin
+      LFHD 72 141 100
+      RFHD -55 148 89
+      LBHD 100 102 -1
+      RBHD -60 116 -30
+      C7 16 271 -73
+      T10 14 276 -85
+      CLAV 20 193 78
+      STRN 24 53 136
+      RBAK -59 165 -105
+      LSHO -42 166 -13
+      LUPA -52 162.7 -9
+      LELB -34 285.7 -23
+      LFRM -39 102 -25
+      LWRA 3 -16 18
+      LWRB -33 -18 -37
+      LFIN -29 46 -7
+      RSHO 43 130 4
+      RUPA 36 163.7 21
+      RELB 30 306.7 2
+      RFRM 35 112 18
+      RWRA -10 -1 47
+      RWRB 29 -5 -11
+      RFIN 13 67 13
+      LASI 130 25 113
+      RASI -126 19 113
+      LPSI 38 82 -61
+      RPSI -49 86 -53
+      LTHI -85 231 29
+      LKNE -69 445.2 1
+      LTIB -68 139 -29
+      LANK -50 399.9 -26
+      LHEE -9 -65 56
+      LTOE 8 150.4 -28
+      RTHI 78 306 23
+      RKNE 75 462.2 -5
+      RTIB 73 134 -9
+      RANK 40 419.9 6
+      RHEE 16 -48 25
+      RTOE 17 173.4 -45
+   end

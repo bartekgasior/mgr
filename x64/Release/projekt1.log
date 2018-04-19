@@ -1,4 +1,2 @@
-﻿  qrc_myresources.cpp
-  main.cpp
-  mainwindow.cpp
+﻿  Generate moc_predefs.h
   projekt1.vcxproj -> C:\Users\barte\Documents\projekt1\release\projekt1.exe

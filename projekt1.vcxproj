@@ -116,8 +116,8 @@
     <LibraryPath>C:\Users\barte\Desktop\Dla studenta\libmotion;C:\OpenCV-3.4.1\opencv\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(MOTION_LIB)\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>$(MOTION_LIB)\lib\v140x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(MOTION_LIB)\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);.\include</IncludePath>
+    <LibraryPath>$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64);$(MOTION_LIB)\lib\v140x64;.\libs</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\Users\barte\Desktop\Dla studenta\include;C:\Users\barte\Desktop\Dla studenta\include;$(IncludePath)</IncludePath>
@@ -125,7 +125,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\..\..\QT\5.10.1\MSVC2015_64\include;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;release;..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\lib\v140x64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(QTDIR)\include;$(ProjectDir);$(ProjectDir)GeneratedFiles;$(ProjectDir)GeneratedFiles\$(Configuration);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;C:\OpenCV-3.4.1\opencv\build\include;.\;.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:rvalueCast -Zc:inline -Zc:strictStrings -w34100 -w34189 -w44996 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -142,8 +142,8 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glew32.lib;freeglut.lib;Model3D.lib;Model3Dd.lib;C:\QT\5.10.1\MSVC2015_64\lib\qtmain.lib;shell32.lib;Opengl32.lib;C:\QT\5.10.1\MSVC2015_64\lib\Qt5Widgets.lib;C:\QT\5.10.1\MSVC2015_64\lib\Qt5Gui.lib;C:\QT\5.10.1\MSVC2015_64\lib\Qt5Core.lib;opencv_world330d.lib;opencv_world330.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\barte\Documents\Visual Studio 2013\freeglut\lib;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\lib;C:\QT\5.10.1\MSVC2015_64\lib;C:\utils\my_sql\my_sql\lib;C:\utils\postgresql\pgsql\lib;$(QTDIR)\lib;C:\OpenCV-3.4.1\opencv\build\x64\vc14\lib;C:\Users\barte\Desktop\Dla studenta\lib\v140x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Model3D.lib;Utility.lib;GeometricTransform.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;opencv_world330d.lib;opencv_world330.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;C:\OpenCV-3.4.1\opencv\build\x64\vc14\lib;.\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -151,7 +151,7 @@
       <LinkIncremental>false</LinkIncremental>
       <OutputFile>$(OutDir)\projekt1.exe</OutputFile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
     <Midl>
@@ -171,7 +171,7 @@
       <Include>release/moc_predefs.h</Include>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
       <DynamicSource>output</DynamicSource>
-      <IncludePath>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;.\release;.\..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\lib\v140x64</IncludePath>
+      <IncludePath>$(QTDIR)\include;$(ProjectDir)\.;$(ProjectDir)GeneratedFiles;$(ProjectDir)GeneratedFiles\$(Configuration)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;C:\OpenCV-3.4.1\opencv\build\include;.;.\include</IncludePath>
     </QtMoc>
     <QtRcc>
       <InitFuncName>myresources</InitFuncName>
@@ -382,15 +382,19 @@
     </QtUic>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AMC.cpp" />
     <ClCompile Include="asf.cpp" />
     <ClCompile Include="bone.cpp" />
     <ClCompile Include="glwidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="sidemenubuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AMC.h" />
     <ClInclude Include="asf.h" />
     <ClInclude Include="bone.h" />
+    <QtMoc Include="sidemenubuilder.h" />
     <QtMoc Include="glwidget.h">
     </QtMoc>
     <QtMoc Include="mainwindow.h">
