@@ -16,7 +16,6 @@
 #include "asf.h"
 #include "fileshandler.h"
 #include "glwidget.h"
-#include "sidemenubuilder.h"
 
 namespace Ui {
 class MainWindow;
@@ -62,48 +61,36 @@ public:
     QVector<QLabel*> picLabelsVector;
     QVector<int> imagesListIterator;
 
+	//wektory zawierajace elementy bocznego menu
+	QVector<QLabel*> sideMenuLabelsVector;
+	QVector<QHBoxLayout*> sideMenuHLayoutsVector;
+	QVector<QPushButton*> sideMenuButtonsVector;
+	QVector<QLineEdit*> sideMenuLineEditsVector;
+
 private slots:
+	/*wczytanie plików z wybranej ścieżki*/
     void loadFiles();
+	/*przewijane klatek wybranego okna*/
     void increaseIteratorPressed(int i);
     void reduceIteratorPressed(int i);
     void maxIteratorPressed(int i);
     void minIteratorPressed(int i);
+	/*dodanie okna z modelem postaci*/
     void buttonAddFramePressed();
     void updateGlobalListIterator(int value);
 
+	/*odswiezenie wartosci w polach qlineedit po rotacji kosci*/
+	void reloadGLWidgetMenu();
+
 	/*Operacje na modelu*/
-	void rotateModelXUp();
-	void rotateModelXDown();
-	void rotateModelYLeft();
-	void rotateModelYRight();
+	/*rotacja wybranego elementu modelu
+	funkcja przyjmuje string w postaci "boneName;direction;axis;qLineEditID" np. "root;-1.0f;X;0" 
+	direction = 1.0 || direction = -1.0
+	axis = "X" || axis = "Y" || axis = "Z"
+	qLineEditID >= 0 && qLineEditID <= bones.size()*3
+	*/
+	void rotate(QString str);
 
-	void rotateLeftUpLegX1();
-	void rotateLeftUpLegX2();
-	void rotateLeftUpLegY1();
-	void rotateLeftUpLegY2();
-	void rotateLeftUpLegZ1();
-	void rotateLeftUpLegZ2();
-
-	void rotateLeftLegX1();
-	void rotateLeftLegX2();
-	void rotateLeftLegY1();
-	void rotateLeftLegY2();
-	void rotateLeftLegZ1();
-	void rotateLeftLegZ2();
-
-	void rotateRightUpLegX1();
-	void rotateRightUpLegX2();
-	void rotateRightUpLegY1();
-	void rotateRightUpLegY2();
-	void rotateRightUpLegZ1();
-	void rotateRightUpLegZ2();
-
-	void rotateRightLegX1();
-	void rotateRightLegX2();
-	void rotateRightLegY1();
-	void rotateRightLegY2();
-	void rotateRightLegZ1();
-	void rotateRightLegZ2();
 private:
     Ui::MainWindow *ui;
 
@@ -111,9 +98,9 @@ private:
     void setTextIteratorLabel(QLabel *label, int iterator, int listSize);
     void setImage1Label(QLabel *label, QString file);
 
+	void prepareFrameMenu(int i);
     void addFrameMenu(int i);
 	void addGLWidgetMenu();
-    void prepareFrameMenu(int i);
 
     void mapIncreaseButtonSlot(int i);
     void mapReduceButtonSlot(int i);

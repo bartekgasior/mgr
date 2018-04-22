@@ -388,13 +388,11 @@
     <ClCompile Include="glwidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
-    <ClCompile Include="sidemenubuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AMC.h" />
     <ClInclude Include="asf.h" />
     <ClInclude Include="bone.h" />
-    <QtMoc Include="sidemenubuilder.h" />
     <QtMoc Include="glwidget.h">
     </QtMoc>
     <QtMoc Include="mainwindow.h">

@@ -65,9 +65,6 @@
     <ClCompile Include="AMC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sidemenubuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asf.h">
@@ -103,10 +100,5 @@
     <QtRcc Include="myresources.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="sidemenubuilder.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
   </ItemGroup>
 </Project>

@@ -192,8 +192,26 @@ void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect) {
 	}
 
 	cout << modelState[0][limitID] << " " << modelState[0][limitID+1] << " " << modelState[0][limitID + 2] << endl;
+	cout << endl;
 	model->setModelState(modelState[0]);
 	update();
+}
+
+int GLWidget::getModelStateID(pf::Model3D *model, string boneName, pf::Vec3 vect) {
+	int result;
+	vector <string> usedBonesNames = model->getNamesMovingBones();
+	for (int i = 0; i < usedBonesNames.size(); i++) {
+		if (boneName == usedBonesNames[i]) {
+			result = i + 3;
+			break;
+		}
+	}
+	if (vect == pf::Model3D::axisX)
+		return result;
+	else if (vect == pf::Model3D::axisY)
+		return result + 1;
+	else if (vect == pf::Model3D::axisZ)
+		return result + 2;
 }
 
 void GLWidget::drawBackgroud(string img) {

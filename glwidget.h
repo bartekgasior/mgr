@@ -30,7 +30,9 @@ public:
     void drawBone(Bone *bone, cv::Point3f);
 	/*BG,funkcja nie uzywana*/
     void drawSkeleton();
-
+	//obrot modelu
+	void rotate(string boneName, float direction, pf::Vec3 vect);
+	int getModelStateID(pf::Model3D *model, string boneName, pf::Vec3 vect);
 
     QVector<Bone> skeletonBones;
     cv::Point3f p;
@@ -50,8 +52,8 @@ public:
 	vector<string> usedBones;
 	vector<vector<float>> modelState;
 
-public slots:
-	void rotate(string boneName, float direction, pf::Vec3 vect);
+//public slots:
+	//void rotate(string boneName, float direction, pf::Vec3 vect);
 };
 
 #endif // GLWIDGET_H
