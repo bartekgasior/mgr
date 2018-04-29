@@ -3,7 +3,7 @@
 #include "Model3D.h"
 #include "gl/glu.h"
 #include "SOIL.h"
-#include "AMC.h"
+#include "FileHandler.h"
 
 using namespace std;
 
@@ -12,12 +12,12 @@ GLWidget::GLWidget(QWidget *parent) :
     yRot = 0;
     p.x = p.y = p.z = 0.0;
     //skeletonBones = ASF::getASF();
-	AMC * amc;
+	FileHandler * fileHandler;
 
 	try {
 		//cylinder model, default configuration files
-		model = new pf::Model3D(pf::Model3D::Cylinder, "ETC/model.asf", "ETC/model.dat");
-		modelState = amc->getAMCTemplate(model);
+		model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, DAT_TEMPLATE_PATH);
+		modelState = fileHandler->getAMCTemplate(model);
 		model->setModelState(modelState[0]);
 	}
 	catch (std::exception &e) {
@@ -26,6 +26,9 @@ GLWidget::GLWidget(QWidget *parent) :
 	}
 	limits = model->getLimits();
 	usedBones = model->getNamesMovingBones();
+	allBones = model->getNamesBones();
+	pf::MotionData::loadASF(ASF_TEMPLATE_PATH, idxBonesMap, asfBones);
+	model->loadConfig(DAT_TEMPLATE_PATH, bonesConf, bonesGeometry);
 }
 
 void GLWidget::initializeGL(){

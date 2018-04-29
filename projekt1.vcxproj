@@ -382,7 +382,7 @@
     </QtUic>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AMC.cpp" />
+    <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="asf.cpp" />
     <ClCompile Include="bone.cpp" />
     <ClCompile Include="glwidget.cpp" />
@@ -390,7 +390,7 @@
     <ClCompile Include="mainwindow.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AMC.h" />
+    <ClInclude Include="FileHandler.h" />
     <ClInclude Include="asf.h" />
     <ClInclude Include="bone.h" />
     <QtMoc Include="glwidget.h">

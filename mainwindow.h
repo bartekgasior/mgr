@@ -16,6 +16,7 @@
 #include "asf.h"
 #include "fileshandler.h"
 #include "glwidget.h"
+#include "FileHandler.h"
 
 namespace Ui {
 class MainWindow;
@@ -31,6 +32,16 @@ public:
 
     int globalListIterator = 1;
     int addFrameButtonCounter = 0;
+
+	//sciezka do folderu ze zdjeciami
+	QString *loadedImagesFolderPath;
+	QMenuBar *menuBar;
+	QMenu *plikMenu;
+	QMenu *saveMenu;
+	QAction *loadImagesAction;
+	QAction *saveAmcAction;
+	QAction *saveAmcSequenceAction;
+	QAction *loadFromAmcAction;
 
     QFileInfoList list;
     QPixmap pix;
@@ -70,17 +81,15 @@ public:
 private slots:
 	/*wczytanie plików z wybranej ścieżki*/
     void loadFiles();
-	/*przewijane klatek wybranego okna*/
-    void increaseIteratorPressed(int i);
-    void reduceIteratorPressed(int i);
-    void maxIteratorPressed(int i);
-    void minIteratorPressed(int i);
-	/*dodanie okna z modelem postaci*/
-    void buttonAddFramePressed();
-    void updateGlobalListIterator(int value);
 
-	/*odswiezenie wartosci w polach qlineedit po rotacji kosci*/
-	void reloadGLWidgetMenu();
+	/*zapis jednej klatki*/
+	void saveOneFrameToFile();
+
+	/*zapis sekwencji klatek*/
+	void saveSequenceToFile();
+
+	/*Wczytanie pliku amc*/
+	void loadFromAmc();
 
 	/*Operacje na modelu*/
 	/*rotacja wybranego elementu modelu
@@ -91,9 +100,25 @@ private slots:
 	*/
 	void rotate(QString str);
 
+	/*przewijane klatek wybranego okna*/
+	void increaseIteratorPressed(int i);
+	void reduceIteratorPressed(int i);
+	void maxIteratorPressed(int i);
+	void minIteratorPressed(int i);
+
+	/*dodanie okna z modelem postaci*/
+	void buttonAddFramePressed();
+	void updateGlobalListIterator(int value);
+
+	/*odswiezenie wartosci w polach qlineedit po rotacji kosci*/
+	void reloadGLWidgetMenu();
+
 private:
     Ui::MainWindow *ui;
 
+	/*Menu aplikacji*/
+	void prepareMenus();
+	void prepareLayouts();
     void prepareGlobalSlider(QSlider *slider);
     void setTextIteratorLabel(QLabel *label, int iterator, int listSize);
     void setImage1Label(QLabel *label, QString file);

@@ -16,6 +16,10 @@
 #include <fstream>
 #include <cstring>
 
+#define ASF_TEMPLATE_PATH "ETC/modelTemplate.asf"
+#define AMC_TEMPLATE_PATH "ETC/modelTemplate.amc"
+#define DAT_TEMPLATE_PATH "ETC/modelTemplate.dat"
+
 class GLWidget : public QOpenGLWidget
 {
     Q_OBJECT
@@ -48,9 +52,20 @@ public:
 	void drawSkeletonModel(vector<vector<pf::Vec3f> > modelVertices);
 	// vector zawieraj¹cy limity rotacji poszczególnych koœci
 	vector<pf::range2> limits;
-	vector<pf::Matrixf> rotations;
+	//rotacje
+	vector<pf::Matrixf> rotations; 
+	//nazwy wykorzystanych kosci
 	vector<string> usedBones;
+	//nazwy wszystkich kosci
+	vector<string> allBones;
+	//stany modelu
 	vector<vector<float>> modelState;
+	//kosci
+	vector<pf::ASFBone> asfBones;
+	map<string, int> idxBonesMap;
+	//
+	vector<pf::boneConfig> bonesConf;
+	vector<pf::boneGeometry> bonesGeometry;
 
 //public slots:
 	//void rotate(string boneName, float direction, pf::Vec3 vect);
