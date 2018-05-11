@@ -8,12 +8,12 @@
 using namespace std;
 
 GLWidget::GLWidget(QWidget *parent) :
-    QOpenGLWidget(parent){
+	QOpenGLWidget(parent) {
+
     yRot = 0;
     p.x = p.y = p.z = 0.0;
     //skeletonBones = ASF::getASF();
 	FileHandler * fileHandler;
-
 	try {
 		//cylinder model, default configuration files
 		model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, DAT_TEMPLATE_PATH);
@@ -29,12 +29,14 @@ GLWidget::GLWidget(QWidget *parent) :
 	allBones = model->getNamesBones();
 	pf::MotionData::loadASF(ASF_TEMPLATE_PATH, idxBonesMap, asfBones);
 	model->loadConfig(DAT_TEMPLATE_PATH, bonesConf, bonesGeometry);
+	initializeBonesRotationsMap();
 }
 
 void GLWidget::initializeGL(){
+	
     glClearColor(255,255,255,0);
 
-   // glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
     //glEnable(GL_LIGHTING);
@@ -55,9 +57,9 @@ void GLWidget::paintGL(){
 	
 	vector<vector<pf::Vec3f> > vertices = this->model->getRotatedVertices();
 	//glColor3f(0.0f, 0.0f, 0.8f);
-
-	//this->drawBackgroud(imgPath);
-
+	
+	//drawBackgroud("C:/Users/barte/Desktop/badania.png");
+	
 	glPushMatrix();
 	// draw skeleton model
 	glLineWidth(5);
@@ -151,13 +153,13 @@ void GLWidget::drawSkeleton(){
     }
 }
 
-void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect) {
+void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVal) {
 
 	int actualBoneNameIDtmp, limitID; 
 
 	//id kosci wsrod wykorzystywanych w modelu
-	for (int i = 0; i < usedBones.size(); i++) {
-		if (usedBones[i] == boneName)
+	for (int i = 0; i < bonesConf.size(); i++) {
+		if (bonesConf[i].name == boneName)
 			actualBoneNameIDtmp = i;
 	}
 	//limit kazdej z wykorzystanych kosci opisany jest przez 3 kolejne el. wektora 'limits'
@@ -169,9 +171,10 @@ void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect) {
 	}
 
 	float angle;
-	float rotVal = 5.0f;
+	//float rotVal = 5.0f;
 	if (vect == pf::Model3D::axisX) {
 		angle = modelState[0][limitID] + rotVal*direction;
+		cout << "min: " << limits[limitID].min << " max: " << limits[limitID].max << endl;
 		if (limits[limitID].min <= angle && angle <= limits[limitID].max) 
 			modelState[0][limitID] += rotVal*direction;
 
@@ -196,7 +199,11 @@ void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect) {
 
 	cout << modelState[0][limitID] << " " << modelState[0][limitID+1] << " " << modelState[0][limitID + 2] << endl;
 	cout << endl;
+
+	//cout << model->getNamesMovingBones().size() << endl;
+	//model->updateModel();
 	model->setModelState(modelState[0]);
+	
 	update();
 }
 
@@ -240,5 +247,72 @@ void GLWidget::drawBackgroud(string img) {
 
 	glDisable(GL_TEXTURE_2D);
 	glFinish();
-	update();
+}
+
+void GLWidget::setLimitsVector(vector<pf::range2> &limits, vector<pf::boneConfig> bones) {
+	limits.clear();
+	pf::range2 r;
+	r.min = -360;
+	r.max = 360;
+	limits.push_back(r);
+	limits.push_back(r);
+	limits.push_back(r);
+	for (int i = 0; i < bones.size(); i++) {
+		pf::range2 rangeX, rangeY, rangeZ;
+		rangeX.min = bones[i].minRotX;
+		rangeX.max = bones[i].maxRotX;
+		rangeY.min = bones[i].minRotY;
+		rangeY.max = bones[i].maxRotY;
+		rangeZ.min = bones[i].minRotZ;
+		rangeZ.max = bones[i].maxRotZ;
+		limits.push_back(rangeX);
+		limits.push_back(rangeY);
+		limits.push_back(rangeZ);
+	}
+}
+
+void GLWidget::initializeBonesRotationsMap() {
+	bonesRotations.clear();
+	for (int i = 0; i < asfBones.size(); i++) {
+		pf::Vec3f vec(0, 0, 0);
+		bonesRotations[asfBones[i].name] = vec;
+	}
+}
+
+void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<vector<float>> mState, vector<pf::boneConfig> bonesConfig) {
+	for (int i = 0; i < bonesConfig.size(); i++) {
+		//std::map<char, int>::iterator it = bonesRotations.find(bonesConfig[i].name);
+		int j = i + 1;
+		pf::Vec3f vec(mState[0][j*3], mState[0][j*3+1], mState[0][j*3+2]);
+		bonesRotations.at(bonesConfig[i].name) = vec;
+	}
+	
+	/*for (auto it = bonesRotations.cbegin(); it != bonesRotations.cend(); ++it) {
+		std::cout << it->first << " " << it->second.x() << " " << it->second.y() << " " << it->second.z() << endl;
+	}*/
+
+}
+
+void GLWidget::updateModelStateFromMap(vector<vector<float>> &mState, map<string, pf::Vec3f> bonesRotations, vector<pf::boneConfig> bonesConfig) {
+	mState.clear();
+	vector<float> newModelState;
+
+	newModelState.push_back(0);
+	newModelState.push_back(0); // ############################# przesuniecie root
+	newModelState.push_back(0);
+
+	for (int i = 0; i < bonesConfig.size(); i++) {
+		pf::Vec3f vec = bonesRotations.at(bonesConfig[i].name);
+		newModelState.push_back(vec.x());
+		newModelState.push_back(vec.y());
+		newModelState.push_back(vec.z());
+	}
+
+	cout << newModelState.size() << endl;
+
+	for (int i = 0; i < newModelState.size(); i++) {
+		cout << newModelState[i] << endl;
+	}
+
+	mState.push_back(newModelState);
 }

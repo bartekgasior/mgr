@@ -64,21 +64,71 @@ void FileHandler::saveASFToFile(vector<pf::ASFBone> bones, QString asfFileName) 
 void FileHandler::saveDATToFile(vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry, QString datFileName) {
 	if (datFileName.isEmpty()) {
 		QMessageBox msgBox;
-		msgBox.setText("Plik asf musi mieæ nazwê.");
+		msgBox.setText("Plik dat musi mieæ nazwê.");
 		msgBox.exec();
 	}
 	else {
 		pf::Model3D model;
 		model.saveConfig(datFileName.toUtf8().constData(), bonesConf, bonesGeometry);
+		//saveDATGeometry(bonesGeometry, datFileName);
 	}
 }
 
-void FileHandler::saveHelperFile(QString folderPath, QString helperFileName) {
+void FileHandler::saveDATGeometry(vector<pf::boneGeometry> bonesGeometry, QString datFileName) {
+	/*iterator bonesGeometry*/
+	int i = 0;
+	string fileName = datFileName.toUtf8().constData();
+
+	char string[100];
+	std::string str;
+	char inputFilename[100];
+
+	strcpy(inputFilename, datFileName.toUtf8().constData());
+
+	ifstream plikIn;
+	plikIn.open(inputFilename);
+
+	ofstream plikOut(fileName);
+
+	if (!plikIn || !plikOut){
+		cout << "Error opening files!" << endl;
+	}
+	else {
+		while (strcmp(string, ":geometry")) {
+			plikIn >> string;
+		}
+		while (plikIn >> string) {
+			while (plikIn >> string && strcmp(string, "end")) {
+				if (strcmp(string, bonesGeometry[i].name.c_str()) == 0) {
+					getline(plikIn, str);
+					str = std::to_string(int(bonesGeometry[i].topRadius1)) + " " +
+						std::to_string(int(bonesGeometry[i].topRadius2)) + " " +
+						std::to_string(int(bonesGeometry[i].bottomRadius1)) + " " +
+						std::to_string(int(bonesGeometry[i].bottomRadius2)) + " " +
+						std::to_string(int(bonesGeometry[i].length)) + " " +
+						std::to_string(int(bonesGeometry[i].label.r)) + " " +
+						std::to_string(int(bonesGeometry[i].label.g)) + " " +
+						std::to_string(int(bonesGeometry[i].label.b)) + "\n" ;
+					plikOut << str;
+				}
+				i++;
+			}
+		}
+	}
+
+	plikIn.close();
+	plikOut.close();
+
+}
+
+void FileHandler::saveHelperFile(QString folderPath, QString helperFileName, QString imagePath) {
 	ofstream plik(helperFileName.toUtf8().constData());
 
 	plik << ":folderPath" << endl;
 	plik << "\t" << folderPath.toUtf8().constData() << endl;
 	plik << ":glWidgetBackground" << endl;
+	plik << "\tid " << 0 << endl;
+	plik << "\tpath " << imagePath.toUtf8().constData() << endl;
 	plik.close();
 }
 
@@ -133,11 +183,7 @@ void FileHandler::saveAMCSeq(vector<vector<float>> modelState, vector<string> al
 		}
 
 		plik.close();
-
-		QMessageBox::information(NULL, QObject::tr("app"),
-			QObject::tr("Zapisano pomyœlnie"),
-			QMessageBox::Cancel,
-			QMessageBox::Cancel);
+		//pf::MotionData::saveStateVectorToAMC(fileName.toUtf8().constData(), allBones, usedBones, modelState);
 	}
 }
 
@@ -152,17 +198,38 @@ vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<QStr
 	}
 
 	else {
-		for (int i = 0; i < asfPaths.size(); i++) {
-			vector<vector<float>> statesTMP;
-			pf::Model3D model3D = pf::Model3D(pf::Model3D::Cylinder, asfPaths[i].toUtf8().constData(), datPaths[i].toUtf8().constData());
-			pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), model3D.getNamesMovingBones(), statesTMP);
-			states.push_back(statesTMP[i]);
+		if (asfPaths.size() != datPaths.size()) {
+			QMessageBox::warning(NULL, QObject::tr("app"),
+				QObject::tr("Niepoprawna iloœæ plików asf lub dat."),
+				QMessageBox::Cancel,
+				QMessageBox::Cancel);
 		}
-		
-		QMessageBox::information(NULL, QObject::tr("app"),
-			QObject::tr("Wczytano pomyœlnie"),
-			QMessageBox::Cancel,
-			QMessageBox::Cancel);
+		else {
+
+			for (int i = 0; i < asfPaths.size(); i++) {
+				if (QFileInfo(asfPaths[i]).exists() && QFileInfo(datPaths[i]).exists()) {
+					vector<vector<float>> statesTMP;
+					pf::Model3D model3D = pf::Model3D(pf::Model3D::Cylinder, asfPaths[i].toUtf8().constData(), datPaths[i].toUtf8().constData());
+					pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), model3D.getNamesMovingBones(), statesTMP);
+					states.push_back(statesTMP[i]);
+				}
+				else {
+					string tmp = "Brak podanych plików dat lub asf!\n" + asfPaths[i].toStdString() + "\n" + datPaths[i].toStdString();
+					QMessageBox::warning(NULL, QObject::tr("app"),
+						QObject::tr(tmp.c_str()),
+						QMessageBox::Cancel,
+						QMessageBox::Cancel);
+
+					states.clear();
+					break;
+				}
+			}
+			if(!states.empty())
+			QMessageBox::information(NULL, QObject::tr("app"),
+				QObject::tr("Wczytano pomyœlnie"),
+				QMessageBox::Cancel,
+				QMessageBox::Cancel);
+		}
 	}
 
 	return states;
@@ -278,9 +345,14 @@ void FileHandler::checkExistingFiles(vector<QString> &asfFiles, vector<QString> 
 				if (asfTmp == asfFiles[i]) {
 					string tmp = asfFiles[i].toUtf8().constData();
 					if (tmp.find("(") != string::npos && tmp.find(")") != string::npos) {
-						int id = stoi(tmp.substr(tmp.find("(") + 1, tmp.find(")") - tmp.find("(") - 1));
-						asf = asf.remove(asf.length() - 7, 7) + "(" + QString::fromStdString(std::to_string(id + 1)) + ").asf"; //tu nie czyta id wekszych niz 9
-						dat = dat.remove(dat.length() - 7, 7) + "(" + QString::fromStdString(std::to_string(id + 1)) + ").dat";
+						/* ilosc cyfr w nawiasie */
+						int length = tmp.find(")") - tmp.find("(") - 1;
+						/* wartosc w nawiasie */
+						int id = stoi(tmp.substr(tmp.find("(") + 1, length));
+						/* ilosc znakow do usuniecia - ().asf */
+						int removeChars = 6 + length;
+						asf = asf.remove(asf.length() - removeChars, removeChars) + "(" + QString::fromStdString(std::to_string(id + 1)) + ").asf"; //tu nie czyta id wekszych niz 9
+						dat = dat.remove(dat.length() - removeChars, removeChars) + "(" + QString::fromStdString(std::to_string(id + 1)) + ").dat";
 					}
 					else {
 						asf = asf + "(1).asf";
@@ -304,4 +376,162 @@ void FileHandler::checkExistingFiles(vector<QString> &asfFiles, vector<QString> 
 			QMessageBox::Cancel,
 			QMessageBox::Cancel);
 	}
+}
+
+vector<int> FileHandler::getImagesIDs(QFileInfoList allImagesList, vector<QString> loadedImages) {
+	vector<int> result;
+
+	for (int i = 0; i < loadedImages.size(); i++) {
+		for (int j = 0; j < allImagesList.size(); j++) {
+			if (allImagesList[j] == loadedImages[i]) {
+				result.push_back(j+1);
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+void FileHandler::addBoneConf(vector<pf::boneConfig> &bonesConf, map<string, int> idxBonesMap, vector<pf::ASFBone> bones, int i) {
+	istringstream iss(bones[i].dof);
+	string s;
+	vector <string> boneDOF;
+	while (getline(iss, s, ' ')) {
+		boneDOF.push_back(s);
+	}
+
+	pf::boneConfig bConf;
+
+	bConf.name = bones[i].name;
+
+	if (std::find(boneDOF.begin(), boneDOF.end(), "tx") != boneDOF.end())
+		bConf.isTransX = true;
+	else
+		bConf.isTransX = false;
+
+	if (std::find(boneDOF.begin(), boneDOF.end(), "ty") != boneDOF.end())
+		bConf.isTransY = true;
+	else
+		bConf.isTransY = false;
+
+	if (std::find(boneDOF.begin(), boneDOF.end(), "tz") != boneDOF.end())
+		bConf.isTransZ = true;
+	else
+		bConf.isTransZ = false;
+
+	if (std::find(boneDOF.begin(), boneDOF.end(), "rx") != boneDOF.end())
+		bConf.isRotX = true;
+	else
+		bConf.isRotX = false;
+
+	if (std::find(boneDOF.begin(), boneDOF.end(), "ry") != boneDOF.end())
+		bConf.isRotY = true;
+	else
+		bConf.isRotY = false;
+
+	if (std::find(boneDOF.begin(), boneDOF.end(), "rz") != boneDOF.end())
+		bConf.isRotZ = true;
+	else
+		bConf.isRotZ = false;
+
+	bConf.rotX = 0.0;
+	bConf.rotY = 0.0;
+	bConf.rotZ = 0.0;
+	bConf.maxRotX = 360.0;
+	bConf.minRotX = -360.0;
+	bConf.maxRotY = 360.0;
+	bConf.minRotY = -360.0;
+	bConf.maxRotZ = 360.0;
+	bConf.minRotZ = -360.0;
+
+	bConf.vRotX = 0.0;
+	bConf.vRotY = 0.0;
+	bConf.vRotZ = 0.0;
+	bConf.vTransX = 0.0;
+	bConf.vTransY = 0.0;
+	bConf.vTransZ = 0.0;
+
+	bonesConf.push_back(bConf);
+	
+}
+
+void FileHandler::addBoneGeo(vector<pf::boneGeometry> &bonesGeometry, map<string, int> idxBonesMap, vector<pf::ASFBone> bones, int i) {
+	if (bones[i].name != "root") {
+		pf::boneGeometry bGeo;
+		bGeo.name = bones[i].name;
+
+		if (bGeo.name == "LeftUpLeg" || bGeo.name == "RightUpLeg" || bGeo.name == "LeftArm" || bGeo.name == "RightArm")
+			bGeo.length = round(bones[i].length) - 4;
+		else if (bGeo.name == "RightForeArm" || bGeo.name == "LeftForeArm")
+			bGeo.length = round(bones[i].length) - 25;
+		else
+			bGeo.length = round(bones[i].length);
+
+		boneGeometryLabels(bGeo);
+		boneGeometryRadius(bGeo);
+
+		bonesGeometry.push_back(bGeo);
+	}
+}
+
+void FileHandler::boneGeometryLabels(pf::boneGeometry &bGeo) {
+	if ((bGeo.name.find("Left") != std::string::npos) && ((bGeo.name.find("Foot") != std::string::npos) || (bGeo.name.find("Toe") != std::string::npos) || (bGeo.name.find("Leg") != std::string::npos))) {
+		//bGeo.label.a = 0.0;
+		bGeo.label.b = LEFT_LEG_LABEL;
+		bGeo.label.g = LEFT_LEG_LABEL;
+		bGeo.label.r = LEFT_LEG_LABEL;
+	}
+
+	else if ((bGeo.name.find("Right") != std::string::npos) && ((bGeo.name.find("Foot") != std::string::npos) || (bGeo.name.find("Toe") != std::string::npos) || (bGeo.name.find("Leg") != std::string::npos))) {
+		//bGeo.label.a = 0.0;
+		bGeo.label.b = RIGHT_LEG_LABEL;
+		bGeo.label.g = RIGHT_LEG_LABEL;
+		bGeo.label.r = RIGHT_LEG_LABEL;
+	}
+
+	else if ((bGeo.name.find("Left") != std::string::npos) && ((bGeo.name.find("Arm") != std::string::npos) || (bGeo.name.find("Hand") != std::string::npos) || (bGeo.name.find("Shoulder") != std::string::npos))) {
+		bGeo.label.b = LEFT_ARM_LABEL;
+		bGeo.label.g = LEFT_ARM_LABEL;
+		bGeo.label.r = LEFT_ARM_LABEL;
+	}
+
+	else if ((bGeo.name.find("Right") != std::string::npos) && ((bGeo.name.find("Arm") != std::string::npos) || (bGeo.name.find("Hand") != std::string::npos) || (bGeo.name.find("Shoulder") != std::string::npos))) {
+		bGeo.label.b = RIGHT_ARM_LABEL;
+		bGeo.label.g = RIGHT_ARM_LABEL;
+		bGeo.label.r = RIGHT_ARM_LABEL;
+	}
+
+	else {
+		bGeo.label.b = 255;
+		bGeo.label.g = 255;
+		bGeo.label.r = 255;
+	}
+}
+
+void FileHandler::boneGeometryRadius(pf::boneGeometry &bGeo) {
+	bGeo.topRadius1 = 0.0;
+	bGeo.topRadius2 = 0.0;
+	bGeo.bottomRadius1 = 0.0;
+	bGeo.bottomRadius2 = 0.0;
+}
+
+int FileHandler::findBoneIDByName(string name, vector<pf::ASFBone> asfBones) {
+	int res = 0;
+	for (int i = 0; i < asfBones.size(); i++) {
+		
+		if (name == asfBones[i].name) {
+			res = asfBones[i].id;
+			break;
+		}
+	}
+	return res;
+}
+
+bool FileHandler::isBoneChecked(string name, vector<string> allBonesNames) {
+	for (int i = 0; i < allBonesNames.size(); i++) {
+		if (allBonesNames[i] == name)
+			return true;
+	}
+	return false;
 }

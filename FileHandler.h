@@ -31,7 +31,7 @@ public:
 	/*zapis pliku pomocniczego - wykorzystywany przy zapisie jednek klatki
 	sceizka do folderu ze zdjeciami
 	*/
-	void saveHelperFile(QString folderPath, QString helperFileName);
+	void saveHelperFile(QString folderPath, QString helperFileName, QString imagePath);
 
 	/*zapis pliku pomocniczego - wykorzystywany przy zapisie sekwencji klatek
 	sciezka do folderu ze zdjeciami
@@ -78,5 +78,32 @@ public:
 	
 	/*funkcja sprawdzaj¹ca czy dane zdjecie tla zostalo wykorzystane wiecej niz raz, jesli tak do nazwy plikow .asf oraz .dat dodaje indeks np. asf(1).asf*/
 	void checkExistingFiles(vector<QString> &asfFiles, vector<QString> &datFiles, QString asf, QString dat);
+
+	/*funkcja zwraca wektor indeksow zdjec wykorzystanych do tworzenia modelu - wykorzystywana do wczytywania wczesniej zapisanej sekwencji*/
+	vector<int> getImagesIDs(QFileInfoList allImagesList, vector<QString> loadedImages);
+
+	/*dodanie kosci do modelu oraz pliku dat
+	funkcja przyjmuje za parametry zmienne wybranego obiektu QOpenGlWidget oraz indeks kosci z pliku .asf
+	*/
+	void addBoneConf(vector<pf::boneConfig> &bonesConf, map<string, int> idxBonesMap, vector<pf::ASFBone> bones, int i);
+
+	/*dodanie :geometry do pliku dat
+	funkcja przyjmuje za parametry zmienne wybranego obiektu QOpenGlWidget oraz indeks kosci z pliku .asf
+	*/
+	void addBoneGeo(vector<pf::boneGeometry> &bonesGeometry, map<string, int> idxBonesMap, vector<pf::ASFBone> bones, int i);
+
+	int findBoneIDByName(string name, vector<pf::ASFBone> asfBones);
+
+	bool isBoneChecked(string name, vector<string> allBonesNames);
+
+private:
+	/*zapis wartosci label w pliku .dat*/
+	void boneGeometryLabels(pf::boneGeometry &bGeo);
+
+	/*zapis wartosci radius w pliku .dat*/
+	void boneGeometryRadius(pf::boneGeometry &bGeo);
+
+	/*zapis :geometry w pliku dat*/
+	void saveDATGeometry(vector<pf::boneGeometry> bonesGeometry, QString datFileName);
 };
 

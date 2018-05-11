@@ -39,7 +39,14 @@
       velocity 25 0 0
    end
    begin
-      name Spine1
+      name Spine
+      dof rx ry rz 
+      rot 0 0 0
+      limits -15 25 -25 25 -25 25
+      velocity 10 10 10
+   end
+    begin
+      name Spine1_dum1
       dof rx ry rz 
       rot 0 0 0
       limits -15 25 -25 25 -25 25
@@ -83,19 +90,35 @@
 # bone name, topRadius1, topRadius2, bottomRadius1, bottomRadius2, length, label.r, label.g, label.b
 :geometry
    begin
+	  LeftUpLeg_dum 0 0 0 0 0 150 150 150
       LeftUpLeg 125 125 135 135 434 150 150 150
       LeftLeg 85 85 120 120 406 150 150 150
-      LeftFoot 50 50 100 100 167 150 150 150
+	  LeftFoot 0 0 0 0 0 150 150 150
+      LeftToeBase 0 0 0 0 0 150 150 150
+	  RightUpLeg_dum 0 0 0 0 0 140 140 140
       RightUpLeg 125 125 135 135 434 140 140 140
       RightLeg 85 85 120 120 406 140 140 140
-      RightFoot 50 50 100 100 167 140 140 140
+	  RightFoot 0 0 0 0 0 140 140 140
+      RightToeBase 0 0 0 0 0 140 140 140
       Spine 275 275 285 285 212 255 255 255
+	  Spine_dum 0 0 0 0 0 255 255 255
       Spine1_dum1 260 260 270 270 260 255 255 255
+	  Spine1_dum2 0 0 0 0 0 255 255 255
+      Spine1_dum3 0 0 0 0 0 255 255 255
+	  Neck 0 0 0 0 0 255 255 255
+	  LeftShoulder 0 0 0 0 0 200 200 200
+      RightShoulder 0 0 0 0 0 190 190 190
       Head 180 140 180 140 139 255 255 255
       LeftArm 70 70 80 80 284 200 200 200
       LeftForeArm 50 50 70 70 218 200 200 200
-      LeftHand_dum2 80 80 50 50 99.8 200 200 200
+	  LeftHand 0 0 0 0 0 200 200 200
+      LeftHand_dum1 0 0 0 0 0 200 200 200
+      LeftHand_dum2 0 0 0 0 0 200 200 200
+      LeftHandThumb 0 0 0 0 0 200 200 200
       RightArm 70 70 80 80 284 190 190 190
       RightForeArm 50 50 70 70 218 190 190 190
-      RightHand_dum2 80 80 50 50 99.8 190 190 190
+	  RightHand 0 0 0 0 0 190 190 190
+      RightHand_dum1 0 0 0 0 0 190 190 190
+      RightHand_dum2 0 0 0 0 0 190 190 190
+      RightHandThumb 0 0 0 0 0 190 190 190
    end

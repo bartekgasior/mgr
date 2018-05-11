@@ -125,7 +125,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(QTDIR)\include;$(ProjectDir);$(ProjectDir)GeneratedFiles;$(ProjectDir)GeneratedFiles\$(Configuration);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;C:\OpenCV-3.4.1\opencv\build\include;.\;.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(QTDIR)\include;$(ProjectDir);$(ProjectDir)GeneratedFiles;$(ProjectDir)GeneratedFiles\$(Configuration);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;C:\OpenCV-3.4.1\opencv\build\include;.\;.\include;.\GeneratedFiles;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:rvalueCast -Zc:inline -Zc:strictStrings -w34100 -w34189 -w44996 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>release\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -171,7 +171,7 @@
       <Include>release/moc_predefs.h</Include>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
       <DynamicSource>output</DynamicSource>
-      <IncludePath>$(QTDIR)\include;$(ProjectDir)\.;$(ProjectDir)GeneratedFiles;$(ProjectDir)GeneratedFiles\$(Configuration)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;C:\OpenCV-3.4.1\opencv\build\include;.;.\include</IncludePath>
+      <IncludePath>$(QTDIR)\include;$(ProjectDir);$(ProjectDir)GeneratedFiles;$(ProjectDir)GeneratedFiles\$(Configuration);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;C:\OpenCV-3.4.1\opencv\build\include;.\;.\include;.\GeneratedFiles;%(AdditionalIncludeDirectories)</IncludePath>
     </QtMoc>
     <QtRcc>
       <InitFuncName>myresources</InitFuncName>
@@ -236,7 +236,7 @@
       <Include>release/moc_predefs.h</Include>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
       <DynamicSource>output</DynamicSource>
-      <IncludePath>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;.\release;.\..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;$(INHERIT)\.</IncludePath>
+      <IncludePath>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\..\..\QT\5.10.1\MSVC2015_64\include;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;release;..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;C:\Users\barte\Desktop\Dla studenta\include;%(AdditionalIncludeDirectories);C:\Users\barte\Desktop\Dla studenta\include;C:\Users\barte\Desktop\Dla studenta\include</IncludePath>
     </QtMoc>
     <QtRcc>
       <InitFuncName>myresources</InitFuncName>
@@ -300,7 +300,7 @@
       <Include>debug/moc_predefs.h</Include>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
       <DynamicSource>output</DynamicSource>
-      <IncludePath>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;.\release;.\..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;$(INHERIT)\.</IncludePath>
+      <IncludePath>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\..\..\QT\5.10.1\MSVC2015_64\include;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;release;..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;C:\Users\barte\Desktop\Dla studenta\include;%(AdditionalIncludeDirectories);C:\Users\barte\Desktop\Dla studenta\include;C:\Users\barte\Desktop\Dla studenta\include</IncludePath>
     </QtMoc>
     <QtRcc>
       <QTDIR>C:\QT\5.10.1\MSVC2013_64</QTDIR>
@@ -364,7 +364,7 @@
       <Include>debug/moc_predefs.h</Include>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
       <DynamicSource>output</DynamicSource>
-      <IncludePath>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;.\release;.\..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;$(INHERIT)\.</IncludePath>
+      <IncludePath>C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;..\..\..\..\QT\5.10.1\MSVC2015_64\include;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;release;..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;C:\Users\barte\Desktop\Dla studenta\include;%(AdditionalIncludeDirectories);C:\Users\barte\Desktop\Dla studenta\include;C:\Users\barte\Desktop\Dla studenta\include</IncludePath>
     </QtMoc>
     <QtRcc>
       <QTDIR>C:\QT\5.10.1\MSVC2013_64</QTDIR>
@@ -382,6 +382,7 @@
     </QtUic>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bonemanagment.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="asf.cpp" />
     <ClCompile Include="bone.cpp" />
@@ -390,6 +391,12 @@
     <ClCompile Include="mainwindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="bonemanagment.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;.\release;.\..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;$(INHERIT)\.</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;.\release;.\..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;$(INHERIT)\.</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\barte\Documents\Visual Studio 2013\freeglut\include;C:\Users\barte\Documents\Visual Studio 2013\glew-1.11.0\include;C:\Users\barte\Desktop\Dla studenta\include;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtWidgets;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtGui;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtANGLE;.\..\..\..\..\QT\5.10.1\MSVC2015_64\include\QtCore;.\release;.\..\..\..\..\QT\5.10.1\MSVC2015_64\mkspecs\win32-msvc;C:\OpenCV-3.4.1\opencv\build\include;C:\Users\barte\Desktop\Dla studenta\libmotion;$(INHERIT)\.</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\include;$(ProjectDir)\.;$(ProjectDir)GeneratedFiles;$(ProjectDir)GeneratedFiles\$(Configuration)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;C:\OpenCV-3.4.1\opencv\build\include;.;.\include;.\GeneratedFiles</IncludePath>
+    </QtMoc>
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="asf.h" />
     <ClInclude Include="bone.h" />
@@ -427,6 +434,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="bonemanagment.ui" />
     <QtUic Include="mainwindow.ui">
     </QtUic>
   </ItemGroup>

@@ -35,8 +35,19 @@ public:
 	/*BG,funkcja nie uzywana*/
     void drawSkeleton();
 	//obrot modelu
-	void rotate(string boneName, float direction, pf::Vec3 vect);
+	void rotate(string boneName, float direction, pf::Vec3 vect, int rotVal);
+
+	/*funkcja zwraca id wybranej kosci w wektorze modelState*/
 	int getModelStateID(pf::Model3D *model, string boneName, pf::Vec3 vect);
+
+	/*funkcja aktualizuje limity obrotu wybranych kosci*/
+	void setLimitsVector(vector<pf::range2> &limits, vector<pf::boneConfig> bones);
+
+	/*zapis rotacji do mapy bonesRotations*/
+	void saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<vector<float>> mState, vector<pf::boneConfig> bonesConfig);
+
+	/*aktualizacja wektora modelState po zmianie ilosci kosci modelu*/
+	void updateModelStateFromMap(vector<vector<float>> &mState, map<string, pf::Vec3f> bonesRotations, vector<pf::boneConfig> bonesConfig);
 
     QVector<Bone> skeletonBones;
     cv::Point3f p;
@@ -46,7 +57,7 @@ public:
 	string imgPath;
 	// Human 3D Model
 	pf::Model3D* model;
-	
+
 
 	// draw skeleton model 
 	void drawSkeletonModel(vector<vector<pf::Vec3f> > modelVertices);
@@ -67,8 +78,12 @@ public:
 	vector<pf::boneConfig> bonesConf;
 	vector<pf::boneGeometry> bonesGeometry;
 
-//public slots:
-	//void rotate(string boneName, float direction, pf::Vec3 vect);
+	/*obroty wszystkich kosci wraz z nazwa*/
+	map<string, pf::Vec3f> bonesRotations;
+
+private:
+	void initializeBonesRotationsMap();
+
 };
 
 #endif // GLWIDGET_H
