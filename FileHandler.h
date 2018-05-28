@@ -42,7 +42,7 @@ public:
 	void saveHelperFile(QString folderPath, QString helperFileName, vector<int> frameID, vector<QString> imagesPath);
 
 	/*zapis sekwencji klatek do pliku - wektor stanow modelu, nazwy wszystkich kosci,wykorzystane kosci, nazwa pliku*/
-	void saveAMCSeq(vector<vector<float>> modelState, vector<string> allBones, vector<string> usedBones, QString fileName);
+	void saveAMCSeq(vector<vector<float>> modelState, /*vector<string> allBones,*/ vector<pf::ASFBone> allbones, vector<string> usedBones, QString fileName);
 
 	/*Wczytanie pliku .amc do wektora stanów*/
 	vector<vector<float>> loadAmcFromFile(QString fileName, vector<QString> asfPath, vector<QString> datPath);
@@ -94,6 +94,7 @@ public:
 
 	int findBoneIDByName(string name, vector<pf::ASFBone> asfBones);
 
+	/* funkcja sprawdza czy checkbox kosci o podanej nazwie zostal zaznaczony*/
 	bool isBoneChecked(string name, vector<string> allBonesNames);
 
 private:

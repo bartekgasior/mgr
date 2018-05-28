@@ -26,7 +26,7 @@ BoneManagment::~BoneManagment()
 {
 }
 
-void BoneManagment::getUsedBones(vector<pf::ASFBone> asfBones, vector<int> usedBonesIDs) {
+void BoneManagment::setUsedBones(vector<pf::ASFBone> asfBones, vector<int> usedBonesIDs) {
 	/*petla dla kazdej kosci wczytanej z pliku asf*/
 	for (int i = 0; i < asfBones.size(); i++) {
 
@@ -50,7 +50,9 @@ void BoneManagment::getUsedBones(vector<pf::ASFBone> asfBones, vector<int> usedB
 void BoneManagment::addTreeRoot(QString name,int id) {
 	QTreeWidgetItem *treeItem = new QTreeWidgetItem(treeWidget);
 	treeItem->setText(0, name);
-	treeItem->setCheckState(1, Qt::Unchecked);
+	treeItem->setCheckState(1, Qt::Checked);
+	treeItem->setExpanded(true);
+	treeItem->setFlags(Qt::ItemIsEnabled);
 
 	treeWidgetsItems.push_back(treeItem);
 	bonesNames.push_back(name);
@@ -63,17 +65,18 @@ void BoneManagment::addTreeChild(QTreeWidgetItem *parent, QString name, int id) 
 	treeItem->setCheckState(1, Qt::Unchecked);
 	parent->addChild(treeItem);
 	treeItem->setExpanded(true);
+	//treeItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);
 
 	treeWidgetsItems.push_back(treeItem);
 	bonesNames.push_back(name);
 	bonesIDs.push_back(id);
 }
 
-vector<int> BoneManagment::getUsedBonesIDs(vector<pf::boneConfig> bonesConf, vector<string> allBones) {
+vector<int> BoneManagment::getUsedBonesIDs(vector<pf::boneGeometry> bonesGeometry, vector<string> allBones) {
 	vector<int> result;
 	for (int i = 0; i < allBones.size(); i++) {
-		for (int j = 0; j < bonesConf.size(); j++) {
-			if (allBones[i] == bonesConf[j].name) {
+		for (int j = 0; j < bonesGeometry.size(); j++) {
+			if (allBones[i] == bonesGeometry[j].name) {
 				result.push_back(i);
 				break;
 			}

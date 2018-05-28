@@ -68,6 +68,9 @@
     <ClCompile Include="bonemanagment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="modelindialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asf.h">
@@ -109,6 +112,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="bonemanagment.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="modelindialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

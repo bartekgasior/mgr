@@ -23,13 +23,18 @@ public:
 	QDialogButtonBox *okButton;
 
 	/*lista pozwalajaca na wybor kosci w modelu*/
-	void getUsedBones(vector<pf::ASFBone> asfBones, vector<int> usedBones);
+	void setUsedBones(vector<pf::ASFBone> asfBones, vector<int> usedBones);
+
 	/*indeksy uzytych kosci*/
-	vector<int> getUsedBonesIDs(vector<pf::boneConfig> bonesConf, vector<string> allBones);
+	vector<int> getUsedBonesIDs(vector<pf::boneGeometry> bonesGeometry, vector<string> allBones);
 	
+	/*elementy QTreeWidget*/
 	vector<QTreeWidgetItem*> treeWidgetsItems;
 
+	/*id wybranych kosci*/
 	vector<int> selectedBonesIDs;
+
+	/*nazwy wybranych kosci*/
 	vector<string> selectedBonesNames;
 
 private:
@@ -38,9 +43,16 @@ private:
 	/*wektor zawierajacy nazwy kosci tworzacych QTreeWidget*/
 	vector<QString> bonesNames;
 
+	/*dodanie roota do QTreeWidget*/
 	void addTreeRoot(QString name, int id);
+
+	/*dodanie potomkow do QTreeWidget*/
 	void addTreeChild(QTreeWidgetItem *parent, QString name, int id);
+
+	/*pobranie id wybranego elementu*/
 	int getTreeItemID(vector<int> bonesIDs, int parentID);
+
+	/*zaznaczenie checkboxow odpowiadajacych kosci po uruchomieniu okna*/
 	void setCheckBoxes(vector<int> usedBonesIDs);
 
 private slots:

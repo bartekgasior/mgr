@@ -149,7 +149,7 @@ void FileHandler::saveHelperFile(QString folderPath, QString helperFileName, vec
 	plik.close();
 }
 
-void FileHandler::saveAMCSeq(vector<vector<float>> modelState, vector<string> allBones, vector<string> usedBones, QString fileName) {
+void FileHandler::saveAMCSeq(vector<vector<float>> modelState, vector<pf::ASFBone> allbones, vector<string> usedBones, QString fileName) {
 	if (fileName.isEmpty()) {
 		QMessageBox msgBox;
 		msgBox.setText("Plik musi mieæ nazwê.");
@@ -163,28 +163,28 @@ void FileHandler::saveAMCSeq(vector<vector<float>> modelState, vector<string> al
 
 		for (int i = 0; i < modelState.size(); i++) {
 			plik << i + 1 << endl;
-			plik << allBones[0] << " " << modelState[i][0] << " "
+			plik << allbones[0].name << " " << modelState[i][0] << " "
 				<< modelState[i][1] << " " << modelState[i][2] << " "
 				<< modelState[i][3] << " " << modelState[i][4] << " " 
 				<< modelState[i][5] << endl;
 
-			for (int k = 1; k < allBones.size(); k++) {
+			for (int k = 1; k < allbones.size(); k++) {
 				bool flag = false;
 				for (int j = 1; j < usedBones.size(); j++) {
-					if (allBones[k] == usedBones[j]) {
-						plik << allBones[k] << " " << modelState[i][(j + 1) * 3] << " " << modelState[i][(j + 1) * 3 + 1] << " " << modelState[i][(j + 1) * 3 + 2] << endl;
+					if (allbones[k].name == usedBones[j]) {
+						plik << allbones[k].name << " " << modelState[i][(j + 1) * 3] << " " << modelState[i][(j + 1) * 3 + 1] << " " << modelState[i][(j + 1) * 3 + 2] << endl;
 						flag = true;
 						break;
 					}
 				}
-				if (!flag)
-					plik << allBones[k] << " " << 0 << " " << 0 << " " << 0 << endl;
+				if (!flag) {}
+					//plik << allbones[k].name << " " << 0 << " " << 0 << " " << 0 << endl;
 			}
 		}
 
 		plik.close();
-		//pf::MotionData::saveStateVectorToAMC(fileName.toUtf8().constData(), allBones, usedBones, modelState);
 	}
+	//pf::MotionData::saveStateVectorToAMC(fileName.toUtf8().constData(), allbones, usedBones, modelState);
 }
 
 vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<QString> asfPaths, vector<QString> datPaths) {
@@ -241,7 +241,7 @@ void FileHandler::loadDatFromFile(string datFileName, vector<pf::boneConfig> &bo
 }
 
 QString FileHandler::getImagesFolderPath(QString helperFileName) {
-	char string[100];
+	string str;
 	char inputFilename[100];
 
 	strcpy(inputFilename, helperFileName.toUtf8().constData());
@@ -250,11 +250,13 @@ QString FileHandler::getImagesFolderPath(QString helperFileName) {
 	inputFile.open(inputFilename);
 	if (!inputFile.is_open())
 		cout << "B³¹d otwarcia pliku: " << inputFilename << endl;
-	inputFile >> string;
-	inputFile >> string;
+	getline(inputFile, str);
+	getline(inputFile,str);
 	inputFile.close();
 
-	return QString::fromStdString(string);
+	str.erase(std::remove(str.begin(), str.end(), '\t'), str.end());
+
+	return QString::fromStdString(str);
 }
 
 vector<QString> FileHandler::getGlWidgetBackgroudFromFile(QString helperFileName) {
@@ -460,13 +462,7 @@ void FileHandler::addBoneGeo(vector<pf::boneGeometry> &bonesGeometry, map<string
 	if (bones[i].name != "root") {
 		pf::boneGeometry bGeo;
 		bGeo.name = bones[i].name;
-
-		if (bGeo.name == "LeftUpLeg" || bGeo.name == "RightUpLeg" || bGeo.name == "LeftArm" || bGeo.name == "RightArm")
-			bGeo.length = round(bones[i].length) - 4;
-		else if (bGeo.name == "RightForeArm" || bGeo.name == "LeftForeArm")
-			bGeo.length = round(bones[i].length) - 25;
-		else
-			bGeo.length = round(bones[i].length);
+		bGeo.length = round(bones[i].length);
 
 		boneGeometryLabels(bGeo);
 		boneGeometryRadius(bGeo);
