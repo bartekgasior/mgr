@@ -24,6 +24,8 @@
 #include "FileHandler.h"
 #include "bonemanagment.h"
 #include "modelindialog.h"
+#include "camerasconfig.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -72,20 +74,22 @@ private:
 	/*#################################################*/
 
 	//sciezka do folderu ze zdjeciami
-	QString *loadedImagesFolderPath;
-	QVector<cv::Mat> aviFrames;
+	//QString *loadedImagesFolderPath;
+	//QVector<cv::Mat> aviFrames;
 
 	/*menu*/
 	QMenuBar *menuBar;
 	QMenu *plikMenu;
 	QMenu *saveMenu;
 	QMenu *loadMenu;
+	QMenu *cameraMenu;
 	//QAction *loadImagesAction;
 	//QAction *loadAviAction;
 	QAction *loadFromAmcAction;
 	QAction *saveAmcAction;
 	QAction *saveAmcSequenceAction;
 	QAction *manageModelBonesAction;
+	QAction *openCameraConfigAction;
 	
 	/*signalmapper dla przyciskow obslugujacych iteracje tla kazdej z klatek*/
 	QSignalMapper *increaseButtonSignalMapper;
@@ -158,7 +162,7 @@ private:
 	QVector<QSpinBox*> sideLengthMenuSpinBoxesExtraVector;
 
     Ui::MainWindow *ui;
-	BoneManagment *boneManagmentWindow;
+	
 	ModelInDialog *modelInDialog;
 
 	/*Menu aplikacji*/
@@ -215,6 +219,8 @@ private:
 	void mapAddImagesToBackground(int i);
 	void mapAddAviToBackground(int i);
 
+	void clearLayout(QLayout* layout);
+
 private slots:
 	/*zapis jednej klatki*/
 	void saveOneFrameToFile();
@@ -227,6 +233,9 @@ private slots:
 
 	/*edycja kosci modelu*/
 	void manageBonesPressed();
+
+	/*konfiguracja kamery*/
+	void openCameraConfigPressed();
 
 	/*Operacje na modelu*/
 	/*rotacja wybranego elementu modelu

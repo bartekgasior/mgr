@@ -6,7 +6,7 @@ BoneManagment::BoneManagment(QWidget *parent)
 	QDialog *dialog = new QDialog();
 	
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-	dialog->setWindowTitle("zarz¹dzaj modelem");
+	dialog->setWindowTitle("Zarz¹dzaj modelem");
 	treeWidget = new QTreeWidget();
 	treeWidget->setColumnCount(2);
 	treeWidget->setColumnWidth(0, 350);

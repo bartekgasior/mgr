@@ -7,6 +7,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <QOpenGLWidget>
 #include <QGLWidget>
@@ -17,6 +18,8 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+
+#include "avihzdialog.h"
 
 #define ASF_TEMPLATE_PATH "ETC/modelTemplate.asf"
 #define AMC_TEMPLATE_PATH "ETC/modelTemplate.amc"
@@ -37,6 +40,8 @@ public:
 
 	//sciezka do folderu ze zdjeciami
 	QString *loadedImagesFolderPath;
+	//sciezka do pliku avi
+	QString aviFilePath;
 	QVector<cv::Mat> aviFrames;
 
 	/*pliki wybranego folderu*/
@@ -59,6 +64,9 @@ public:
 
 	/*czy dodac tlo*/
 	bool drawBckg = false;
+	
+	/*czestotliwosc wczytywania klatek z avi - wykorzystywana do zapisu i odczytu z pliku*/
+	int hz = 0;
 
 	// vector zawieraj¹cy limity rotacji poszczególnych koœci
 	vector<pf::range2> limits;
@@ -171,6 +179,8 @@ public:
 
 	void updateVelocityFromMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> &bonesConfig);
 
+	void updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig> bonesConfig);
+
 	// draw skeleton model 
 	void drawSkeletonModel(vector<vector<pf::Vec3f> > modelVertices);
 
@@ -183,6 +193,8 @@ public:
 
 	/*Wczytanie pliku .avi*/
 	void loadAviFile();
+
+	void loadAviFile(string path, int hz);
 
 private:
 	void initializeBonesRotationsMap();

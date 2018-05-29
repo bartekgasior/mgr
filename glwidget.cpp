@@ -5,6 +5,7 @@
 #include "FileHandler.h"
 
 using namespace std;
+using namespace cv;
 
 GLWidget::GLWidget(QWidget *parent) :
 	QOpenGLWidget(parent) {
@@ -1443,6 +1444,7 @@ void GLWidget::saveVelocityToMap(map<string, vector<float>> modelVelocity, vecto
 		//vector<int>().swap(tmp);
 	}
 }
+
 void GLWidget::updateModelStateFromMap(vector<vector<float>> &mState, map<string, pf::Vec3f> bonesRotations, vector<pf::boneConfig> bonesConfig) {
 	mState.clear();
 	vector<float> newModelState;
@@ -1520,6 +1522,13 @@ void GLWidget::updateVelocityFromMap(map<string, vector<float>> modelVelocity, v
 	}
 }
 
+void GLWidget::updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig> bonesConfig) {
+	usedBones.clear();
+	for (int i = 0; i < bonesConfig.size(); i++) {
+		usedBones.push_back(bonesConfig[i].name);
+	}
+}
+
 void GLWidget::loadFiles() {
 	loadedImagesFolderPath = new QString(QFileDialog::getExistingDirectory(this, tr("Img folder")));
 	if (!loadedImagesFolderPath->isEmpty()) {
@@ -1534,21 +1543,28 @@ void GLWidget::loadFiles() {
 		list = dir.entryInfoList();	
 
 		isAvi = false;
-		/*QMessageBox::information(NULL, QObject::tr("app"),
-			QObject::tr("Wczytano pomyœlnie"),
-			QMessageBox::Cancel,
-			QMessageBox::Cancel);*/
 	}
 }
 
 void GLWidget::loadAviFile() {
-	QString aviFilePath = QFileDialog::getOpenFileName(this,
+	aviFilePath = QFileDialog::getOpenFileName(this,
 		tr("Wczytaj .avi"), "",
 		tr("AVI (*.avi);;All Files(*)"));
 
 	if (!aviFilePath.isEmpty()) {
 
-		cv::VideoCapture cap(aviFilePath.toUtf8().constData());
+		VideoCapture cap(aviFilePath.toUtf8().constData());
+		cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+		cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+		AviHzDialog *aviDialog = new AviHzDialog(this);
+		aviDialog->setFramesCounter(cap.get(CV_CAP_PROP_FRAME_COUNT));
+
+		aviDialog->resize(200, 100);
+		aviDialog->exec();
+
+		hz = aviDialog->getHz();
+		delete aviDialog;
+
 		if (!cap.isOpened()) {
 			QMessageBox::warning(NULL, QObject::tr("app"),
 				QObject::tr("B³¹d w czasie otwierania pliku avi"),
@@ -1557,24 +1573,68 @@ void GLWidget::loadAviFile() {
 		}
 		else {
 			aviFrames.clear();
-			bool stop = false;
+			Mat frame;
 
+			bool stop = false;
+			int i = 0;
 			while (!stop) {
-				cv::Mat frame;
+				
 				cap >> frame;
+				
 				if (frame.empty()) {
 					stop = true;
 					continue;
 				}
-				aviFrames.push_back(frame);
+				if (i%hz == 0) {
+					cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+					cout << frame.size();
+					aviFrames.push_back(frame);
+				}
+				i++;
+				//frame.release();
 			}
 			isAvi = true;
-
-			/*QMessageBox::information(NULL, QObject::tr("app"),
-				QObject::tr("Wczytano pomyœlnie"),
-				QMessageBox::Cancel,
-				QMessageBox::Cancel);*/
-
+			cap.release();
 		}
+		
 	}
+}
+
+void GLWidget::loadAviFile(string path, int hz) {
+	VideoCapture cap(path);
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+
+	if (!cap.isOpened()) {
+		QMessageBox::warning(NULL, QObject::tr("app"),
+			QObject::tr("B³¹d w czasie otwierania pliku avi"),
+			QMessageBox::Cancel,
+			QMessageBox::Cancel);
+	}
+	else {
+		aviFrames.clear();
+		Mat frame;
+
+		bool stop = false;
+		int i = 0;
+		while (!stop) {
+
+			cap >> frame;
+
+			if (frame.empty()) {
+				stop = true;
+				continue;
+			}
+			if (i%hz == 0) {
+				cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+				cout << frame.size();
+				aviFrames.push_back(frame);
+			}
+			i++;
+			//frame.release();
+		}
+		isAvi = true;
+		cap.release();
+	}
+
 }

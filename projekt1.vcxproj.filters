@@ -71,6 +71,12 @@
     <ClCompile Include="modelindialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="camerasconfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="avihzdialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asf.h">
@@ -115,6 +121,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="modelindialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="camerasconfig.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="avihzdialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

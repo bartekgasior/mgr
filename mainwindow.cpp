@@ -40,16 +40,6 @@ void MainWindow::prepareMenus() {
 
 	loadMenu = plikMenu->addMenu(tr("&Wczytaj"));
 
-	/*loadImagesAction = new QAction("Wczytaj folder zdjęć", this);
-	connect(loadImagesAction, &QAction::triggered, this, &MainWindow::loadFiles);
-	loadMenu->addAction(loadImagesAction);
-
-	loadAviAction = new QAction("Wczytaj plik .avi", this);
-	connect(loadAviAction, &QAction::triggered, this, &MainWindow::loadAviFile);
-	loadMenu->addAction(loadAviAction);
-
-	loadMenu->addSeparator();
-	*/
 	loadFromAmcAction = new QAction("Wczytaj plik .amc", this);
 	connect(loadFromAmcAction, &QAction::triggered, this, &MainWindow::loadFromAmc);
 	loadMenu->addAction(loadFromAmcAction);
@@ -77,6 +67,12 @@ void MainWindow::prepareMenus() {
 	plikMenu->addAction(manageModelBonesAction);
 	if (comboBoxFrameSelector->count() == 0)
 		manageModelBonesAction->setDisabled(true);
+
+	/******************************/
+	cameraMenu = menuBar->addMenu("&Camera");
+	openCameraConfigAction = new QAction(tr("&Konfiguracja kamery"));
+	connect(openCameraConfigAction, &QAction::triggered, this, &MainWindow::openCameraConfigPressed);
+	cameraMenu->addAction(openCameraConfigAction);
 }
 
 void MainWindow::prepareLayouts() {
@@ -172,6 +168,8 @@ void MainWindow::resetVariables() {
 	//aviFrames.clear();
 
 	glWidgetsVector.clear();
+	horizontalGLWidgetMenuVector.clear();
+	hMenuWidgetVector.clear();
 	minButtonsVector.clear();
 	reduceButtonsVector.clear();
 	maxButtonsVector.clear();
@@ -181,7 +179,10 @@ void MainWindow::resetVariables() {
 	imagesListIterator.clear();
 	menuButtonsVector.clear();
 	frameScrollingMenu.clear();
-	//manageBonesVector.clear();
+	selectBackgroundMenuVector.clear();
+	showModelInDialogVector.clear();
+	selectAviBackgroundVector.clear();
+	selectImagesBackgroundVector.clear();
 
 	sideRotateMenuLabelsVector.clear();
 	sideRotateMenuHLayoutsVector.clear();
@@ -194,6 +195,10 @@ void MainWindow::resetVariables() {
 	sideLengthMenuButtonsVector.clear();
 	sideLengthMenuLineEditsVector.clear();
 	sideLengthMenuSpinBoxesVector.clear();
+	sideLengthMenuRotLabelsVector.clear();
+	sideLengthMenuRotCheckBoxesVector.clear();
+	sideLengthMenuLimVelLabelsVector.clear();
+	sideLengthMenuLimVelSpinBoxesVector.clear();
 
 	sideLengthMenuHLayoutsExtraVector.clear();
 	sideLengthMenuLabelsExtraVector.clear();
@@ -203,7 +208,7 @@ void MainWindow::resetVariables() {
 
 	globalListIterator = 1;
 	addFrameButtonCounter = 0;
-	isAvi = false;
+	//isAvi = false;
 	//loadedImagesFolderPath->clear();
 
 	showLayouts();
@@ -223,13 +228,28 @@ void MainWindow::saveOneFrameToFile() {
 
 	QString folderPath = QFileDialog::getExistingDirectory(this, tr("Model files folder"));
 	if (!folderPath.isEmpty()) {
-		/*scieżka utworzonego folderu zapisywanej klatki*/
-		folderPath += ("/" + list[imagesListIterator[id] - 1].baseName());
+
 		/*sciezki plikow*/
-		QString amcFileName = folderPath + "/" + list[imagesListIterator[id] - 1].baseName() + ".amc"; 
-		QString asfFileName = folderPath + "/" + list[imagesListIterator[id] - 1].baseName() + ".asf";
-		QString datFileName = folderPath + "/" + list[imagesListIterator[id] - 1].baseName() + ".dat";
-		QString helperFile = folderPath + "/" + "helperFile.dat";
+		QString amcFileName;
+		QString asfFileName;
+		QString datFileName;
+		QString helperFile;
+
+		/*scieżka utworzonego folderu zapisywanej klatki*/
+		if (!glWidgetsVector[id]->isAvi) {
+			folderPath += ("/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName());
+			amcFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".amc";
+			asfFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".asf";
+			datFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".dat";
+			helperFile = folderPath + "/" + "helperFile.dat";
+		}
+		else {/*sciezka do zapisu klatki avi*/
+			folderPath += ("/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName());
+			amcFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".amc";
+			asfFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".asf";
+			datFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".dat";
+			helperFile = folderPath + "/" + "helperFile.dat";
+		}		
 
 		if (QDir(folderPath).exists()) {
 			QMessageBox::StandardButton reply;
@@ -239,6 +259,9 @@ void MainWindow::saveOneFrameToFile() {
 				QMessageBox::Yes | QMessageBox::No);
 			if (reply = QMessageBox::Yes) {
 				QDir().mkdir(folderPath);
+
+				/*pobranie wykorzystanych kosci z boneConfig*/
+				glWidgetsVector[id]->updateUsedBones(glWidgetsVector[id]->usedBones, glWidgetsVector[id]->bonesConf);
 
 				/*zapis pliku amc*/
 				fileHandler->saveAMCToFile(
@@ -262,8 +285,12 @@ void MainWindow::saveOneFrameToFile() {
 				);
 
 				/*zapis pliku pomocniczego*/
-				QString imagePath = list[imagesListIterator[0] - 1].absoluteFilePath();
-				fileHandler->saveHelperFile(*loadedImagesFolderPath, helperFile, imagePath);
+				//QString imagePath = list[imagesListIterator[0] - 1].absoluteFilePath();
+				if(!glWidgetsVector[id]->isAvi)
+					fileHandler->saveHelperFileFromImagesFolder(glWidgetsVector[id]->list[imagesListIterator[id] - 1].absoluteFilePath(), helperFile);
+				else 
+					fileHandler->saveHelperFileFromAvi(glWidgetsVector[id]->aviFilePath, helperFile, imagesListIterator[id] - 1, glWidgetsVector[id]->hz);
+				
 
 				QMessageBox::information(NULL, QObject::tr("app"),
 					QObject::tr("Zapisano pomyślnie"),
@@ -274,6 +301,9 @@ void MainWindow::saveOneFrameToFile() {
 		}
 		else {
 			QDir().mkdir(folderPath);
+
+			/*pobranie wykorzystanych kosci z boneConfig*/
+			glWidgetsVector[id]->updateUsedBones(glWidgetsVector[id]->usedBones, glWidgetsVector[id]->bonesConf);
 
 			/*zapis pliku amc*/
 			fileHandler->saveAMCToFile(
@@ -297,8 +327,10 @@ void MainWindow::saveOneFrameToFile() {
 			);
 			
 			/*zapis pliku pomocniczego*/
-			QString imagePath = list[imagesListIterator[0] - 1].absoluteFilePath();
-			fileHandler->saveHelperFile(*loadedImagesFolderPath, helperFile, imagePath);
+			if (!glWidgetsVector[id]->isAvi)
+				fileHandler->saveHelperFileFromImagesFolder(glWidgetsVector[id]->list[imagesListIterator[id] - 1].absoluteFilePath(), helperFile);
+			else
+				fileHandler->saveHelperFileFromAvi(glWidgetsVector[id]->aviFilePath, helperFile, imagesListIterator[id], glWidgetsVector[id]->hz);
 
 			QMessageBox::information(NULL, QObject::tr("app"),
 				QObject::tr("Zapisano pomyślnie"),
@@ -316,94 +348,17 @@ void MainWindow::saveSequenceToFile() {
 		tr("AMC (*.amc);;All Files(*)"));
 	
 	if (!fileName.isEmpty()) {
+		/*sciezka do folderu zapisywanej sekwencji*/
 		QString folderPath = QFileInfo(fileName).absolutePath();
 		folderPath += ("/" + QFileInfo(fileName).baseName());
+		/*sciezka do folderu pomocniczego*/
 		QString helperFile = folderPath + "/" + "helperFile.dat";
+		/*sciezka do pliku amc sekwencji*/
 		QString amcFileName = folderPath + "/" + QFileInfo(fileName).baseName() + ".amc";
+		QDir().mkdir(folderPath);
 
-		if (QDir(folderPath).exists()) {
-			QMessageBox::StandardButton reply;
-			reply = QMessageBox::question(this,
-				"?",
-				"Konfiguracja dla wybranej sekwencji została wcześniej zapisana. Nadpisać?",
-				QMessageBox::Yes | QMessageBox::No);
-			if (reply = QMessageBox::Yes) {
-				QDir().mkdir(folderPath);
-
-				vector<int> framesID; /* wektor indeksów utworzonych glWidget */
-				vector<QString> imagesPath; /* wektor sciezek do plikow tla */
-
-				/*Stany kolejnych modeli*/
-				vector<vector<float>> states;
-				
-				int frames = comboBoxFrameSelector->count();
-				for (int i = 0; i < frames; i++) {
-					states.push_back(glWidgetsVector[i]->modelState[0]);
-				}
-
-				//tu jest zle, nie wszystkie modele musza miec tyle samo kosci !!
-				int id = comboBoxFrameSelector->currentIndex();
-
-				for (int i = 0; i < usedBones.size(); i++) {
-					cout << usedBones[i] << endl;
-				}
-
-				/*Zapis plików*/
-				/*Zapis pliku AMC*/
-				fileHandler->saveAMCSeq(
-					states,
-					//glWidgetsVector[id]->allBones,
-					asfBones,
-					usedBones,
-					amcFileName
-				);
-
-				vector <QString> asfFiles;
-				vector <QString> datFiles;
-
-				for (int i = 0; i < frames; i++) {
-					QString asfFileName = folderPath + "/" + list[imagesListIterator[i] - 1].baseName();
-					QString datFileName = folderPath + "/" + list[imagesListIterator[i] - 1].baseName();
-
-					//asfFiles.push_back(asfFileName);
-					//datFiles.push_back(datFileName);
-					fileHandler->checkExistingFiles(asfFiles, datFiles, asfFileName, datFileName);
-				}
-
-				for (int i = 0; i < frames; i++) {
-					/*Zapis pliku ASF*/
-					fileHandler->saveASFToFile(
-						glWidgetsVector[i]->asfBones,
-						asfFiles[i]
-					);
-					/*Zapis pliku DAT*/
-					fileHandler->saveDATToFile(
-						glWidgetsVector[i]->bonesConf,
-						glWidgetsVector[i]->bonesGeometry,
-						datFiles[i]
-					);
-				}
-
-				for (int i = 0; i < comboBoxFrameSelector->count(); i++) {
-					framesID.push_back(i);
-					imagesPath.push_back(list[imagesListIterator[i] - 1].absoluteFilePath());
-				}
-				/*Zapis pliku pomocniczego*/
-				fileHandler->saveHelperFile(*loadedImagesFolderPath, helperFile, framesID, imagesPath);
-				/*Koniec zapisu plików*/
-
-				QMessageBox::information(NULL, QObject::tr("app"),
-					QObject::tr("Zapisano pomyślnie"),
-					QMessageBox::Cancel,
-					QMessageBox::Cancel);
-			}
-			else {}
-		}
-		else {
-			QDir().mkdir(folderPath);
-
-			vector<int> framesID; /* wektor indeksów utworzonych glWidget */
-			vector<QString> imagesPath; /* wektor sciezek do plikow tla */
+			vector<int> framesID; /* wektor indeksów utworzonych obiektow glWidget */
+			vector<vector<string>> imagesPath; /* wektor sciezek do plikow tla */
 
 			/*Stany kolejnych modeli*/
 			vector<vector<float>> states;
@@ -411,29 +366,30 @@ void MainWindow::saveSequenceToFile() {
 			for (int i = 0; i < frames; i++) {
 				states.push_back(glWidgetsVector[i]->modelState[0]);
 			}
-			//tu jest zle, nie wszystkie modele musza miec tyle samo kosci !!
-			int id = comboBoxFrameSelector->currentIndex();
-
-			for (int i = 0; i < usedBones.size(); i++) {
-				cout << usedBones[i] << endl;
-			}
 
 			/*Zapis plików*/
 			/*Zapis pliku AMC*/
 			fileHandler->saveAMCSeq(
 				states,
-				//glWidgetsVector[id]->allBones,
 				asfBones,
 				usedBones,
 				amcFileName
 			);
 
-			vector <QString> asfFiles;
-			vector <QString> datFiles;
+			vector<QString> asfFiles;
+			vector<QString> datFiles;
 
 			for (int i = 0; i < frames; i++) {
-				QString asfFileName = folderPath + "/" + list[imagesListIterator[i] - 1].baseName();
-				QString datFileName = folderPath + "/" + list[imagesListIterator[i] - 1].baseName();
+				QString asfFileName;
+				QString datFileName;
+				if (!glWidgetsVector[i]->isAvi) {
+					 asfFileName = folderPath + "/" + glWidgetsVector[i]->list[imagesListIterator[i] - 1].baseName();
+					 datFileName = folderPath + "/" + glWidgetsVector[i]->list[imagesListIterator[i] - 1].baseName();
+				}
+				else {
+					 asfFileName = folderPath + "/" + QFileInfo(glWidgetsVector[i]->aviFilePath).baseName();
+					 datFileName = folderPath + "/" + QFileInfo(glWidgetsVector[i]->aviFilePath).baseName();
+				}
 
 				fileHandler->checkExistingFiles(asfFiles, datFiles, asfFileName, datFileName);
 			}
@@ -453,11 +409,23 @@ void MainWindow::saveSequenceToFile() {
 			}
 
 			for (int i = 0; i < comboBoxFrameSelector->count(); i++) {
+				vector<string> glWidgetBackground;
 				framesID.push_back(i);
-				imagesPath.push_back(list[imagesListIterator[i] - 1].absoluteFilePath());
+				//imagesPath.push_back(list[imagesListIterator[i] - 1].absoluteFilePath());
+				if (!glWidgetsVector[i]->isAvi) {
+					glWidgetBackground.push_back("img");
+					glWidgetBackground.push_back(glWidgetsVector[i]->list[imagesListIterator[i] - 1].absoluteFilePath().toUtf8().constData());
+				}
+				else {
+					glWidgetBackground.push_back("avi");
+					glWidgetBackground.push_back(glWidgetsVector[i]->aviFilePath.toUtf8().constData());
+					glWidgetBackground.push_back(std::to_string(imagesListIterator[i] - 1));
+					glWidgetBackground.push_back(std::to_string(glWidgetsVector[i]->hz));
+				}
+				imagesPath.push_back(glWidgetBackground);
 			}
 			/*Zapis pliku pomocniczego*/
-			fileHandler->saveHelperFile(*loadedImagesFolderPath, helperFile, framesID, imagesPath);
+			fileHandler->saveHelperFile(helperFile, framesID, imagesPath);
 			/*Koniec zapisu plików*/
 
 			QMessageBox::information(NULL, QObject::tr("app"),
@@ -465,7 +433,6 @@ void MainWindow::saveSequenceToFile() {
 				QMessageBox::Cancel,
 				QMessageBox::Cancel);
 		}
-	}
 	//delete fileHandler;
 }
 
@@ -482,19 +449,21 @@ void MainWindow::loadFromAmc() {
 	/*wektor nazw plików dat*/
 	vector<QString> datFilesPaths;
 
-	/*ścieżka folderu ze zdjęciami wykorzystanymi do tworzenia tła*/
-	QString imgFolderPath;
-
 	/*ściezka do pliku pomocniczego*/
 	QString helperFilePath;
 	if (!amcFilePath.isEmpty()) {
+		
+		//for(int i=0;i<glWidgetsVector())
 
 		if (!windowLayout->layout()->isEmpty())
 			delete windowLayout->layout();
+
+		//clearLayout(gridChildLayout);
+
 		prepareLayouts();
 		resetVariables();
 
-		fileHandler->getFilesAsQStrings(amcFilePath, asfFilesPaths, datFilesPaths, imgFolderPath);
+		fileHandler->getFilesAsQStrings(amcFilePath, asfFilesPaths, datFilesPaths);
 
 		QString folderPath = QFileInfo(amcFilePath).absolutePath();
 		helperFilePath = folderPath + "/helperFile.dat";
@@ -502,65 +471,101 @@ void MainWindow::loadFromAmc() {
 		//wektor zawierajacy sciezki do zdjec tla kolejnych klatek
 		vector<QString> loadedImages = fileHandler->getGlWidgetBackgroudFromFile(helperFilePath);
 
+		//pobranie typow tla -img lub avi
+		vector<string> loadedBackgroundTypes = fileHandler->getGlWidgetBackgroudTypeFromFile(helperFilePath);
+
+		/*wektory przechowujace numer klatki oraz wybrana czestotliwosc avi*/
+		vector<int> framesID;
+		vector<int> aviHz;
+
+		fileHandler->getGlWidgetBackgroudAviInfoFromFile(helperFilePath, framesID, aviHz);
+
 		/*wczytanie pliku amc do wektora stanow*/
 		vector<vector<float>> states = fileHandler->loadAmcFromFile(amcFilePath, asfFilesPaths, datFilesPaths);
 
 		if (!states.empty()) {
-			QDir dir(imgFolderPath);
-			if (dir.exists()) {
-				loadedImagesFolderPath = new QString(imgFolderPath);
+			int aviCounter = 0;
+			addFrameButton->setVisible(true);
+			addFrameButton->setText(QString("Dodaj okno"));
 
-				//prepareGlobalSlider(globalSlider);
-				addFrameButton->setVisible(true);
-				addFrameButton->setText(QString("Dodaj okno"));
+			for (int i = 0; i < loadedBackgroundTypes.size(); i++) {
+				if (loadedBackgroundTypes[i] == "img") {
 
-				QStringList filter;
-				filter << QLatin1String("*.png");
-				filter << QLatin1String("*.jpg");
-				filter << QLatin1String("*.jpeg");
-				filter << QLatin1String("*.bmp");
-				dir.setNameFilters(filter);
-				list = dir.entryInfoList();
+					QDir dir(QFileInfo(loadedImages[i]).absolutePath());
 
-				vector<int> imagesIDs = fileHandler->getImagesIDs(list, loadedImages);
-				for (int i = 0; i < states.size(); i++) {
-					addFrameButton->click();
+					if (dir.exists()) {
+
+						addFrameButton->click();
+
+						QStringList filter;
+						filter << QLatin1String("*.png");
+						filter << QLatin1String("*.jpg");
+						filter << QLatin1String("*.jpeg");
+						filter << QLatin1String("*.bmp");
+						dir.setNameFilters(filter);
+
+						glWidgetsVector[i]->list = dir.entryInfoList();
+
+						glWidgetsVector[i]->bonesConf.clear();
+						glWidgetsVector[i]->bonesGeometry.clear();
+
+						fileHandler->loadDatFromFile(datFilesPaths[i].toUtf8().constData(), glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
+						glWidgetsVector[i]->setLimitsVector(glWidgetsVector[i]->limits, glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
+						glWidgetsVector[i]->setVelocityVector(glWidgetsVector[i]->velocity, glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
+						glWidgetsVector[i]->model = new pf::Model3D(pf::Model3D::Cylinder, asfFilesPaths[i].toUtf8().constData(), datFilesPaths[i].toUtf8().constData());
+						glWidgetsVector[i]->modelState[0] = states[i];
+
+						imagesListIterator[i] = fileHandler->getImageID(glWidgetsVector[i]->list, loadedImages[i]);
+						setTextIteratorLabel(countersVector[i], imagesListIterator[i], glWidgetsVector[i]->list.size());
+
+						/*tlo zdjecia*/
+						//QString imgString = glWidgetsVector[i]->list[imagesListIterator[i] - 1].absoluteFilePath();
+						glWidgetsVector[i]->imgPath = loadedImages[i].toUtf8().constData();
+						slidersVector[i]->setValue(imagesListIterator[i]);
+						prepareSlider(slidersVector[i], i);
+						glWidgetsVector[i]->drawBckg = true;
+						
+						glWidgetsVector[i]->rotate("root", 1.0, pf::Model3D::axisX, 0);
+						hMenuWidgetVector[i]->show();
+						glWidgetsVector[i]->update();
+					}
 				}
+				else {
+					addFrameButton->click();
 
-				for (int i = 0; i < glWidgetsVector.size(); i++) {
+					glWidgetsVector[i]->aviFilePath = loadedImages[i];
+
+					glWidgetsVector[i]->loadAviFile(glWidgetsVector[i]->aviFilePath.toUtf8().constData(), aviHz[aviCounter]);
+
 					glWidgetsVector[i]->bonesConf.clear();
 					glWidgetsVector[i]->bonesGeometry.clear();
 
 					fileHandler->loadDatFromFile(datFilesPaths[i].toUtf8().constData(), glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
 					glWidgetsVector[i]->setLimitsVector(glWidgetsVector[i]->limits, glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
+					glWidgetsVector[i]->setVelocityVector(glWidgetsVector[i]->velocity, glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
 					glWidgetsVector[i]->model = new pf::Model3D(pf::Model3D::Cylinder, asfFilesPaths[i].toUtf8().constData(), datFilesPaths[i].toUtf8().constData());
 					glWidgetsVector[i]->modelState[0] = states[i];
 
-					imagesListIterator[i] = imagesIDs[i];
-					setTextIteratorLabel(countersVector[i], imagesIDs[i], list.size());
+					imagesListIterator[i] = framesID[aviCounter]+1;
+					setTextIteratorLabel(countersVector[i], imagesListIterator[i], glWidgetsVector[i]->aviFrames.size());
+					glWidgetsVector[i]->aviFrames[imagesListIterator[i]].copyTo(glWidgetsVector[i]->aviFrame);
 
-					/*tlo zdjecia*/
-					QString imgString = list[imagesListIterator[i]-1].absoluteFilePath();
-					glWidgetsVector[i]->imgPath = imgString.toUtf8().constData();
-					/*odswiezenie wartosci qlineedit*/
-					refreshRotateSideMenu();
-					refreshLengthSideMenu();
+					slidersVector[i]->setValue(imagesListIterator[i]);
+					prepareSlider(slidersVector[i], i);
+					glWidgetsVector[i]->drawBckg = true;
+
 					glWidgetsVector[i]->rotate("root", 1.0, pf::Model3D::axisX, 0);
-
+					hMenuWidgetVector[i]->show();
+					glWidgetsVector[i]->update();
+					aviCounter++;
 				}
-				/*ustawienia bocznego menu wczytywane sa dla ostatniej klatki -> ustawienie comboboxa na ostatni index*/
-				comboBoxFrameSelector->setCurrentIndex(glWidgetsVector.size() - 1);
-				refreshRotateSideMenu();
-				refreshLengthSideMenu();
-				
-			}
-			else {
-				QMessageBox::warning(NULL, QObject::tr("app"),
-					QObject::tr("Folder z wykorzystanymi zdjęciami nie istnieje!"),
-					QMessageBox::Cancel,
-					QMessageBox::Cancel);
 			}
 		}
+
+		/*odswiezenie wartosci qlineedit*/
+
+		refreshRotateSideMenu();
+		refreshLengthSideMenu();
 	}
 	//delete fileHandler;
 }
@@ -583,13 +588,13 @@ void MainWindow::addFrameMenu(int i){
 
     glWidgetsVector.push_back(new GLWidget(this));
 	horizontalGLWidgetMenuVector.push_back(new QHBoxLayout());
-	hMenuWidgetVector.push_back(new QWidget());
-	slidersVector.push_back(new QSlider());
-    minButtonsVector.push_back(new QPushButton());
-    maxButtonsVector.push_back(new QPushButton());
-    reduceButtonsVector.push_back(new QPushButton());
-    increaseButtonsVector.push_back(new QPushButton());
-    countersVector.push_back(new QLabel());
+	hMenuWidgetVector.push_back(new QWidget(this));
+	slidersVector.push_back(new QSlider(this));
+    minButtonsVector.push_back(new QPushButton(this));
+    maxButtonsVector.push_back(new QPushButton(this));
+    reduceButtonsVector.push_back(new QPushButton(this));
+    increaseButtonsVector.push_back(new QPushButton(this));
+    countersVector.push_back(new QLabel(this));
     imagesListIterator.push_back(0);
 	menuButtonsVector.push_back(new QPushButton("Menu"));
 
@@ -774,7 +779,7 @@ void MainWindow::maxIteratorPressed(int i) {
 }
 
 void MainWindow::manageBonesPressed() {
-	boneManagmentWindow = new BoneManagment(this);
+	BoneManagment *boneManagmentWindow = new BoneManagment(this);
 
 	boneManagmentWindow->setWindowTitle("Zarządzaj modelem");
 
@@ -872,7 +877,14 @@ void MainWindow::manageBonesPressed() {
 
 		//delete fileHandler;
 	}
+	delete boneManagmentWindow;
+}
 
+void MainWindow::openCameraConfigPressed() {
+	CamerasConfig *cfg = new CamerasConfig(this);
+
+	cfg->resize(500, 400);
+	cfg->exec();
 }
 
 void MainWindow::showModelInDialogPressed(int i) {
@@ -1786,14 +1798,6 @@ void MainWindow::setVelocitySpinBoxes(int id) {
 
 	for (int j = 0; j < glWidgetsVector[id]->bonesGeometry.size(); j++) {
 		string name = glWidgetsVector[id]->bonesGeometry[j].name;
-
-		cout << endl;
-		cout << name << endl;
-		cout << glWidgetsVector[id]->modelVelocity.find(name)->second[0] << endl;
-		cout << glWidgetsVector[id]->modelVelocity.find(name)->second[1] << endl;
-		cout << glWidgetsVector[id]->modelVelocity.find(name)->second[2] << endl;
-
-		cout << endl;
 		//velocity X
 		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 2]->setValue(velocities[j][0]);
 		//velocity Y

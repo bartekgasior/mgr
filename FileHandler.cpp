@@ -39,8 +39,8 @@ void FileHandler::saveAMCToFile(vector<float> modelState, vector<string> allBone
 					break;
 				}
 			}
-			if (!flag)
-				plik << allBones[i] << " " << 0 << " " << 0 << " " << 0 << endl;
+			if (!flag) {}
+				//plik << allBones[i] << " " << 0 << " " << 0 << " " << 0 << endl;
 		}
 
 		plik.close();
@@ -121,29 +121,57 @@ void FileHandler::saveDATGeometry(vector<pf::boneGeometry> bonesGeometry, QStrin
 
 }
 
-void FileHandler::saveHelperFile(QString folderPath, QString helperFileName, QString imagePath) {
+void FileHandler::saveHelperFileFromAvi(QString aviPath, QString helperFileName, int frameNumber, int hz) {
 	ofstream plik(helperFileName.toUtf8().constData());
 
-	plik << ":folderPath" << endl;
-	plik << "\t" << folderPath.toUtf8().constData() << endl;
 	plik << ":glWidgetBackground" << endl;
+	plik << "begin" << endl;
 	plik << "\tid " << 0 << endl;
-	plik << "\tpath " << imagePath.toUtf8().constData() << endl;
+	plik << "\ttype " << "avi" << endl;
+	plik << "\tpath " << aviPath.toUtf8().constData() << endl;
+	plik << "\tframe " << frameNumber << endl;
+	plik << "\thz " << hz << endl;
+	plik << "end" << endl;
 	plik.close();
 }
 
-void FileHandler::saveHelperFile(QString folderPath, QString helperFileName, vector<int> frameID, vector<QString> imagesPath) {
+void FileHandler::saveHelperFileFromImagesFolder(QString imgPath, QString helperFileName) {
+	cout << imgPath.toUtf8().constData() << endl;
+
 	ofstream plik(helperFileName.toUtf8().constData());
 
-	plik << ":folderPath" << endl;
-	plik << "\t" << folderPath.toUtf8().constData() << endl;
+	plik << ":glWidgetBackground" << endl;
+	plik << "begin" << endl;
+	plik << "\tid " << 0 << endl;
+	plik << "\ttype " << "img" << endl;
+	plik << "\tpath " << imgPath.toUtf8().constData() << endl;
+	plik << "end" << endl;
+
+	plik.close();
+}
+
+void FileHandler::saveHelperFile(QString helperFileName, vector<int> frameID, vector<vector<string>> imagesPath) {
+	ofstream plik(helperFileName.toUtf8().constData());
+
 	/*zapis informacji o kolejnych klatkach*/
 	plik << ":glWidgetBackground" << endl;
 	for (int i = 0; i < frameID.size(); i++) {
-		plik << "begin" << endl;
-		plik << "\tid " << frameID[i] << endl;
-		plik << "\tpath " << imagesPath[i].toUtf8().constData() << endl;
-		plik << "end" << endl;
+		if (imagesPath[i][0] == "img") {
+			plik << "begin" << endl;
+			plik << "\tid " << frameID[i] << endl;
+			plik << "\ttype " << imagesPath[i][0] << endl;
+			plik << "\tpath " << imagesPath[i][1] << endl;
+			plik << "end" << endl;
+		}
+		else {
+			plik << "begin" << endl;
+			plik << "\tid " << frameID[i] << endl;
+			plik << "\ttype " << imagesPath[i][0] << endl;
+			plik << "\tpath " << imagesPath[i][1] << endl;
+			plik << "\tframe " << imagesPath[i][2] << endl;
+			plik << "\thz " << imagesPath[i][3] << endl;
+			plik << "end" << endl;
+		}
 	}
 	
 	plik.close();
@@ -291,6 +319,70 @@ vector<QString> FileHandler::getGlWidgetBackgroudFromFile(QString helperFileName
 	return filesPath;
 }
 
+vector<string> FileHandler::getGlWidgetBackgroudTypeFromFile(QString helperFileName) {
+	vector<string> types;
+
+	char string[100];
+	std::string str;
+	char inputFilename[100];
+
+	strcpy(inputFilename, helperFileName.toUtf8().constData());
+
+	ifstream inputFile;
+	inputFile.open(inputFilename);
+	if (!inputFile.is_open())
+		cout << "B³¹d otwarcia pliku: " << inputFilename << endl;
+
+	while (strcmp(string, ":glWidgetBackground")) {
+		inputFile >> string;
+	}
+
+	while (inputFile >> string) {
+		while (inputFile >> string && strcmp(string, "end")) {
+			if (strcmp(string, "type") == 0) {
+				getline(inputFile, str);
+				types.push_back(str.substr(str.find(" ") + 1, str.length() - str.find(" ")));
+			}
+		}
+	}
+
+	inputFile.close();
+
+	return types;
+}
+
+void FileHandler::getGlWidgetBackgroudAviInfoFromFile(QString helperFileName, vector<int> &framesID, vector<int> &aviHz) {
+	char string[100];
+	std::string str;
+	char inputFilename[100];
+
+	strcpy(inputFilename, helperFileName.toUtf8().constData());
+
+	ifstream inputFile;
+	inputFile.open(inputFilename);
+	if (!inputFile.is_open())
+		cout << "B³¹d otwarcia pliku: " << inputFilename << endl;
+
+	while (strcmp(string, ":glWidgetBackground")) {
+		inputFile >> string;
+	}
+
+	while (inputFile >> string) {
+		while (inputFile >> string && strcmp(string, "end")) {
+			if (strcmp(string, "frame") == 0) {
+				getline(inputFile, str);
+				framesID.push_back(std::stoi(str));
+			}
+			else if (strcmp(string, "hz") == 0) {
+				getline(inputFile, str);
+				aviHz.push_back(std::stoi(str));
+			}
+		}
+	}
+
+	inputFile.close();
+}
+
 void FileHandler::getFilesAsQStrings(QString amcFilePath, QString &asfFilePath, QString &datFilePath, QString &imgFolderPath) {
 	QString fileName = QFileInfo(amcFilePath).baseName().toUtf8().constData();
 	QString folderPath = QFileInfo(amcFilePath).absolutePath();
@@ -300,12 +392,13 @@ void FileHandler::getFilesAsQStrings(QString amcFilePath, QString &asfFilePath, 
 	imgFolderPath = getImagesFolderPath(helperFilePath);
 }
 
-void FileHandler::getFilesAsQStrings(QString amcFilePath, vector<QString> &asfFilesPaths, vector<QString> &datFilesPaths, QString &imgFolderPath) {
+void FileHandler::getFilesAsQStrings(QString amcFilePath, vector<QString> &asfFilesPaths, vector<QString> &datFilesPaths) {
 	QString fileName = QFileInfo(amcFilePath).baseName().toUtf8().constData();
 	QString folderPath = QFileInfo(amcFilePath).absolutePath();
 	QString helperFilePath = folderPath + "/helperFile.dat";
 
 	vector<QString> glWidgetsBackground = getGlWidgetBackgroudFromFile(helperFilePath);
+	//vector<string> glWidgetsType = getGlWidgetBackgroudTypeFromFile(helperFilePath);
 	if (!glWidgetsBackground.empty()) {
 		for (int i = 0; i < glWidgetsBackground.size(); i++) {
 			/*nazwa pliku bez rozszerzenia*/
@@ -320,7 +413,7 @@ void FileHandler::getFilesAsQStrings(QString amcFilePath, vector<QString> &asfFi
 		asfFilesPaths.push_back(folderPath + "/" + fileName + ".asf");
 		datFilesPaths.push_back(folderPath + "/" + fileName + ".dat");
 	}
-	imgFolderPath = getImagesFolderPath(helperFilePath);	
+	//imgFolderPath = getImagesFolderPath(helperFilePath);	
 }
 
 void FileHandler::checkExistingFiles(vector<QString> &asfFiles, vector<QString> &datFiles, QString asf, QString dat) {
@@ -353,7 +446,7 @@ void FileHandler::checkExistingFiles(vector<QString> &asfFiles, vector<QString> 
 						int id = stoi(tmp.substr(tmp.find("(") + 1, length));
 						/* ilosc znakow do usuniecia - ().asf */
 						int removeChars = 6 + length;
-						asf = asf.remove(asf.length() - removeChars, removeChars) + "(" + QString::fromStdString(std::to_string(id + 1)) + ").asf"; //tu nie czyta id wekszych niz 9
+						asf = asf.remove(asf.length() - removeChars, removeChars) + "(" + QString::fromStdString(std::to_string(id + 1)) + ").asf"; 
 						dat = dat.remove(dat.length() - removeChars, removeChars) + "(" + QString::fromStdString(std::to_string(id + 1)) + ").dat";
 					}
 					else {
@@ -380,15 +473,13 @@ void FileHandler::checkExistingFiles(vector<QString> &asfFiles, vector<QString> 
 	}
 }
 
-vector<int> FileHandler::getImagesIDs(QFileInfoList allImagesList, vector<QString> loadedImages) {
-	vector<int> result;
+int FileHandler::getImageID(QFileInfoList allImagesList, QString loadedImage) {
+	int result;
 
-	for (int i = 0; i < loadedImages.size(); i++) {
-		for (int j = 0; j < allImagesList.size(); j++) {
-			if (allImagesList[j] == loadedImages[i]) {
-				result.push_back(j+1);
-				break;
-			}
+	for (int j = 0; j < allImagesList.size(); j++) {
+		if (allImagesList[j] == loadedImage) {
+			result = j + 1;
+			break;
 		}
 	}
 
