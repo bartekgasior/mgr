@@ -25,7 +25,7 @@
 #include "bonemanagment.h"
 #include "modelindialog.h"
 #include "camerasconfig.h"
-
+#include "selectmodelid.h"
 
 namespace Ui {
 class MainWindow;
@@ -119,6 +119,8 @@ private:
 
 	//interfejs klatek
     QVector<GLWidget*> glWidgetsVector; //glWidget
+	QVector<QWidget*> bordersWidgetsVector; //ramka interfejsu
+	QVector<QLabel*> frameIDVector; //indeks okna
 	QVector<QHBoxLayout*> horizontalGLWidgetMenuVector; //layout przechowujacy wszystkie elementy menu znajdujacego sie pod obiektem glwidget
 	QVector<QWidget*> hMenuWidgetVector; //widget przechowujacy layout menu, wykorzystywany do metod show() i hide()
     QVector<QPushButton*> minButtonsVector; //przycisk przewijajacy zdjecie pierwszego elementu
@@ -135,6 +137,25 @@ private:
 	QVector<QAction*> showModelInDialogVector; //model w osobnym oknie
 	QVector<QAction*> selectAviBackgroundVector; //wybor sciezki tla z avi
 	QVector<QAction*> selectImagesBackgroundVector; //wybor sciezki tla z folderu zdjec
+	QVector<QAction*> setConfigFromModelVector; //konfiguracja modelu pobrana z wybranego obiektu
+	QVector<QAction*> setConfigToAllModelsVector; //ustawienie konfiguracji modelu do wszystkich pozostalych okien
+
+	/*qSignalMappers dla przyciskow*/
+	/*menu kazdego okna*/
+	QVector<QSignalMapper*> increaseButtonMapperVector;
+	QVector<QSignalMapper*> reduceButtonMapperVector;
+	QVector<QSignalMapper*> minButtonMapperVector;
+	QVector<QSignalMapper*> maxButtonMapperVector;
+	QVector<QSignalMapper*> showModelInDialogMapperVector;
+	QVector<QSignalMapper*> setConfigFromModelMapperVector;
+	QVector<QSignalMapper*> addImagesBackgroundMapperVector;
+	QVector<QSignalMapper*> addAviMapperVector;
+	QVector<QSignalMapper*> setConfigToAllModelsMapperVector;
+	QVector<QSignalMapper*> sliderMapperVector;
+	/*boczne menu*/
+	QVector<QSignalMapper*> rotateMapperVector;
+	QVector<QSignalMapper*> lengthMapperVector;
+	QVector<QSignalMapper*> geometryMapperVector;
 
 	//wektory zawierajace elementy bocznego menu rotacji
 	QVector<QLabel*> sideRotateMenuLabelsVector; 
@@ -161,9 +182,14 @@ private:
 	QVector<QLineEdit*> sideLengthMenuLineEditsExtraVector;
 	QVector<QSpinBox*> sideLengthMenuSpinBoxesExtraVector;
 
+	//wektory zawierajace elementy bocznego menu geometry
+	QVector<QLabel*> sideGeometryMenuLabelsVector;
+	QVector<QHBoxLayout*> sideGeometryMenuHLayoutsVector;
+	QVector<QPushButton*> sideGeometryMenuButtonsVector;
+	QVector<QLineEdit*> sideGeometryMenuLineEditsVector;
+	QVector<QSpinBox*> sideGeometryMenuSpinBoxesVector;
+
     Ui::MainWindow *ui;
-	
-	ModelInDialog *modelInDialog;
 
 	/*Menu aplikacji*/
 	void prepareMenus();
@@ -181,6 +207,9 @@ private:
 
 	/*Dodanie bocznego menu sluzacego do ustawienia dlugosci kosci*/
 	void addGLWidgetLengthMenu();
+
+	/*Dodanie bocznego menu sluzacego do ustawienia geometry*/
+	void addGLWidgetGeometryMenu();
 
 	/*wyczysczenie wartości zmiennych*/
 	void resetVariables();
@@ -210,6 +239,8 @@ private:
 	/*wylaczenie przyciskow dla ktorych isRot nie jest wybrane*/
 	void disableRotatingButtons();
 
+	void addFrameMenuMappers(int id);
+
     void mapIncreaseButtonSlot(int i);
     void mapReduceButtonSlot(int i);
     void mapMaxButtonSlot(int i);
@@ -218,8 +249,8 @@ private:
 	void mapShowModelInDialog(int i);
 	void mapAddImagesToBackground(int i);
 	void mapAddAviToBackground(int i);
-
-	void clearLayout(QLayout* layout);
+	void mapSetConfigFromModel(int i);
+	void mapSetConfigToAllModels(int i);
 
 private slots:
 	/*zapis jednej klatki*/
@@ -255,6 +286,12 @@ private slots:
 	*/
 	void updateBoneLength(QString str);
 
+	void updateBoneLengthGeometry(QString str);
+
+	void updateBoneTopRadius(QString str);
+
+	void updateBoneBottomRadius(QString str);
+
 	/*translacja modelu
 	string w postaci "direction;axis;qLineEditID;qSpinBoxID
 	*/
@@ -275,6 +312,8 @@ private slots:
 	void showModelInDialogPressed(int i);
 	void selectImagesBackgroundPressed(int i);
 	void selectAviBackgroundPressed(int i);
+	void setConfigFromModelPressed(int i);
+	void setConfigToAllModelsPressed(int i);
 
 	/*dodanie okna z modelem postaci*/
 	void buttonAddFramePressed();
@@ -296,6 +335,9 @@ private slots:
 
 	/*odswiezenie wartosci w polach qlineedit po edycji dlugosci */
 	void refreshLengthSideMenu();
+
+	/*odswiezenie wartosci w polach qlineedit po edycji dlugosci lub wartosci katow*/
+	void refreshGeometrySideMenu();
 
 	/*aktualizacja vectora boneConfig po wybraniu odpowiedniego chechboxa isRot*/
 	void updateBoneConfigFromCB();

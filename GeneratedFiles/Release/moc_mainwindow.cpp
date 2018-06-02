@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[32];
-    char stringdata0[567];
+    QByteArrayData data[38];
+    char stringdata0[713];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -41,43 +41,54 @@ QT_MOC_LITERAL(6, 81, 23), // "openCameraConfigPressed"
 QT_MOC_LITERAL(7, 105, 6), // "rotate"
 QT_MOC_LITERAL(8, 112, 3), // "str"
 QT_MOC_LITERAL(9, 116, 16), // "updateBoneLength"
-QT_MOC_LITERAL(10, 133, 9), // "translate"
-QT_MOC_LITERAL(11, 143, 5), // "scale"
-QT_MOC_LITERAL(12, 149, 23), // "increaseIteratorPressed"
-QT_MOC_LITERAL(13, 173, 1), // "i"
-QT_MOC_LITERAL(14, 175, 21), // "reduceIteratorPressed"
-QT_MOC_LITERAL(15, 197, 18), // "maxIteratorPressed"
-QT_MOC_LITERAL(16, 216, 18), // "minIteratorPressed"
-QT_MOC_LITERAL(17, 235, 24), // "showModelInDialogPressed"
-QT_MOC_LITERAL(18, 260, 29), // "selectImagesBackgroundPressed"
-QT_MOC_LITERAL(19, 290, 26), // "selectAviBackgroundPressed"
-QT_MOC_LITERAL(20, 317, 21), // "buttonAddFramePressed"
-QT_MOC_LITERAL(21, 339, 24), // "updateGlobalListIterator"
-QT_MOC_LITERAL(22, 364, 5), // "value"
-QT_MOC_LITERAL(23, 370, 19), // "updateFrameIterator"
-QT_MOC_LITERAL(24, 390, 18), // "reloadGLWidgetMenu"
-QT_MOC_LITERAL(25, 409, 18), // "reloadGLRotateMenu"
-QT_MOC_LITERAL(26, 428, 21), // "refreshRotateSideMenu"
-QT_MOC_LITERAL(27, 450, 21), // "refreshLengthSideMenu"
-QT_MOC_LITERAL(28, 472, 22), // "updateBoneConfigFromCB"
-QT_MOC_LITERAL(29, 495, 28), // "updateBoneConfigFromLimitsSB"
-QT_MOC_LITERAL(30, 524, 30), // "updateBoneConfigFromVelocitySB"
-QT_MOC_LITERAL(31, 555, 11) // "tabSelected"
+QT_MOC_LITERAL(10, 133, 24), // "updateBoneLengthGeometry"
+QT_MOC_LITERAL(11, 158, 19), // "updateBoneTopRadius"
+QT_MOC_LITERAL(12, 178, 22), // "updateBoneBottomRadius"
+QT_MOC_LITERAL(13, 201, 9), // "translate"
+QT_MOC_LITERAL(14, 211, 5), // "scale"
+QT_MOC_LITERAL(15, 217, 23), // "increaseIteratorPressed"
+QT_MOC_LITERAL(16, 241, 1), // "i"
+QT_MOC_LITERAL(17, 243, 21), // "reduceIteratorPressed"
+QT_MOC_LITERAL(18, 265, 18), // "maxIteratorPressed"
+QT_MOC_LITERAL(19, 284, 18), // "minIteratorPressed"
+QT_MOC_LITERAL(20, 303, 24), // "showModelInDialogPressed"
+QT_MOC_LITERAL(21, 328, 29), // "selectImagesBackgroundPressed"
+QT_MOC_LITERAL(22, 358, 26), // "selectAviBackgroundPressed"
+QT_MOC_LITERAL(23, 385, 25), // "setConfigFromModelPressed"
+QT_MOC_LITERAL(24, 411, 27), // "setConfigToAllModelsPressed"
+QT_MOC_LITERAL(25, 439, 21), // "buttonAddFramePressed"
+QT_MOC_LITERAL(26, 461, 24), // "updateGlobalListIterator"
+QT_MOC_LITERAL(27, 486, 5), // "value"
+QT_MOC_LITERAL(28, 492, 19), // "updateFrameIterator"
+QT_MOC_LITERAL(29, 512, 18), // "reloadGLWidgetMenu"
+QT_MOC_LITERAL(30, 531, 18), // "reloadGLRotateMenu"
+QT_MOC_LITERAL(31, 550, 21), // "refreshRotateSideMenu"
+QT_MOC_LITERAL(32, 572, 21), // "refreshLengthSideMenu"
+QT_MOC_LITERAL(33, 594, 23), // "refreshGeometrySideMenu"
+QT_MOC_LITERAL(34, 618, 22), // "updateBoneConfigFromCB"
+QT_MOC_LITERAL(35, 641, 28), // "updateBoneConfigFromLimitsSB"
+QT_MOC_LITERAL(36, 670, 30), // "updateBoneConfigFromVelocitySB"
+QT_MOC_LITERAL(37, 701, 11) // "tabSelected"
 
     },
     "MainWindow\0saveOneFrameToFile\0\0"
     "saveSequenceToFile\0loadFromAmc\0"
     "manageBonesPressed\0openCameraConfigPressed\0"
-    "rotate\0str\0updateBoneLength\0translate\0"
-    "scale\0increaseIteratorPressed\0i\0"
+    "rotate\0str\0updateBoneLength\0"
+    "updateBoneLengthGeometry\0updateBoneTopRadius\0"
+    "updateBoneBottomRadius\0translate\0scale\0"
+    "increaseIteratorPressed\0i\0"
     "reduceIteratorPressed\0maxIteratorPressed\0"
     "minIteratorPressed\0showModelInDialogPressed\0"
     "selectImagesBackgroundPressed\0"
     "selectAviBackgroundPressed\0"
+    "setConfigFromModelPressed\0"
+    "setConfigToAllModelsPressed\0"
     "buttonAddFramePressed\0updateGlobalListIterator\0"
     "value\0updateFrameIterator\0reloadGLWidgetMenu\0"
     "reloadGLRotateMenu\0refreshRotateSideMenu\0"
-    "refreshLengthSideMenu\0updateBoneConfigFromCB\0"
+    "refreshLengthSideMenu\0refreshGeometrySideMenu\0"
+    "updateBoneConfigFromCB\0"
     "updateBoneConfigFromLimitsSB\0"
     "updateBoneConfigFromVelocitySB\0"
     "tabSelected"
@@ -90,7 +101,7 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      27,   14, // methods
+      33,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -98,33 +109,39 @@ static const uint qt_meta_data_MainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,  149,    2, 0x08 /* Private */,
-       3,    0,  150,    2, 0x08 /* Private */,
-       4,    0,  151,    2, 0x08 /* Private */,
-       5,    0,  152,    2, 0x08 /* Private */,
-       6,    0,  153,    2, 0x08 /* Private */,
-       7,    1,  154,    2, 0x08 /* Private */,
-       9,    1,  157,    2, 0x08 /* Private */,
-      10,    1,  160,    2, 0x08 /* Private */,
-      11,    1,  163,    2, 0x08 /* Private */,
-      12,    1,  166,    2, 0x08 /* Private */,
-      14,    1,  169,    2, 0x08 /* Private */,
-      15,    1,  172,    2, 0x08 /* Private */,
-      16,    1,  175,    2, 0x08 /* Private */,
-      17,    1,  178,    2, 0x08 /* Private */,
-      18,    1,  181,    2, 0x08 /* Private */,
-      19,    1,  184,    2, 0x08 /* Private */,
-      20,    0,  187,    2, 0x08 /* Private */,
-      21,    1,  188,    2, 0x08 /* Private */,
-      23,    1,  191,    2, 0x08 /* Private */,
-      24,    0,  194,    2, 0x08 /* Private */,
-      25,    0,  195,    2, 0x08 /* Private */,
-      26,    0,  196,    2, 0x08 /* Private */,
-      27,    0,  197,    2, 0x08 /* Private */,
-      28,    0,  198,    2, 0x08 /* Private */,
-      29,    0,  199,    2, 0x08 /* Private */,
-      30,    0,  200,    2, 0x08 /* Private */,
-      31,    0,  201,    2, 0x08 /* Private */,
+       1,    0,  179,    2, 0x08 /* Private */,
+       3,    0,  180,    2, 0x08 /* Private */,
+       4,    0,  181,    2, 0x08 /* Private */,
+       5,    0,  182,    2, 0x08 /* Private */,
+       6,    0,  183,    2, 0x08 /* Private */,
+       7,    1,  184,    2, 0x08 /* Private */,
+       9,    1,  187,    2, 0x08 /* Private */,
+      10,    1,  190,    2, 0x08 /* Private */,
+      11,    1,  193,    2, 0x08 /* Private */,
+      12,    1,  196,    2, 0x08 /* Private */,
+      13,    1,  199,    2, 0x08 /* Private */,
+      14,    1,  202,    2, 0x08 /* Private */,
+      15,    1,  205,    2, 0x08 /* Private */,
+      17,    1,  208,    2, 0x08 /* Private */,
+      18,    1,  211,    2, 0x08 /* Private */,
+      19,    1,  214,    2, 0x08 /* Private */,
+      20,    1,  217,    2, 0x08 /* Private */,
+      21,    1,  220,    2, 0x08 /* Private */,
+      22,    1,  223,    2, 0x08 /* Private */,
+      23,    1,  226,    2, 0x08 /* Private */,
+      24,    1,  229,    2, 0x08 /* Private */,
+      25,    0,  232,    2, 0x08 /* Private */,
+      26,    1,  233,    2, 0x08 /* Private */,
+      28,    1,  236,    2, 0x08 /* Private */,
+      29,    0,  239,    2, 0x08 /* Private */,
+      30,    0,  240,    2, 0x08 /* Private */,
+      31,    0,  241,    2, 0x08 /* Private */,
+      32,    0,  242,    2, 0x08 /* Private */,
+      33,    0,  243,    2, 0x08 /* Private */,
+      34,    0,  244,    2, 0x08 /* Private */,
+      35,    0,  245,    2, 0x08 /* Private */,
+      36,    0,  246,    2, 0x08 /* Private */,
+      37,    0,  247,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
@@ -136,16 +153,22 @@ static const uint qt_meta_data_MainWindow[] = {
     QMetaType::Void, QMetaType::QString,    8,
     QMetaType::Void, QMetaType::QString,    8,
     QMetaType::Void, QMetaType::QString,    8,
-    QMetaType::Void, QMetaType::Int,   13,
-    QMetaType::Void, QMetaType::Int,   13,
-    QMetaType::Void, QMetaType::Int,   13,
-    QMetaType::Void, QMetaType::Int,   13,
-    QMetaType::Void, QMetaType::Int,   13,
-    QMetaType::Void, QMetaType::Int,   13,
-    QMetaType::Void, QMetaType::Int,   13,
+    QMetaType::Void, QMetaType::QString,    8,
+    QMetaType::Void, QMetaType::QString,    8,
+    QMetaType::Void, QMetaType::QString,    8,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void, QMetaType::Int,   16,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,   22,
-    QMetaType::Void, QMetaType::Int,   13,
+    QMetaType::Void, QMetaType::Int,   27,
+    QMetaType::Void, QMetaType::Int,   16,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -171,26 +194,32 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 4: _t->openCameraConfigPressed(); break;
         case 5: _t->rotate((*reinterpret_cast< QString(*)>(_a[1]))); break;
         case 6: _t->updateBoneLength((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 7: _t->translate((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 8: _t->scale((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 9: _t->increaseIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 10: _t->reduceIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 11: _t->maxIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 12: _t->minIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 13: _t->showModelInDialogPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 14: _t->selectImagesBackgroundPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 15: _t->selectAviBackgroundPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 16: _t->buttonAddFramePressed(); break;
-        case 17: _t->updateGlobalListIterator((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 18: _t->updateFrameIterator((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 19: _t->reloadGLWidgetMenu(); break;
-        case 20: _t->reloadGLRotateMenu(); break;
-        case 21: _t->refreshRotateSideMenu(); break;
-        case 22: _t->refreshLengthSideMenu(); break;
-        case 23: _t->updateBoneConfigFromCB(); break;
-        case 24: _t->updateBoneConfigFromLimitsSB(); break;
-        case 25: _t->updateBoneConfigFromVelocitySB(); break;
-        case 26: _t->tabSelected(); break;
+        case 7: _t->updateBoneLengthGeometry((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 8: _t->updateBoneTopRadius((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 9: _t->updateBoneBottomRadius((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 10: _t->translate((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 11: _t->scale((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 12: _t->increaseIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 13: _t->reduceIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 14: _t->maxIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 15: _t->minIteratorPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 16: _t->showModelInDialogPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 17: _t->selectImagesBackgroundPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 18: _t->selectAviBackgroundPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 19: _t->setConfigFromModelPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 20: _t->setConfigToAllModelsPressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 21: _t->buttonAddFramePressed(); break;
+        case 22: _t->updateGlobalListIterator((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 23: _t->updateFrameIterator((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 24: _t->reloadGLWidgetMenu(); break;
+        case 25: _t->reloadGLRotateMenu(); break;
+        case 26: _t->refreshRotateSideMenu(); break;
+        case 27: _t->refreshLengthSideMenu(); break;
+        case 28: _t->refreshGeometrySideMenu(); break;
+        case 29: _t->updateBoneConfigFromCB(); break;
+        case 30: _t->updateBoneConfigFromLimitsSB(); break;
+        case 31: _t->updateBoneConfigFromVelocitySB(); break;
+        case 32: _t->tabSelected(); break;
         default: ;
         }
     }
@@ -221,13 +250,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 27)
+        if (_id < 33)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 27;
+        _id -= 33;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 27)
+        if (_id < 33)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 27;
+        _id -= 33;
     }
     return _id;
 }

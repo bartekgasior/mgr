@@ -136,8 +136,6 @@ void FileHandler::saveHelperFileFromAvi(QString aviPath, QString helperFileName,
 }
 
 void FileHandler::saveHelperFileFromImagesFolder(QString imgPath, QString helperFileName) {
-	cout << imgPath.toUtf8().constData() << endl;
-
 	ofstream plik(helperFileName.toUtf8().constData());
 
 	plik << ":glWidgetBackground" << endl;
@@ -145,6 +143,20 @@ void FileHandler::saveHelperFileFromImagesFolder(QString imgPath, QString helper
 	plik << "\tid " << 0 << endl;
 	plik << "\ttype " << "img" << endl;
 	plik << "\tpath " << imgPath.toUtf8().constData() << endl;
+	plik << "end" << endl;
+
+	plik.close();
+}
+
+void FileHandler::saveHelperFileWithoutBackground(QString helperFileName) {
+
+	ofstream plik(helperFileName.toUtf8().constData());
+
+	plik << ":glWidgetBackground" << endl;
+	plik << "begin" << endl;
+	plik << "\tid " << 0 << endl;
+	plik << "\ttype " << "empty" << endl;
+	plik << "\tpath " << "emptyPath" << endl;
 	plik << "end" << endl;
 
 	plik.close();
@@ -163,13 +175,20 @@ void FileHandler::saveHelperFile(QString helperFileName, vector<int> frameID, ve
 			plik << "\tpath " << imagesPath[i][1] << endl;
 			plik << "end" << endl;
 		}
-		else {
+		else if(imagesPath[i][0] == "avi") {
 			plik << "begin" << endl;
 			plik << "\tid " << frameID[i] << endl;
 			plik << "\ttype " << imagesPath[i][0] << endl;
 			plik << "\tpath " << imagesPath[i][1] << endl;
 			plik << "\tframe " << imagesPath[i][2] << endl;
 			plik << "\thz " << imagesPath[i][3] << endl;
+			plik << "end" << endl;
+		}
+		else {
+			plik << "begin" << endl;
+			plik << "\tid " << frameID[i] << endl;
+			plik << "\ttype " << imagesPath[i][0] << endl;
+			plik << "\tpath " << imagesPath[i][1] << endl;
 			plik << "end" << endl;
 		}
 	}
@@ -398,13 +417,24 @@ void FileHandler::getFilesAsQStrings(QString amcFilePath, vector<QString> &asfFi
 	QString helperFilePath = folderPath + "/helperFile.dat";
 
 	vector<QString> glWidgetsBackground = getGlWidgetBackgroudFromFile(helperFilePath);
-	//vector<string> glWidgetsType = getGlWidgetBackgroudTypeFromFile(helperFilePath);
+
 	if (!glWidgetsBackground.empty()) {
 		for (int i = 0; i < glWidgetsBackground.size(); i++) {
-			/*nazwa pliku bez rozszerzenia*/
-			QString tmpFileName = QFileInfo(glWidgetsBackground[i]).baseName();
-			QString tmpASF = folderPath + "/" + tmpFileName;
-			QString tmpDAT = folderPath + "/" + tmpFileName;
+			QString tmpFileName;
+			QString tmpASF;
+			QString tmpDAT;
+
+			if (glWidgetsBackground[i] == "emptyBckg") {
+				tmpFileName = "emptyBckg";
+				tmpASF = folderPath + "/" + tmpFileName;
+				tmpDAT = folderPath + "/" + tmpFileName;
+			}
+			else {
+				/*nazwa pliku bez rozszerzenia*/
+				tmpFileName = QFileInfo(glWidgetsBackground[i]).baseName();
+				tmpASF = folderPath + "/" + tmpFileName;
+				tmpDAT = folderPath + "/" + tmpFileName;	
+			}
 
 			checkExistingFiles(asfFilesPaths, datFilesPaths, tmpASF, tmpDAT);	
 		}
@@ -621,4 +651,19 @@ bool FileHandler::isBoneChecked(string name, vector<string> allBonesNames) {
 			return true;
 	}
 	return false;
+}
+
+void FileHandler::reloadParams(GLWidget *&glWidget) {
+	saveDATToFile(glWidget->bonesConf, glWidget->bonesGeometry, "tmpDatFile.dat");
+
+	glWidget->bonesConf.clear();
+	glWidget->bonesGeometry.clear();
+
+	glWidget->model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, "tmpDatFile.dat");
+	glWidget->model->loadConfig("tmpDatFile.dat", glWidget->bonesConf, glWidget->bonesGeometry);
+
+	std::remove("tmpDatFile.dat");
+
+	glWidget->updateModelStateFromMap(glWidget->modelState, glWidget->bonesRotations, glWidget->bonesConf);
+	glWidget->model->updateModelState(glWidget->modelState[0]);
 }

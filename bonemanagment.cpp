@@ -45,6 +45,9 @@ void BoneManagment::setUsedBones(vector<pf::ASFBone> asfBones, vector<int> usedB
 	}
 
 	setCheckBoxes(usedBonesIDs);
+	//for (int i = 0; i < asfBones.size() - 1; i++) {
+	connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(isAtLeastOneChecked(QTreeWidgetItem *, int)));
+	//}
 }
 
 void BoneManagment::addTreeRoot(QString name,int id) {
@@ -107,6 +110,19 @@ void BoneManagment::setCheckBoxes(vector<int> usedBonesIDs) {
 				treeWidgetsItems[i]->setCheckState(1, Qt::Checked);
 			}
 		}
+	}
+}
+
+void BoneManagment::isAtLeastOneChecked(QTreeWidgetItem * item, int i) {
+	bool anyChecked = false;
+	for (int j = 1; j < treeWidgetsItems.size(); j++) {
+		if (treeWidgetsItems[j]->checkState(1) == Qt::Checked) {
+			anyChecked = true;
+			break;
+		}
+	}
+	if (!anyChecked) {
+		item->setCheckState(1, Qt::Checked);
 	}
 }
 

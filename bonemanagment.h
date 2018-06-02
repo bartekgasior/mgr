@@ -58,4 +58,7 @@ private:
 private slots:
 	void okButtonAccepted();
 	void okButtonRejected();
+
+	/* przynajmniej jedna kosc (oprocz root) musi byc wybrana, aby mozliwe bylo zapisanie pliku .dat */
+	void isAtLeastOneChecked(QTreeWidgetItem * item, int i);
 };

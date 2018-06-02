@@ -28,7 +28,7 @@ GLWidget::GLWidget(QWidget *parent) :
 	velocity = model->getVelocity();
 	usedBones = model->getNamesMovingBones();
 	allBones = model->getNamesBones();
-	radiusVec = model->getRadiusVec();
+	
 
 	pf::MotionData::loadASF(ASF_TEMPLATE_PATH, idxBonesMap, asfBones);
 	model->loadConfig(DAT_TEMPLATE_PATH, bonesConf, bonesGeometry);
@@ -38,6 +38,7 @@ GLWidget::GLWidget(QWidget *parent) :
 	initializeBonesLimitsMap();
 	initializeBonesVelocityMap();
 	initializeBonesDOFMap();
+	initializeBonesRadiusMap();
 
 	modelTranslation.push_back(0);
 	modelTranslation.push_back(0);
@@ -87,6 +88,7 @@ void GLWidget::paintGL(){
 		this->drawSkeletonModel(vertices);
 	}
 	else if (mode == 2) {
+		vector<vector<float>> radiusVec = model->getRadiusVec();
 		this->drawCylinderModel(vertices, radiusVec);
 	}
 	glLineWidth(1);
@@ -316,7 +318,7 @@ void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVa
 	//cout << endl;
 
 	model->setModelState(modelState[0]);
-	
+
 	update();
 }
 
@@ -330,9 +332,46 @@ void GLWidget::updateLength(string boneName, float direction, float value) {
 				bonesGeometry[i].length = 0;
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
-			//model->updateBoneLength(boneName, bonesGeometry[i].length);
-			
-			//bonesLength.at(boneName) = bonesGeometry[i].length;
+			break;
+		}
+	}
+	update();
+}
+
+void GLWidget::updateTopRadius(string boneName, float direction, float value) {
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		if (bonesGeometry[i].name == boneName) {
+
+			bonesGeometry[i].topRadius1 += value*direction;
+			bonesGeometry[i].topRadius2 += value*direction;
+
+			if (bonesGeometry[i].topRadius1 < 0)
+				bonesGeometry[i].topRadius1 = 0;
+
+			if (bonesGeometry[i].topRadius2 < 0)
+				bonesGeometry[i].topRadius2 = 0;
+
+			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			break;
+		}
+	}
+	update();
+}
+
+void GLWidget::updateBottomRadius(string boneName, float direction, float value) {
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		if (bonesGeometry[i].name == boneName) {
+
+			bonesGeometry[i].bottomRadius1 += value*direction;
+			bonesGeometry[i].bottomRadius2 += value*direction;
+
+			if (bonesGeometry[i].bottomRadius1 < 0)
+				bonesGeometry[i].bottomRadius1 = 0;
+
+			if (bonesGeometry[i].bottomRadius2 < 0)
+				bonesGeometry[i].bottomRadius2 = 0;
+
+			model->updateBoneGeometry(boneName, bonesGeometry[i]);
 			break;
 		}
 	}
@@ -383,6 +422,28 @@ float GLWidget::getBoneLength(string boneName) {
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (boneName == bonesGeometry[i].name) {
 			res = bonesGeometry[i].length;
+			break;
+		}
+	}
+	return res;
+}
+
+float GLWidget::getBoneTopRadius(string boneName){
+	float res = 0;
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		if (boneName == bonesGeometry[i].name) {
+			res = bonesGeometry[i].topRadius1;
+			break;
+		}
+	}
+	return res;
+}
+
+float GLWidget::getBoneBottomRadius(string boneName) {
+	float res = 0;
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		if (boneName == bonesGeometry[i].name) {
+			res = bonesGeometry[i].bottomRadius1;
 			break;
 		}
 	}
@@ -452,7 +513,11 @@ void GLWidget::drawBackgroud(string img) {
 
 		glDisable(GL_TEXTURE_2D);
 		glFinish();
+
+		tmp.release();
+		glDeleteTextures(1, &tex);
 	}
+	mat.release();
 }
 
 void GLWidget::drawBackground(cv::Mat mat) {
@@ -497,7 +562,11 @@ void GLWidget::drawBackground(cv::Mat mat) {
 
 		glDisable(GL_TEXTURE_2D);
 		glFinish();
+
+		tmp.release();
+		glDeleteTextures(1, &tex);
 	}
+	mat.release();
 }
 
 void GLWidget::setLimitsVector(vector<pf::range2> &limits, vector<pf::boneConfig> bones, vector<pf::boneGeometry> bonesGeometry) {
@@ -1340,6 +1409,33 @@ void GLWidget::initializeBonesDOFMap() {
 	}
 }
 
+void GLWidget::initializeBonesRadiusMap() {
+	modelRadius.clear();
+	for (int i = 0; i < asfBones.size(); i++) {
+		vector<float> radiusTmp;
+		bool found = false;
+		string str = asfBones[i].name;
+		for (int j = 0; j < bonesGeometry.size(); j++) {
+			if (str == bonesGeometry[j].name) {
+				radiusTmp.push_back(bonesGeometry[j].topRadius1);
+				radiusTmp.push_back(bonesGeometry[j].topRadius2);
+				radiusTmp.push_back(bonesGeometry[j].bottomRadius1);
+				radiusTmp.push_back(bonesGeometry[j].bottomRadius2);
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			radiusTmp.push_back(20);
+			radiusTmp.push_back(20);
+			radiusTmp.push_back(20);
+			radiusTmp.push_back(20);
+		}
+
+		modelRadius[str] = radiusTmp;
+	}
+}
+
 void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<vector<float>> mState, vector<pf::boneConfig> bonesConfig) {
 	for (int i = 0; i < bonesConfig.size(); i++) {
 		//std::map<char, int>::iterator it = bonesRotations.find(bonesConfig[i].name);
@@ -1350,13 +1446,24 @@ void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vecto
 
 	for (auto it = bonesRotations.cbegin(); it != bonesRotations.cend(); ++it)
 	{
-		//std::cout << it->first << " " << it->second.x() << " " << it->second.y() << it->second.z() << "\n";
+		std::cout << it->first << " " << it->second.x() << " " << it->second.y() << " " << it->second.z() << "\n";
 	}
 }
 
 void GLWidget::saveBonesLengthToMap(map<string, float> &bonesLength, vector<pf::boneGeometry> boneGeometry) {
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		bonesLength.at(bonesGeometry[i].name) = bonesGeometry[i].length;
+	}
+}
+
+void GLWidget::saveRadiusToMap(map<string, vector<float>> &bonesRadius, vector<pf::boneGeometry> boneGeometry) {
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		vector<float> tmp;
+		tmp.push_back(bonesGeometry[i].topRadius1);
+		tmp.push_back(bonesGeometry[i].topRadius2);
+		tmp.push_back(bonesGeometry[i].bottomRadius1);
+		tmp.push_back(bonesGeometry[i].bottomRadius2);
+		bonesRadius.at(bonesGeometry[i].name) = tmp;
 	}
 }
 
@@ -1470,6 +1577,15 @@ void GLWidget::updateModelStateFromMap(vector<vector<float>> &mState, map<string
 void GLWidget::updateBonesLengthFromMap(map<string, float> bonesLength) {
 	for (int i = 0; i < bonesGeometry.size(); i++) 
 		bonesGeometry[i].length = bonesLength.find(bonesGeometry[i].name)->second;
+}
+
+void GLWidget::updateBonesRadiusFromMap(map<string, vector<float>> bonesRadius) {
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		bonesGeometry[i].topRadius1 = bonesRadius.find(bonesGeometry[i].name)->second[0];
+		bonesGeometry[i].topRadius2 = bonesRadius.find(bonesGeometry[i].name)->second[1];
+		bonesGeometry[i].bottomRadius1 = bonesRadius.find(bonesGeometry[i].name)->second[2];
+		bonesGeometry[i].bottomRadius2 = bonesRadius.find(bonesGeometry[i].name)->second[3];
+	}
 }
 
 void GLWidget::updateBonesDOFMap(map<string, vector<bool>> &bonesDOF, string boneName, vector<bool> dofs) {
@@ -1587,7 +1703,7 @@ void GLWidget::loadAviFile() {
 				}
 				if (i%hz == 0) {
 					cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
-					cout << frame.size();
+					cout << "." << endl;
 					aviFrames.push_back(frame);
 				}
 				i++;
@@ -1627,7 +1743,7 @@ void GLWidget::loadAviFile(string path, int hz) {
 			}
 			if (i%hz == 0) {
 				cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
-				cout << frame.size();
+				cout << "." << endl;
 				aviFrames.push_back(frame);
 			}
 			i++;
@@ -1637,4 +1753,33 @@ void GLWidget::loadAviFile(string path, int hz) {
 		cap.release();
 	}
 
+}
+
+void GLWidget::copyConfigToGlWidget(GLWidget *&dest, GLWidget *source) {
+	dest->limits = source->limits;
+	dest->rotations = source->rotations;
+	dest->usedBones = source->usedBones;
+	dest->allBones = source->allBones;
+	dest->modelState = source->modelState;
+	dest->asfBones = source->asfBones;
+	dest->idxBonesMap = source->idxBonesMap;
+	dest->bonesConf = source->bonesConf;
+	dest->bonesGeometry = source->bonesGeometry;
+	dest->bonesRotations = source->bonesRotations;
+	dest->bonesLength = source->bonesLength;
+	dest->modelTranslation = source->modelTranslation;
+	dest->modelLimits = source->modelLimits;
+	dest->modelVelocity = source->modelVelocity;
+	dest->modelDOF = source->modelDOF;
+
+	saveModelStateToMap(dest->bonesRotations, dest->modelState, dest->bonesConf);
+	saveBonesLengthToMap(dest->bonesLength, dest->bonesGeometry);
+	saveDOFToMap(dest->modelDOF, dest->bonesConf);
+	saveLimitsToMap(dest->modelLimits, dest->bonesConf);
+	saveVelocityToMap(dest->modelVelocity, dest->bonesConf);
+
+	FileHandler *fileHandler = new FileHandler();
+	fileHandler->reloadParams(dest);
+
+	delete fileHandler;
 }

@@ -164,30 +164,42 @@ void MainWindow::prepareMainModel() {
 }
 
 void MainWindow::resetVariables() {
-	//list.clear();
-	//aviFrames.clear();
+	qDeleteAll(sideRotateMenuLineEditsVector);
+	qDeleteAll(sideRotateMenuLabelsVector);
+	qDeleteAll(sideRotateMenuButtonsVector);
+	qDeleteAll(sideRotateMenuHLayoutsVector);
+	qDeleteAll(sideRotateMenuSpinBoxesVector);
 
-	glWidgetsVector.clear();
-	horizontalGLWidgetMenuVector.clear();
-	hMenuWidgetVector.clear();
-	minButtonsVector.clear();
-	reduceButtonsVector.clear();
-	maxButtonsVector.clear();
-	increaseButtonsVector.clear();
-	countersVector.clear();
-	slidersVector.clear();
-	imagesListIterator.clear();
-	menuButtonsVector.clear();
-	frameScrollingMenu.clear();
-	selectBackgroundMenuVector.clear();
-	showModelInDialogVector.clear();
-	selectAviBackgroundVector.clear();
-	selectImagesBackgroundVector.clear();
+	qDeleteAll(sideLengthMenuLabelsVector);
+	qDeleteAll(sideLengthMenuHLayoutsVector);
+	qDeleteAll(sideLengthMenuButtonsVector);
+	qDeleteAll(sideLengthMenuLineEditsVector);
+	qDeleteAll(sideLengthMenuSpinBoxesVector);
+	qDeleteAll(sideLengthMenuRotLabelsVector);
+	qDeleteAll(sideLengthMenuRotCheckBoxesVector);
+	qDeleteAll(sideLengthMenuLimVelLabelsVector);
+	qDeleteAll(sideLengthMenuLimVelSpinBoxesVector);
 
-	sideRotateMenuLabelsVector.clear();
-	sideRotateMenuHLayoutsVector.clear();
-	sideRotateMenuButtonsVector.clear();
+	qDeleteAll(sideLengthMenuHLayoutsExtraVector);
+	qDeleteAll(sideLengthMenuLabelsExtraVector);
+	qDeleteAll(sideLengthMenuButtonsExtraVector);
+	qDeleteAll(sideLengthMenuLineEditsExtraVector);
+	qDeleteAll(sideLengthMenuSpinBoxesExtraVector);
+
+	qDeleteAll(sideGeometryMenuLabelsVector);
+	qDeleteAll(sideGeometryMenuHLayoutsVector);
+	qDeleteAll(sideGeometryMenuButtonsVector);
+	qDeleteAll(sideGeometryMenuLineEditsVector);
+	qDeleteAll(sideGeometryMenuSpinBoxesVector);
+
+	qDeleteAll(rotateMapperVector);
+	qDeleteAll(lengthMapperVector);
+	qDeleteAll(geometryMapperVector);
+
 	sideRotateMenuLineEditsVector.clear();
+	sideRotateMenuLabelsVector.clear();
+	sideRotateMenuButtonsVector.clear();
+	sideRotateMenuHLayoutsVector.clear();
 	sideRotateMenuSpinBoxesVector.clear();
 
 	sideLengthMenuLabelsVector.clear();
@@ -206,10 +218,18 @@ void MainWindow::resetVariables() {
 	sideLengthMenuLineEditsExtraVector.clear();
 	sideLengthMenuSpinBoxesExtraVector.clear();
 
+	sideGeometryMenuLabelsVector.clear();
+	sideGeometryMenuHLayoutsVector.clear();
+	sideGeometryMenuButtonsVector.clear();
+	sideGeometryMenuLineEditsVector.clear();
+	sideGeometryMenuSpinBoxesVector.clear();
+
+	rotateMapperVector.clear();
+	lengthMapperVector.clear();
+	geometryMapperVector.clear();
+
 	globalListIterator = 1;
 	addFrameButtonCounter = 0;
-	//isAvi = false;
-	//loadedImagesFolderPath->clear();
 
 	showLayouts();
 }
@@ -236,20 +256,32 @@ void MainWindow::saveOneFrameToFile() {
 		QString helperFile;
 
 		/*scieżka utworzonego folderu zapisywanej klatki*/
-		if (!glWidgetsVector[id]->isAvi) {
-			folderPath += ("/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName());
-			amcFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".amc";
-			asfFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".asf";
-			datFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".dat";
-			helperFile = folderPath + "/" + "helperFile.dat";
+		/*czy jest tlo*/
+		if (glWidgetsVector[id]->drawBckg) {
+			/*czy tlo jest zdjeciem*/
+			if (!glWidgetsVector[id]->isAvi) {
+				folderPath += ("/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName());
+				amcFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".amc";
+				asfFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".asf";
+				datFileName = folderPath + "/" + glWidgetsVector[id]->list[imagesListIterator[id] - 1].baseName() + ".dat";
+				helperFile = folderPath + "/" + "helperFile.dat";
+			}
+			/*czy tlo jest klatka avi*/
+			else {/*sciezka do zapisu klatki avi*/
+				folderPath += ("/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName());
+				amcFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".amc";
+				asfFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".asf";
+				datFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".dat";
+				helperFile = folderPath + "/" + "helperFile.dat";
+			}
+		}/*gdy nie ma tla*/
+		else {
+			folderPath += "/emptyBckg";
+			amcFileName = folderPath + "/emptyBckg.amc";
+			asfFileName = folderPath + "/emptyBckg.asf";
+			datFileName = folderPath + "/emptyBckg.dat";
+			helperFile = folderPath + "/helperFile.dat";
 		}
-		else {/*sciezka do zapisu klatki avi*/
-			folderPath += ("/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName());
-			amcFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".amc";
-			asfFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".asf";
-			datFileName = folderPath + "/" + QFileInfo(glWidgetsVector[id]->aviFilePath).baseName() + ".dat";
-			helperFile = folderPath + "/" + "helperFile.dat";
-		}		
 
 		if (QDir(folderPath).exists()) {
 			QMessageBox::StandardButton reply;
@@ -285,12 +317,15 @@ void MainWindow::saveOneFrameToFile() {
 				);
 
 				/*zapis pliku pomocniczego*/
-				//QString imagePath = list[imagesListIterator[0] - 1].absoluteFilePath();
-				if(!glWidgetsVector[id]->isAvi)
-					fileHandler->saveHelperFileFromImagesFolder(glWidgetsVector[id]->list[imagesListIterator[id] - 1].absoluteFilePath(), helperFile);
-				else 
-					fileHandler->saveHelperFileFromAvi(glWidgetsVector[id]->aviFilePath, helperFile, imagesListIterator[id] - 1, glWidgetsVector[id]->hz);
-				
+				if (glWidgetsVector[id]->drawBckg) {
+					if (!glWidgetsVector[id]->isAvi)
+						fileHandler->saveHelperFileFromImagesFolder(glWidgetsVector[id]->list[imagesListIterator[id] - 1].absoluteFilePath(), helperFile);
+					else
+						fileHandler->saveHelperFileFromAvi(glWidgetsVector[id]->aviFilePath, helperFile, imagesListIterator[id], glWidgetsVector[id]->hz);
+				}
+				else {
+					fileHandler->saveHelperFileWithoutBackground(helperFile);
+				}
 
 				QMessageBox::information(NULL, QObject::tr("app"),
 					QObject::tr("Zapisano pomyślnie"),
@@ -327,10 +362,15 @@ void MainWindow::saveOneFrameToFile() {
 			);
 			
 			/*zapis pliku pomocniczego*/
-			if (!glWidgetsVector[id]->isAvi)
-				fileHandler->saveHelperFileFromImagesFolder(glWidgetsVector[id]->list[imagesListIterator[id] - 1].absoluteFilePath(), helperFile);
-			else
-				fileHandler->saveHelperFileFromAvi(glWidgetsVector[id]->aviFilePath, helperFile, imagesListIterator[id], glWidgetsVector[id]->hz);
+			if (glWidgetsVector[id]->drawBckg) {
+				if (!glWidgetsVector[id]->isAvi)
+					fileHandler->saveHelperFileFromImagesFolder(glWidgetsVector[id]->list[imagesListIterator[id] - 1].absoluteFilePath(), helperFile);
+				else
+					fileHandler->saveHelperFileFromAvi(glWidgetsVector[id]->aviFilePath, helperFile, imagesListIterator[id], glWidgetsVector[id]->hz);
+			}
+			else {
+				fileHandler->saveHelperFileWithoutBackground(helperFile);
+			}
 
 			QMessageBox::information(NULL, QObject::tr("app"),
 				QObject::tr("Zapisano pomyślnie"),
@@ -338,7 +378,7 @@ void MainWindow::saveOneFrameToFile() {
 				QMessageBox::Cancel);
 		}
 	}
-	//delete fileHandler;
+	delete fileHandler;
 }
 
 void MainWindow::saveSequenceToFile() {
@@ -351,10 +391,13 @@ void MainWindow::saveSequenceToFile() {
 		/*sciezka do folderu zapisywanej sekwencji*/
 		QString folderPath = QFileInfo(fileName).absolutePath();
 		folderPath += ("/" + QFileInfo(fileName).baseName());
+
 		/*sciezka do folderu pomocniczego*/
 		QString helperFile = folderPath + "/" + "helperFile.dat";
+
 		/*sciezka do pliku amc sekwencji*/
 		QString amcFileName = folderPath + "/" + QFileInfo(fileName).baseName() + ".amc";
+
 		QDir().mkdir(folderPath);
 
 			vector<int> framesID; /* wektor indeksów utworzonych obiektow glWidget */
@@ -365,6 +408,7 @@ void MainWindow::saveSequenceToFile() {
 			int frames = comboBoxFrameSelector->count();
 			for (int i = 0; i < frames; i++) {
 				states.push_back(glWidgetsVector[i]->modelState[0]);
+				glWidgetsVector[i]->updateUsedBones(glWidgetsVector[i]->usedBones, glWidgetsVector[i]->bonesConf);
 			}
 
 			/*Zapis plików*/
@@ -372,7 +416,7 @@ void MainWindow::saveSequenceToFile() {
 			fileHandler->saveAMCSeq(
 				states,
 				asfBones,
-				usedBones,
+				glWidgetsVector[0]->usedBones,
 				amcFileName
 			);
 
@@ -382,13 +426,19 @@ void MainWindow::saveSequenceToFile() {
 			for (int i = 0; i < frames; i++) {
 				QString asfFileName;
 				QString datFileName;
-				if (!glWidgetsVector[i]->isAvi) {
-					 asfFileName = folderPath + "/" + glWidgetsVector[i]->list[imagesListIterator[i] - 1].baseName();
-					 datFileName = folderPath + "/" + glWidgetsVector[i]->list[imagesListIterator[i] - 1].baseName();
+				if (glWidgetsVector[i]->drawBckg) {
+					if (!glWidgetsVector[i]->isAvi) {
+						asfFileName = folderPath + "/" + glWidgetsVector[i]->list[imagesListIterator[i] - 1].baseName();
+						datFileName = folderPath + "/" + glWidgetsVector[i]->list[imagesListIterator[i] - 1].baseName();
+					}
+					else {
+						asfFileName = folderPath + "/" + QFileInfo(glWidgetsVector[i]->aviFilePath).baseName();
+						datFileName = folderPath + "/" + QFileInfo(glWidgetsVector[i]->aviFilePath).baseName();
+					}
 				}
 				else {
-					 asfFileName = folderPath + "/" + QFileInfo(glWidgetsVector[i]->aviFilePath).baseName();
-					 datFileName = folderPath + "/" + QFileInfo(glWidgetsVector[i]->aviFilePath).baseName();
+					asfFileName = folderPath + "/emptyBckg";
+					datFileName = folderPath + "/emptyBckg";
 				}
 
 				fileHandler->checkExistingFiles(asfFiles, datFiles, asfFileName, datFileName);
@@ -411,16 +461,21 @@ void MainWindow::saveSequenceToFile() {
 			for (int i = 0; i < comboBoxFrameSelector->count(); i++) {
 				vector<string> glWidgetBackground;
 				framesID.push_back(i);
-				//imagesPath.push_back(list[imagesListIterator[i] - 1].absoluteFilePath());
-				if (!glWidgetsVector[i]->isAvi) {
-					glWidgetBackground.push_back("img");
-					glWidgetBackground.push_back(glWidgetsVector[i]->list[imagesListIterator[i] - 1].absoluteFilePath().toUtf8().constData());
+				if (glWidgetsVector[i]->drawBckg) {
+					if (!glWidgetsVector[i]->isAvi) {
+						glWidgetBackground.push_back("img");
+						glWidgetBackground.push_back(glWidgetsVector[i]->list[imagesListIterator[i] - 1].absoluteFilePath().toUtf8().constData());
+					}
+					else {
+						glWidgetBackground.push_back("avi");
+						glWidgetBackground.push_back(glWidgetsVector[i]->aviFilePath.toUtf8().constData());
+						glWidgetBackground.push_back(std::to_string(imagesListIterator[i] - 1));
+						glWidgetBackground.push_back(std::to_string(glWidgetsVector[i]->hz));
+					}
 				}
 				else {
-					glWidgetBackground.push_back("avi");
-					glWidgetBackground.push_back(glWidgetsVector[i]->aviFilePath.toUtf8().constData());
-					glWidgetBackground.push_back(std::to_string(imagesListIterator[i] - 1));
-					glWidgetBackground.push_back(std::to_string(glWidgetsVector[i]->hz));
+					glWidgetBackground.push_back("empty");
+					glWidgetBackground.push_back("emptyBckg");
 				}
 				imagesPath.push_back(glWidgetBackground);
 			}
@@ -433,7 +488,7 @@ void MainWindow::saveSequenceToFile() {
 				QMessageBox::Cancel,
 				QMessageBox::Cancel);
 		}
-	//delete fileHandler;
+	delete fileHandler;
 }
 
 void MainWindow::loadFromAmc() {
@@ -442,7 +497,7 @@ void MainWindow::loadFromAmc() {
 		tr("AMC (*.amc);;All Files(*)"));
 
 	FileHandler * fileHandler = new FileHandler();
-
+	cout << "ASD" << endl;
 	/*wektor nazw plików asf*/
 	vector<QString> asfFilesPaths;
 
@@ -451,18 +506,15 @@ void MainWindow::loadFromAmc() {
 
 	/*ściezka do pliku pomocniczego*/
 	QString helperFilePath;
+
 	if (!amcFilePath.isEmpty()) {
-		
 		//for(int i=0;i<glWidgetsVector())
 
 		if (!windowLayout->layout()->isEmpty())
 			delete windowLayout->layout();
 
-		//clearLayout(gridChildLayout);
-
 		prepareLayouts();
 		resetVariables();
-
 		fileHandler->getFilesAsQStrings(amcFilePath, asfFilesPaths, datFilesPaths);
 
 		QString folderPath = QFileInfo(amcFilePath).absolutePath();
@@ -490,7 +542,7 @@ void MainWindow::loadFromAmc() {
 
 			for (int i = 0; i < loadedBackgroundTypes.size(); i++) {
 				if (loadedBackgroundTypes[i] == "img") {
-
+					cout << "img" << endl;
 					QDir dir(QFileInfo(loadedImages[i]).absolutePath());
 
 					if (dir.exists()) {
@@ -530,7 +582,8 @@ void MainWindow::loadFromAmc() {
 						glWidgetsVector[i]->update();
 					}
 				}
-				else {
+				else if (loadedBackgroundTypes[i] == "avi") {
+					cout << "avi" << endl;
 					addFrameButton->click();
 
 					glWidgetsVector[i]->aviFilePath = loadedImages[i];
@@ -545,6 +598,7 @@ void MainWindow::loadFromAmc() {
 					glWidgetsVector[i]->setVelocityVector(glWidgetsVector[i]->velocity, glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
 					glWidgetsVector[i]->model = new pf::Model3D(pf::Model3D::Cylinder, asfFilesPaths[i].toUtf8().constData(), datFilesPaths[i].toUtf8().constData());
 					glWidgetsVector[i]->modelState[0] = states[i];
+					glWidgetsVector[i]->hz = aviHz[aviCounter];
 
 					imagesListIterator[i] = framesID[aviCounter]+1;
 					setTextIteratorLabel(countersVector[i], imagesListIterator[i], glWidgetsVector[i]->aviFrames.size());
@@ -559,15 +613,32 @@ void MainWindow::loadFromAmc() {
 					glWidgetsVector[i]->update();
 					aviCounter++;
 				}
+				else {
+					cout << "empty" << endl;
+					addFrameButton->click();
+
+					glWidgetsVector[i]->bonesConf.clear();
+					glWidgetsVector[i]->bonesGeometry.clear();
+
+					fileHandler->loadDatFromFile(datFilesPaths[i].toUtf8().constData(), glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
+					glWidgetsVector[i]->setLimitsVector(glWidgetsVector[i]->limits, glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
+					glWidgetsVector[i]->setVelocityVector(glWidgetsVector[i]->velocity, glWidgetsVector[i]->bonesConf, glWidgetsVector[i]->bonesGeometry);
+					glWidgetsVector[i]->model = new pf::Model3D(pf::Model3D::Cylinder, asfFilesPaths[i].toUtf8().constData(), datFilesPaths[i].toUtf8().constData());
+					glWidgetsVector[i]->modelState[0] = states[i];
+
+					glWidgetsVector[i]->rotate("root", 1.0, pf::Model3D::axisX, 0);
+					glWidgetsVector[i]->update();
+				}
 			}
 		}
 
 		/*odswiezenie wartosci qlineedit*/
-
-		refreshRotateSideMenu();
+		reloadGLWidgetMenu();
+		/*refreshRotateSideMenu();
 		refreshLengthSideMenu();
+		refreshGeometrySideMenu();*/
 	}
-	//delete fileHandler;
+	delete fileHandler;
 }
 
 void MainWindow::buttonAddFramePressed(){
@@ -576,6 +647,7 @@ void MainWindow::buttonAddFramePressed(){
 	if (addFrameButtonCounter == 0) {
 		addGLWidgetRotateMenu();
 		addGLWidgetLengthMenu();
+		addGLWidgetGeometryMenu();
 	}
 	addFrameButtonCounter++;
 
@@ -583,9 +655,8 @@ void MainWindow::buttonAddFramePressed(){
 
 void MainWindow::addFrameMenu(int i){
     int j=0;
-    QWidget *borderWidget = new QWidget();
-    borderWidget->setStyleSheet("border: 1px solid gray");
-
+    bordersWidgetsVector.push_back(new QWidget(this));
+	frameIDVector.push_back(new QLabel(this));
     glWidgetsVector.push_back(new GLWidget(this));
 	horizontalGLWidgetMenuVector.push_back(new QHBoxLayout());
 	hMenuWidgetVector.push_back(new QWidget(this));
@@ -598,21 +669,38 @@ void MainWindow::addFrameMenu(int i){
     imagesListIterator.push_back(0);
 	menuButtonsVector.push_back(new QPushButton("Menu"));
 
+	/*dodanie obslugi przyciskow*/
+	addFrameMenuMappers(addFrameButtonCounter);
+
+	/*rozmiar label wyswietlajacy numer obiektu*/
+	QFont font = frameIDVector[addFrameButtonCounter]->font();
+	font.setPointSize(25);
+
+	bordersWidgetsVector[addFrameButtonCounter]->setStyleSheet("border: 1px solid black");
+	frameIDVector[addFrameButtonCounter]->setText(" " + QString::number(addFrameButtonCounter));
+	frameIDVector[addFrameButtonCounter]->setFont(font);
+
+	if (i == 0) 
+		frameIDVector[addFrameButtonCounter]->setStyleSheet("color: LawnGreen");
+	else 
+		frameIDVector[addFrameButtonCounter]->setStyleSheet("color: red");
+
+	/*rozmiar przyciskow menu*/
 	minButtonsVector[addFrameButtonCounter]->setFixedSize(30,20);
 	maxButtonsVector[addFrameButtonCounter]->setFixedSize(30, 20);
 	reduceButtonsVector[addFrameButtonCounter]->setFixedSize(30, 20);
 	increaseButtonsVector[addFrameButtonCounter]->setFixedSize(30, 20);
-
 	menuButtonsVector[addFrameButtonCounter]->setFixedSize(60, 30);
 
+	/*dolny panel menu - przyciski do iteracji klatek, slider, menubutton*/
 	horizontalGLWidgetMenuVector[addFrameButtonCounter]->addWidget(minButtonsVector[addFrameButtonCounter]);
 	horizontalGLWidgetMenuVector[addFrameButtonCounter]->addWidget(reduceButtonsVector[addFrameButtonCounter]);
 	horizontalGLWidgetMenuVector[addFrameButtonCounter]->addWidget(countersVector[addFrameButtonCounter]);
 	horizontalGLWidgetMenuVector[addFrameButtonCounter]->addWidget(increaseButtonsVector[addFrameButtonCounter]);
 	horizontalGLWidgetMenuVector[addFrameButtonCounter]->addWidget(maxButtonsVector[addFrameButtonCounter]);
 	horizontalGLWidgetMenuVector[addFrameButtonCounter]->addWidget(slidersVector[addFrameButtonCounter]);
-	//horizontalGLWidgetMenuVector[addFrameButtonCounter]->addSpacing(200);
 
+	/*gdy nie ma wybranego tla panel jest ukryty*/
 	hMenuWidgetVector[addFrameButtonCounter]->setLayout(horizontalGLWidgetMenuVector[addFrameButtonCounter]);
 	hMenuWidgetVector[addFrameButtonCounter]->hide();
 
@@ -621,22 +709,23 @@ void MainWindow::addFrameMenu(int i){
     glWidgetsVector[addFrameButtonCounter]->setMaximumWidth(1200);
 
 	addFrameScrollingMenu(menuButtonsVector[addFrameButtonCounter], addFrameButtonCounter);
-	//prepareSlider(slidersVector[addFrameButtonCounter], addFrameButtonCounter);
     prepareFrameMenu(addFrameButtonCounter);
 
     /*rows, cols, rowspan, colspan*/
     if(i%2==0){
         if(i>1) j=(i/2)*2;
-        gridChildLayout->addWidget(borderWidget, (i/2)*10+j, 0, 12, 10);
+		gridChildLayout->addWidget(bordersWidgetsVector[addFrameButtonCounter], (i / 2) * 10 + j, 0, 12, 10);
         gridChildLayout->addWidget(glWidgetsVector[addFrameButtonCounter], (i/2)*10+j, 0, 10, 10);
 		gridChildLayout->addWidget(hMenuWidgetVector[addFrameButtonCounter], (i / 2) * 10 + 11 + j, 0, 1, 9);
 		gridChildLayout->addWidget(menuButtonsVector[addFrameButtonCounter], (i/2)*10+11+j, 9, 1, 1);
+		gridChildLayout->addWidget(frameIDVector[addFrameButtonCounter], (i / 2) * 10 + j, 0, 2, 2);
     }else {
         if(i>1) j=(i/2)*2;
-        gridChildLayout->addWidget(borderWidget, (i/2)*10+j, 11, 12, 10);
+		gridChildLayout->addWidget(bordersWidgetsVector[addFrameButtonCounter], (i / 2) * 10 + j, 11, 12, 10);
         gridChildLayout->addWidget(glWidgetsVector[addFrameButtonCounter], (i/2)*10+j, 11, 10, 10);
 		gridChildLayout->addWidget(hMenuWidgetVector[addFrameButtonCounter], (i / 2) * 10 + 11 + j, 11, 1, 9);
 		gridChildLayout->addWidget(menuButtonsVector[addFrameButtonCounter], (i / 2) * 10 + 11 + j, 20, 1, 1);
+		gridChildLayout->addWidget(frameIDVector[addFrameButtonCounter], (i / 2) * 10 + j, 11, 2, 2);
     }
 
 	if (comboBoxFrameSelector->count() == 0) {
@@ -649,11 +738,8 @@ void MainWindow::addFrameMenu(int i){
 
 
 	/*ustawienie kosci dodanego modelu*/
-	FileHandler *fileHandler;
-	fileHandler->saveDATToFile(bonesConf, bonesGeometry, "tmpDatFile.dat");
-
-	glWidgetsVector[addFrameButtonCounter]->model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, "tmpDatFile.dat");
-	glWidgetsVector[addFrameButtonCounter]->model->loadConfig("tmpDatFile.dat", glWidgetsVector[addFrameButtonCounter]->bonesConf, glWidgetsVector[addFrameButtonCounter]->bonesGeometry);
+	FileHandler *fileHandler = new FileHandler();
+	fileHandler->reloadParams(glWidgetsVector[addFrameButtonCounter]);
 
 	glWidgetsVector[addFrameButtonCounter]->limits = limits;
 	glWidgetsVector[addFrameButtonCounter]->usedBones = usedBones;
@@ -661,13 +747,8 @@ void MainWindow::addFrameMenu(int i){
 	glWidgetsVector[addFrameButtonCounter]->asfBones = asfBones;
 	glWidgetsVector[addFrameButtonCounter]->idxBonesMap = idxBonesMap;
 
-	glWidgetsVector[addFrameButtonCounter]->updateModelStateFromMap(glWidgetsVector[addFrameButtonCounter]->modelState, glWidgetsVector[addFrameButtonCounter]->bonesRotations, glWidgetsVector[addFrameButtonCounter]->bonesConf);
-	glWidgetsVector[addFrameButtonCounter]->model->updateModelState(glWidgetsVector[addFrameButtonCounter]->modelState[0]);
-
-	std::remove("tmpDatFile.dat");
-	//reloadGLRotateMenu();
-	//delete fileHandler;
 	update();
+	delete fileHandler;
 }
 
 void MainWindow::setTextIteratorLabel(QLabel *label, int iterator, int listSize) {
@@ -793,17 +874,17 @@ void MainWindow::manageBonesPressed() {
 	vector<string> bonesNames = boneManagmentWindow->selectedBonesNames;
 
 	if (!bonesIDs.empty() && !bonesNames.empty()) {
-		FileHandler *fileHandler = new FileHandler();
 
-		/*aktualizacja mapy bonesRotations*/
+		FileHandler *fileHandler = new FileHandler();
+		/*aktualizacja map*/
 		for (int i = 0; i < glWidgetsVector.size(); i++) {
 			glWidgetsVector[i]->saveModelStateToMap(glWidgetsVector[i]->bonesRotations, glWidgetsVector[i]->modelState, glWidgetsVector[i]->bonesConf);
 			glWidgetsVector[i]->saveBonesLengthToMap(glWidgetsVector[i]->bonesLength, glWidgetsVector[i]->bonesGeometry);
+			glWidgetsVector[i]->saveRadiusToMap(glWidgetsVector[i]->modelRadius, glWidgetsVector[i]->bonesGeometry);
 			glWidgetsVector[i]->saveDOFToMap(glWidgetsVector[i]->modelDOF, glWidgetsVector[i]->bonesConf);
 			glWidgetsVector[i]->saveLimitsToMap(glWidgetsVector[i]->modelLimits, glWidgetsVector[i]->bonesConf);
 			glWidgetsVector[i]->saveVelocityToMap(glWidgetsVector[i]->modelVelocity, glWidgetsVector[i]->bonesConf);
 		}
-
 		bonesConf.clear();
 		bonesGeometry.clear();
 
@@ -844,7 +925,6 @@ void MainWindow::manageBonesPressed() {
 		}
 
 		std::remove("tmpDatFile.dat");
-
 		/*ustawienie dlugosci wybranych kosci*/
 		for (int i = 0; i < glWidgetsVector.size(); i++) {
 			for (int j = 0; j < bonesGeometry.size(); j++) {
@@ -864,6 +944,7 @@ void MainWindow::manageBonesPressed() {
 			glWidgetsVector[i]->updateModelStateFromMap(glWidgetsVector[i]->modelState, glWidgetsVector[i]->bonesRotations, glWidgetsVector[i]->bonesConf);
 			glWidgetsVector[i]->model->updateModelState(glWidgetsVector[i]->modelState[0]);
 			glWidgetsVector[i]->updateBonesLengthFromMap(glWidgetsVector[i]->bonesLength);
+			glWidgetsVector[i]->updateBonesRadiusFromMap(glWidgetsVector[i]->modelRadius);
 			glWidgetsVector[i]->updateDOFFromMap(glWidgetsVector[i]->modelDOF, glWidgetsVector[i]->bonesConf);
 			glWidgetsVector[i]->updateLimitsFromMap(glWidgetsVector[i]->modelLimits, glWidgetsVector[i]->bonesConf);
 			glWidgetsVector[i]->updateVelocityFromMap(glWidgetsVector[i]->modelVelocity, glWidgetsVector[i]->bonesConf);
@@ -874,8 +955,7 @@ void MainWindow::manageBonesPressed() {
 		updateBoneConfigFromCB();
 		updateBoneConfigFromLimitsSB();
 		updateBoneConfigFromVelocitySB();
-
-		//delete fileHandler;
+		delete fileHandler;
 	}
 	delete boneManagmentWindow;
 }
@@ -885,16 +965,74 @@ void MainWindow::openCameraConfigPressed() {
 
 	cfg->resize(500, 400);
 	cfg->exec();
+
+	delete cfg;
 }
 
 void MainWindow::showModelInDialogPressed(int i) {
-	modelInDialog = new ModelInDialog(this);
+	ModelInDialog *modelInDialog = new ModelInDialog(this);
 
 	modelInDialog->setWindowTitle("model -" + i);
 
 	modelInDialog->resize(500, 400);
 	modelInDialog->setGLWidget(glWidgetsVector[i]);
 	modelInDialog->exec();
+
+	delete modelInDialog;
+}
+
+void MainWindow::setConfigFromModelPressed(int i) {
+	SelectModelID *selectCfg = new SelectModelID(this);
+	selectCfg->setID(i);
+
+	selectCfg->resize(100, 100);
+	vector<int> ids;
+	for (int j = 0; j < glWidgetsVector.size(); j++) {
+		ids.push_back(j);
+	}
+
+	selectCfg->setComboBox(ids, i);
+	selectCfg->exec();
+
+	int selectedID = selectCfg->getID();
+	glWidgetsVector[i]->copyConfigToGlWidget(glWidgetsVector[i], glWidgetsVector[selectedID]);
+
+	/*zmiena dlugosci kosci aktualizuje dlugosci kosci wyswietlane na ekranie*/
+	if (glWidgetsVector[i]->bonesGeometry.size() != 0) 
+		glWidgetsVector[i]->updateLength(glWidgetsVector[i]->bonesGeometry[0].name, 1.0, 0);
+
+	/*rotacja modelu o 0 stopni aktualizuje obrot na ekranie */
+	if (glWidgetsVector[i]->bonesConf.size() != 0) 
+		glWidgetsVector[i]->rotate(glWidgetsVector[i]->bonesConf[0].name, 1.0, pf::Model3D::axisX, 0);
+
+	glWidgetsVector[i]->update();
+
+	delete selectCfg;
+	refreshRotateSideMenu();
+}
+
+void MainWindow::setConfigToAllModelsPressed(int i) {
+	QMessageBox::StandardButton reply;
+	reply = QMessageBox::question(this, "", "Konfiguracja modelu " + QString::number(i) + " zostanie zapisana do wszystkich modeli.\n"
+											+ "Operacja jest nieodwracalna.\nKontynuowac?", QMessageBox::Yes | QMessageBox::No);
+	if (reply == QMessageBox::Yes) {
+		for (int j = 0; j < glWidgetsVector.size(); j++) {
+			if (i != j) {
+				glWidgetsVector[j]->copyConfigToGlWidget(glWidgetsVector[j], glWidgetsVector[i]);
+				/*zmiena dlugosci kosci aktualizuje dlugosci kosci wyswietlane na ekranie*/
+				if (glWidgetsVector[j]->bonesGeometry.size() != 0)
+					glWidgetsVector[j]->updateLength(glWidgetsVector[i]->bonesGeometry[0].name, 1.0, 0);
+
+				/*rotacja modelu o 0 stopni aktualizuje obrot na ekranie */
+				if (glWidgetsVector[j]->bonesConf.size() != 0)
+					glWidgetsVector[j]->rotate(glWidgetsVector[i]->bonesConf[0].name, 1.0, pf::Model3D::axisX, 0);
+
+			}
+		}
+	}
+	else {
+		cout << "no clicked" << endl;
+	}
 }
 
 void MainWindow::selectAviBackgroundPressed(int i) {
@@ -920,64 +1058,60 @@ void MainWindow::selectImagesBackgroundPressed(int i) {
 }
 
 void MainWindow::mapIncreaseButtonSlot(int i){
-    QSignalMapper * mapper = new QSignalMapper(this);
-
-    QObject::connect(mapper,SIGNAL(mapped(int)),this,SLOT(increaseIteratorPressed(int)));
-    mapper->setMapping(increaseButtonsVector[i], i);
-    connect(increaseButtonsVector[i],SIGNAL(released()),mapper,SLOT(map()));
-
-	//QObject::connect(increaseButtonSignalMapper,SIGNAL(mapped(int)),this,SLOT(increaseIteratorPressed(int)));
-	//increaseButtonSignalMapper->setMapping(increaseButtonsVector[i], i);
-	//connect(increaseButtonsVector[i],SIGNAL(released()), increaseButtonSignalMapper,SLOT(map()));
+    QObject::connect(increaseButtonMapperVector[i],SIGNAL(mapped(int)),this,SLOT(increaseIteratorPressed(int)));
+	increaseButtonMapperVector[i]->setMapping(increaseButtonsVector[i], i);
+    connect(increaseButtonsVector[i],SIGNAL(released()), increaseButtonMapperVector[i],SLOT(map()));
 }
 
 void MainWindow::mapReduceButtonSlot(int i){
-    QSignalMapper * mapper1 = new QSignalMapper(this);
-    QObject::connect(mapper1,SIGNAL(mapped(int)),this,SLOT(reduceIteratorPressed(int)));
-    mapper1->setMapping(reduceButtonsVector[i], i);
-    connect(reduceButtonsVector[i],SIGNAL(released()),mapper1,SLOT(map()));
+    QObject::connect(reduceButtonMapperVector[i],SIGNAL(mapped(int)),this,SLOT(reduceIteratorPressed(int)));
+	reduceButtonMapperVector[i]->setMapping(reduceButtonsVector[i], i);
+    connect(reduceButtonsVector[i],SIGNAL(released()), reduceButtonMapperVector[i],SLOT(map()));
 }
 
 void MainWindow::mapMaxButtonSlot(int i){
-    QSignalMapper * mapper2 = new QSignalMapper(this);
-    QObject::connect(mapper2,SIGNAL(mapped(int)),this,SLOT(minIteratorPressed(int)));
-    mapper2->setMapping(minButtonsVector[i], i);
-    connect(minButtonsVector[i],SIGNAL(released()),mapper2,SLOT(map()));
+    QObject::connect(maxButtonMapperVector[i],SIGNAL(mapped(int)),this,SLOT(minIteratorPressed(int)));
+	maxButtonMapperVector[i]->setMapping(minButtonsVector[i], i);
+    connect(minButtonsVector[i],SIGNAL(released()), maxButtonMapperVector[i],SLOT(map()));
 }
 
 void MainWindow::mapMinButtonSlot(int i){
-    QSignalMapper * mapper3 = new QSignalMapper(this);
-    QObject::connect(mapper3,SIGNAL(mapped(int)),this,SLOT(maxIteratorPressed(int)));
-    mapper3->setMapping(maxButtonsVector[i], i);
-    connect(maxButtonsVector[i],SIGNAL(released()),mapper3,SLOT(map()));
+    QObject::connect(minButtonMapperVector[i],SIGNAL(mapped(int)),this,SLOT(maxIteratorPressed(int)));
+	minButtonMapperVector[i]->setMapping(maxButtonsVector[i], i);
+    connect(maxButtonsVector[i],SIGNAL(released()), minButtonMapperVector[i],SLOT(map()));
 }
 
 void MainWindow::mapManageBonesSlot(int i) {
-	/*QSignalMapper * mapper = new QSignalMapper(this);
-	QObject::connect(mapper, SIGNAL(mapped(int)), this, SLOT(manageBonesPressed(int)));
-	mapper->setMapping(manageBonesVector[i], i);
-	connect(manageBonesVector[i], SIGNAL(triggered()), mapper, SLOT(map()));*/
 }
 
 void MainWindow::mapShowModelInDialog(int i) {
-	QSignalMapper * mapper = new QSignalMapper(this);
-	QObject::connect(mapper, SIGNAL(mapped(int)), this, SLOT(showModelInDialogPressed(int)));
-	mapper->setMapping(showModelInDialogVector[i], i);
-	connect(showModelInDialogVector[i], SIGNAL(triggered()), mapper, SLOT(map()));
+	QObject::connect(showModelInDialogMapperVector[i], SIGNAL(mapped(int)), this, SLOT(showModelInDialogPressed(int)));
+	showModelInDialogMapperVector[i]->setMapping(showModelInDialogVector[i], i);
+	connect(showModelInDialogVector[i], SIGNAL(triggered()), showModelInDialogMapperVector[i], SLOT(map()));
+}
+
+void MainWindow::mapSetConfigFromModel(int i) {
+	QObject::connect(setConfigFromModelMapperVector[i], SIGNAL(mapped(int)), this, SLOT(setConfigFromModelPressed(int)));
+	setConfigFromModelMapperVector[i]->setMapping(setConfigFromModelVector[i], i);
+	connect(setConfigFromModelVector[i], SIGNAL(triggered()), setConfigFromModelMapperVector[i], SLOT(map()));
+}
+
+void MainWindow::mapSetConfigToAllModels(int i) {
+	QObject::connect(setConfigToAllModelsMapperVector[i], SIGNAL(mapped(int)), this, SLOT(setConfigToAllModelsPressed(int)));
+	setConfigToAllModelsMapperVector[i]->setMapping(setConfigToAllModelsVector[i], i);
+	connect(setConfigToAllModelsVector[i], SIGNAL(triggered()), setConfigToAllModelsMapperVector[i], SLOT(map()));
 }
 
 void MainWindow::mapAddImagesToBackground(int i) {
-	QSignalMapper * mapper = new QSignalMapper(this);
-	QObject::connect(mapper, SIGNAL(mapped(int)), this, SLOT(selectImagesBackgroundPressed(int)));
-	mapper->setMapping(selectImagesBackgroundVector[i], i);
-	connect(selectImagesBackgroundVector[i], SIGNAL(triggered()), mapper, SLOT(map()));
+	QObject::connect(addImagesBackgroundMapperVector[i], SIGNAL(mapped(int)), this, SLOT(selectImagesBackgroundPressed(int)));
+	addImagesBackgroundMapperVector[i]->setMapping(selectImagesBackgroundVector[i], i);
+	connect(selectImagesBackgroundVector[i], SIGNAL(triggered()), addImagesBackgroundMapperVector[i], SLOT(map()));
 }
 
 void MainWindow::mapAddAviToBackground(int i) {
-	QSignalMapper * mapper = new QSignalMapper(this);
-	QObject::connect(mapper, SIGNAL(mapped(int)), this, SLOT(selectAviBackgroundPressed(int)));
-	mapper->setMapping(selectAviBackgroundVector[i], i);
-	connect(selectAviBackgroundVector[i], SIGNAL(triggered()), mapper, SLOT(map()));
+	QObject::connect(addAviMapperVector[i], SIGNAL(mapped(int)), this, SLOT(selectAviBackgroundPressed(int)));
+	addAviMapperVector[i]->setMapping(selectAviBackgroundVector[i], i);
+	connect(selectAviBackgroundVector[i], SIGNAL(triggered()), addAviMapperVector[i], SLOT(map()));
 }
 
 void MainWindow::updateGlobalListIterator(int value){
@@ -1031,6 +1165,8 @@ void MainWindow::prepareFrameMenu(int i) {
 	mapShowModelInDialog(i);
 	mapAddAviToBackground(i);
 	mapAddImagesToBackground(i);
+	mapSetConfigFromModel(i);
+	mapSetConfigToAllModels(i);
 }
 
 void MainWindow::prepareSlider(QSlider *slider, int i) {
@@ -1044,11 +1180,10 @@ void MainWindow::prepareSlider(QSlider *slider, int i) {
 	slider->setSingleStep(1);
 	slider->setVisible(true);
 
-	QSignalMapper *mapper = new QSignalMapper(this);
-	connect(slidersVector[i], SIGNAL(sliderReleased()), mapper, SLOT(map()));
-	mapper->setMapping(slidersVector[i], i);
+	connect(slidersVector[i], SIGNAL(sliderReleased()), sliderMapperVector[i], SLOT(map()));
+	sliderMapperVector[i]->setMapping(slidersVector[i], i);
 
-	connect(mapper, SIGNAL(mapped(int)), this, SLOT(updateFrameIterator(int)));
+	connect(sliderMapperVector[i], SIGNAL(mapped(int)), this, SLOT(updateFrameIterator(int)));
 	//delete mapper;
 }
 
@@ -1090,6 +1225,69 @@ void MainWindow::updateBoneLength(QString str) {
 
 		int frameNumber = comboBoxFrameSelector->currentIndex();
 		sideLengthMenuLineEditsVector[qLineEditID]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneLength(glWidgetsVector[frameNumber]->bonesGeometry[qLineEditID].name)));
+		sideGeometryMenuLineEditsVector[qLineEditID*3]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneLength(glWidgetsVector[frameNumber]->bonesGeometry[qLineEditID].name)));
+	}
+	else {
+		//Okno błedu
+		cout << "BLAD" << endl;
+	}
+}
+
+void MainWindow::updateBoneLengthGeometry(QString str) {
+	QStringList values = str.split(";");
+	if (values.count() == 4) {
+		string boneName = values.at(0).toStdString();
+		float direction = values.at(1).toFloat();
+		int qLineEditID = values.at(2).toInt();
+		int qSpinBoxID = values.at(3).toInt();
+
+		glWidgetsVector[comboBoxFrameSelector->currentIndex()]->updateLength(boneName, direction, sideGeometryMenuSpinBoxesVector[qSpinBoxID]->value());
+
+		int frameNumber = comboBoxFrameSelector->currentIndex();
+		sideGeometryMenuLineEditsVector[qLineEditID]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneLength(glWidgetsVector[frameNumber]->bonesGeometry[qLineEditID/3].name)));
+		sideLengthMenuLineEditsVector[qLineEditID/3]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneLength(glWidgetsVector[frameNumber]->bonesGeometry[qLineEditID/3].name)));
+	}
+	else {
+		//Okno błedu
+		cout << "BLAD" << endl;
+	}
+}
+
+void MainWindow::updateBoneTopRadius(QString str) {
+	QStringList values = str.split(";");
+	if (values.count() == 4) {
+		string boneName = values.at(0).toStdString();
+		float direction = values.at(1).toFloat();
+		int qLineEditID = values.at(2).toInt();
+		int qSpinBoxID = values.at(3).toInt();
+
+		glWidgetsVector[comboBoxFrameSelector->currentIndex()]->updateTopRadius(boneName, direction, sideGeometryMenuSpinBoxesVector[qSpinBoxID]->value());
+
+		int frameNumber = comboBoxFrameSelector->currentIndex();
+		sideGeometryMenuLineEditsVector[qLineEditID]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneTopRadius(glWidgetsVector[frameNumber]->bonesGeometry[qLineEditID/3].name)));
+
+		update();
+	}
+	else {
+		//Okno błedu
+		cout << "BLAD" << endl;
+	}
+}
+
+void MainWindow::updateBoneBottomRadius(QString str) {
+	QStringList values = str.split(";");
+	if (values.count() == 4) {
+		string boneName = values.at(0).toStdString();
+		float direction = values.at(1).toFloat();
+		int qLineEditID = values.at(2).toInt();
+		int qSpinBoxID = values.at(3).toInt();
+
+		glWidgetsVector[comboBoxFrameSelector->currentIndex()]->updateBottomRadius(boneName, direction, sideGeometryMenuSpinBoxesVector[qSpinBoxID]->value());
+		//cout << sideGeometryMenuSpinBoxesVector[qSpinBoxID]->value() << endl;
+		int frameNumber = comboBoxFrameSelector->currentIndex();
+		sideGeometryMenuLineEditsVector[qLineEditID]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneBottomRadius(glWidgetsVector[frameNumber]->bonesGeometry[qLineEditID/3].name)));
+	
+		update();
 	}
 	else {
 		//Okno błedu
@@ -1162,6 +1360,16 @@ void MainWindow::reloadGLWidgetMenu() {
 	qDeleteAll(sideLengthMenuLineEditsExtraVector);
 	qDeleteAll(sideLengthMenuSpinBoxesExtraVector);
 
+	qDeleteAll(sideGeometryMenuLabelsVector);
+	qDeleteAll(sideGeometryMenuHLayoutsVector);
+	qDeleteAll(sideGeometryMenuButtonsVector);
+	qDeleteAll(sideGeometryMenuLineEditsVector);
+	qDeleteAll(sideGeometryMenuSpinBoxesVector);
+
+	qDeleteAll(rotateMapperVector);
+	qDeleteAll(lengthMapperVector);
+	qDeleteAll(geometryMapperVector);
+
 	sideRotateMenuLineEditsVector.clear();
 	sideRotateMenuLabelsVector.clear();
 	sideRotateMenuButtonsVector.clear();
@@ -1184,8 +1392,27 @@ void MainWindow::reloadGLWidgetMenu() {
 	sideLengthMenuLineEditsExtraVector.clear();
 	sideLengthMenuSpinBoxesExtraVector.clear();
 
+	sideGeometryMenuLabelsVector.clear();
+	sideGeometryMenuHLayoutsVector.clear();
+	sideGeometryMenuButtonsVector.clear();
+	sideGeometryMenuLineEditsVector.clear();
+	sideGeometryMenuSpinBoxesVector.clear();
+
+	rotateMapperVector.clear();
+	lengthMapperVector.clear();
+	geometryMapperVector.clear();
+
 	addGLWidgetRotateMenu();
 	addGLWidgetLengthMenu();
+	addGLWidgetGeometryMenu();
+
+	for (int i = 0; i < comboBoxFrameSelector->count(); i++) {
+		if(comboBoxFrameSelector->itemText(i).toInt() == comboBoxFrameSelector->currentIndex())
+			frameIDVector[comboBoxFrameSelector->currentIndex()]->setStyleSheet("color: LawnGreen");
+		else 
+			frameIDVector[i]->setStyleSheet("color: red");
+	}
+	
 }
 
 void MainWindow::reloadGLRotateMenu() {
@@ -1195,11 +1422,15 @@ void MainWindow::reloadGLRotateMenu() {
 	qDeleteAll(sideRotateMenuHLayoutsVector);
 	qDeleteAll(sideRotateMenuSpinBoxesVector);
 
+	qDeleteAll(rotateMapperVector);
+
 	sideRotateMenuLineEditsVector.clear();
 	sideRotateMenuLabelsVector.clear();
 	sideRotateMenuButtonsVector.clear();
 	sideRotateMenuHLayoutsVector.clear();
 	sideRotateMenuSpinBoxesVector.clear();
+
+	rotateMapperVector.clear();
 
 	addGLWidgetRotateMenu();
 }
@@ -1208,19 +1439,19 @@ void MainWindow::refreshRotateSideMenu() {
 	//numer wybranego okna
 	int frameNumber = comboBoxFrameSelector->currentIndex();
 
-	pf::Model3D *model = glWidgetsVector[frameNumber]->model;
-	int rootID = glWidgetsVector[frameNumber]->getModelStateID(model, "root", pf::Model3D::axisX);
+	//pf::Model3D *modelTMP = glWidgetsVector[frameNumber]->model;
+	int rootID = glWidgetsVector[frameNumber]->getModelStateID(glWidgetsVector[frameNumber]->model, "root", pf::Model3D::axisX);
 	for (int i=0; i<sideRotateMenuLineEditsVector.size(); i++)
 		sideRotateMenuLineEditsVector[i]->setText(QString::number(glWidgetsVector[frameNumber]->modelState[0][rootID+i]));
 
-	//delete model;
+	//delete modelTMP;
 }
 
 void MainWindow::refreshLengthSideMenu() {
 	//numer wybranego okna
 	int frameNumber = comboBoxFrameSelector->currentIndex();
 
-	pf::Model3D *model = glWidgetsVector[frameNumber]->model;
+	//pf::Model3D *model = glWidgetsVector[frameNumber]->model;
 
 	sideLengthMenuLineEditsExtraVector[0]->setText(QString::number(glWidgetsVector[frameNumber]->modelState[0][0]));
 	sideLengthMenuLineEditsExtraVector[1]->setText(QString::number(glWidgetsVector[frameNumber]->modelState[0][1]));
@@ -1231,7 +1462,19 @@ void MainWindow::refreshLengthSideMenu() {
 	//delete model;
 }
 
+void MainWindow::refreshGeometrySideMenu() {
+	//numer wybranego okna
+	int frameNumber = comboBoxFrameSelector->currentIndex();
+
+	for (int i = 0; i < sideLengthMenuLineEditsVector.size(); i++) {
+		sideGeometryMenuLineEditsVector[i*3]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneLength(glWidgetsVector[frameNumber]->bonesGeometry[i].name)));
+		sideGeometryMenuLineEditsVector[i*3+1]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneTopRadius(glWidgetsVector[frameNumber]->bonesGeometry[i].name)));
+		sideGeometryMenuLineEditsVector[i*3+2]->setText(QString::number(glWidgetsVector[frameNumber]->getBoneBottomRadius(glWidgetsVector[frameNumber]->bonesGeometry[i].name)));
+	}
+}
+
 void MainWindow::addGLWidgetRotateMenu() {
+	int rotateMapperCounter = 0;
 	vboxRotateLayout->setAlignment(Qt::AlignTop);
 
 	int usedBonesSize = glWidgetsVector[comboBoxFrameSelector->currentIndex()]->bonesConf.size();
@@ -1267,6 +1510,7 @@ void MainWindow::addGLWidgetRotateMenu() {
 	int hLayoutCounter = 0, labelsCounter = 0, buttonsCounter = 0, lineEditsCounter = 0, spinBoxesCounter = 0;
 	for (int i = 1; i <= usedBonesSize; i++) {
 		sideRotateMenuLabelsVector[labelsCounter]->setText("Obrót " + QString::fromStdString(usedBones[i - 1].name));
+		sideRotateMenuLabelsVector[labelsCounter]->setStyleSheet("font-weight: bold");
 		sideRotateMenuHLayoutsVector[hLayoutCounter]->addWidget(sideRotateMenuLabelsVector[labelsCounter]);
 		labelsCounter++;
 		hLayoutCounter++;
@@ -1369,11 +1613,11 @@ void MainWindow::addGLWidgetRotateMenu() {
 			/*id qSpinBox*/
 			str += QString::fromStdString(";" + std::to_string(i * 3 + tmpVal));
 
-			QSignalMapper *mapper = new QSignalMapper(this);
-			QObject::connect(mapper, SIGNAL(mapped(QString)), this, SLOT(rotate(QString)));
-			mapper->setMapping(sideRotateMenuButtonsVector[(i * 6) + j], str);
-			connect(sideRotateMenuButtonsVector[(i * 6) + j], SIGNAL(released()), mapper, SLOT(map()));
-			//QString().swap(str);
+			rotateMapperVector.push_back(new QSignalMapper(this));
+			QObject::connect(rotateMapperVector[rotateMapperCounter], SIGNAL(mapped(QString)), this, SLOT(rotate(QString)));
+			rotateMapperVector[rotateMapperCounter]->setMapping(sideRotateMenuButtonsVector[(i * 6) + j], str);
+			connect(sideRotateMenuButtonsVector[(i * 6) + j], SIGNAL(released()), rotateMapperVector[rotateMapperCounter], SLOT(map()));
+			rotateMapperCounter++;
 		}
 	}
 
@@ -1386,11 +1630,10 @@ void MainWindow::addGLWidgetRotateMenu() {
 	disableRotatingButtons();
 
 	refreshRotateSideMenu();
-
-	//vector<pf::boneConfig>().swap(usedBones);
 }
 
 void MainWindow::addGLWidgetLengthMenu() {
+	int lengthMapperCounter = 0;
 	vboxLengthLayout->setAlignment(Qt::AlignTop);
 
 	/*przesuniecie modelu*/
@@ -1561,6 +1804,7 @@ void MainWindow::addGLWidgetLengthMenu() {
 	for (int i = 0; i < usedBonesSize; i++) {
 		// nazwa
 		sideLengthMenuLabelsVector[labelsCounter]->setText(QString::fromStdString(usedBones[i].name));
+		sideLengthMenuLabelsVector[labelsCounter]->setStyleSheet("font-weight: bold");
 		sideLengthMenuHLayoutsVector[hLayoutCounter]->addWidget(sideLengthMenuLabelsVector[labelsCounter]);
 		hLayoutCounter++;
 
@@ -1667,11 +1911,11 @@ void MainWindow::addGLWidgetLengthMenu() {
 			/*id qSpinBox*/
 			str += QString::fromStdString(";" + std::to_string(i));
 
-			QSignalMapper *mapper = new QSignalMapper(this);
-			QObject::connect(mapper, SIGNAL(mapped(QString)), this, SLOT(updateBoneLength(QString)));
-			mapper->setMapping(sideLengthMenuButtonsVector[(i*2) + j], str);
-			connect(sideLengthMenuButtonsVector[(i * 2) + j], SIGNAL(released()), mapper, SLOT(map()));
-			//QString().swap(str);
+			lengthMapperVector.push_back(new QSignalMapper(this));
+			QObject::connect(lengthMapperVector[lengthMapperCounter], SIGNAL(mapped(QString)), this, SLOT(updateBoneLength(QString)));
+			lengthMapperVector[lengthMapperCounter]->setMapping(sideLengthMenuButtonsVector[(i*2) + j], str);
+			connect(sideLengthMenuButtonsVector[(i * 2) + j], SIGNAL(released()), lengthMapperVector[lengthMapperCounter], SLOT(map()));
+			lengthMapperCounter++;
 		}
 	}
 
@@ -1703,6 +1947,179 @@ void MainWindow::addGLWidgetLengthMenu() {
 
 }
 
+void MainWindow::addGLWidgetGeometryMenu() {
+	int geometryMapperCounter = 0;
+	vboxGeometryLayout->setAlignment(Qt::AlignTop);
+
+	int usedBonesSize = glWidgetsVector[comboBoxFrameSelector->currentIndex()]->bonesGeometry.size();
+	vector<pf::boneGeometry> usedBones = glWidgetsVector[comboBoxFrameSelector->currentIndex()]->bonesGeometry;
+
+	for (int i = 0; i < usedBonesSize * 4; i++) {
+		sideGeometryMenuLabelsVector.push_back(new QLabel());
+		sideGeometryMenuHLayoutsVector.push_back(new QHBoxLayout());
+		sideGeometryMenuHLayoutsVector[i]->setAlignment(Qt::AlignLeft);
+	}
+	
+	for (int i = 0; i < usedBonesSize * 3; i++) {
+		sideGeometryMenuLineEditsVector.push_back(new QLineEdit());
+		sideGeometryMenuLineEditsVector[i]->setFixedWidth(50);
+		sideGeometryMenuSpinBoxesVector.push_back(new QSpinBox());
+		sideGeometryMenuSpinBoxesVector[i]->setFixedWidth(50);
+	}
+
+	for (int i = 0; i < usedBonesSize * 6; i++) {
+		sideGeometryMenuButtonsVector.push_back(new QPushButton(this));
+		sideGeometryMenuButtonsVector[i]->setFixedWidth(30);
+	}
+
+	int hLayoutCounter = 0, labelsCounter = 0, buttonsCounter = 0, lineEditsCounter = 0, spinBoxesCounter = 0;
+	for (int i = 0; i < usedBonesSize; i++) {
+		sideGeometryMenuLabelsVector[labelsCounter]->setText(QString::fromStdString(usedBones[i].name));
+		sideGeometryMenuLabelsVector[labelsCounter]->setStyleSheet("font-weight: bold");
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuLabelsVector[labelsCounter]);
+		labelsCounter++;
+		hLayoutCounter++;
+
+		sideGeometryMenuLabelsVector[labelsCounter]->setText("Length");
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuLabelsVector[labelsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuButtonsVector[buttonsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuLineEditsVector[lineEditsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuButtonsVector[buttonsCounter + 1]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuSpinBoxesVector[spinBoxesCounter]);
+
+		lineEditsCounter++;
+		buttonsCounter++;
+		buttonsCounter++;
+		labelsCounter++;
+		hLayoutCounter++;
+		spinBoxesCounter++;
+
+		sideGeometryMenuLabelsVector[labelsCounter]->setText("Radius1");
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuLabelsVector[labelsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuButtonsVector[buttonsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuLineEditsVector[lineEditsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuButtonsVector[buttonsCounter + 1]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuSpinBoxesVector[spinBoxesCounter]);
+
+		lineEditsCounter++;
+		buttonsCounter++;
+		buttonsCounter++;
+		labelsCounter++;
+		hLayoutCounter++;
+		spinBoxesCounter++;
+
+		sideGeometryMenuLabelsVector[labelsCounter]->setText("Radius2");
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuLabelsVector[labelsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuButtonsVector[buttonsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuLineEditsVector[lineEditsCounter]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuButtonsVector[buttonsCounter + 1]);
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->addWidget(sideGeometryMenuSpinBoxesVector[spinBoxesCounter]);
+
+		sideGeometryMenuHLayoutsVector[hLayoutCounter]->setContentsMargins(0, 0, 0, 10);
+
+		lineEditsCounter++;
+		buttonsCounter++;
+		buttonsCounter++;
+		labelsCounter++;
+		hLayoutCounter++;
+		spinBoxesCounter++;
+	}
+
+	for (int i = 0; i < usedBonesSize; i++) {
+		//kazda z kosci moze byc obracana w 3 osiach w 2 strony
+		for (int j = 0; j < 6; j++) {
+			QString str;
+			switch (j) {
+			case 0:
+				str = QString::fromStdString(usedBones[i].name + ";-1.0");
+				break;
+
+			case 1:
+				str = QString::fromStdString(usedBones[i].name + ";1.0");
+				break;
+
+			case 2:
+				str = QString::fromStdString(usedBones[i].name + ";-1.0");
+				break;
+
+			case 3:
+				str = QString::fromStdString(usedBones[i].name + ";1.0");
+				break;
+
+			case 4:
+				str = QString::fromStdString(usedBones[i].name + ";-1.0");
+				break;
+
+			case 5:
+				str = QString::fromStdString(usedBones[i].name + ";1.0");
+				break;
+
+			default:
+				str = " ";
+				cout << "BLAD" << endl;
+				break;
+			}
+
+			int tmpVal;
+			if (j < 2) {
+				/*id qLineEdit*/
+				str += QString::fromStdString(";" + std::to_string(i * 3));
+
+				/*id qSpinBox*/
+				str += QString::fromStdString(";" + std::to_string(i * 3));
+
+				geometryMapperVector.push_back(new QSignalMapper(this));
+				QObject::connect(geometryMapperVector[geometryMapperCounter], SIGNAL(mapped(QString)), this, SLOT(updateBoneLengthGeometry(QString)));
+				geometryMapperVector[geometryMapperCounter]->setMapping(sideGeometryMenuButtonsVector[(i * 6) + j], str);
+				connect(sideGeometryMenuButtonsVector[(i * 6) + j], SIGNAL(released()), geometryMapperVector[geometryMapperCounter], SLOT(map()));
+				geometryMapperCounter++;
+			}
+			else if (j>=2 && j<4){
+				/*id qLineEdit*/
+				str += QString::fromStdString(";" + std::to_string(i * 3 + 1));
+
+				/*id qSpinBox*/
+				str += QString::fromStdString(";" + std::to_string(i * 3 + 1));
+
+				geometryMapperVector.push_back(new QSignalMapper(this));
+				QObject::connect(geometryMapperVector[geometryMapperCounter], SIGNAL(mapped(QString)), this, SLOT(updateBoneTopRadius(QString)));
+				geometryMapperVector[geometryMapperCounter]->setMapping(sideGeometryMenuButtonsVector[(i * 6) + j], str);
+				connect(sideGeometryMenuButtonsVector[(i * 6) + j], SIGNAL(released()), geometryMapperVector[geometryMapperCounter], SLOT(map()));
+				geometryMapperCounter++;
+			}
+			else {
+				/*id qLineEdit*/
+				str += QString::fromStdString(";" + std::to_string(i * 3 + 2));
+
+				/*id qSpinBox*/
+				str += QString::fromStdString(";" + std::to_string(i * 3 + 2));
+
+				geometryMapperVector.push_back(new QSignalMapper(this));
+				QObject::connect(geometryMapperVector[geometryMapperCounter], SIGNAL(mapped(QString)), this, SLOT(updateBoneBottomRadius(QString)));
+				geometryMapperVector[geometryMapperCounter]->setMapping(sideGeometryMenuButtonsVector[(i * 6) + j], str);
+				connect(sideGeometryMenuButtonsVector[(i * 6) + j], SIGNAL(released()), geometryMapperVector[geometryMapperCounter], SLOT(map()));
+				geometryMapperCounter++;
+			}
+			
+		}
+	}
+	
+	/*parametry qspinbox*/
+	for (int i = 0; i < sideGeometryMenuSpinBoxesVector.size(); i=i+3) {
+		setQSpinBoxSettings(sideGeometryMenuSpinBoxesVector[i], 0, 50, 20);
+		setQSpinBoxSettings(sideGeometryMenuSpinBoxesVector[i+1], 0, 20, 5);
+		setQSpinBoxSettings(sideGeometryMenuSpinBoxesVector[i+2], 0, 20, 5);
+	}
+
+	for (int lineEdits = 0; lineEdits < sideGeometryMenuLineEditsVector.size(); lineEdits++)
+		sideGeometryMenuLineEditsVector[lineEdits]->setReadOnly(true);
+
+	for (int hLayouts = 0; hLayouts < sideGeometryMenuHLayoutsVector.size(); hLayouts++)
+		vboxGeometryLayout->addLayout(sideGeometryMenuHLayoutsVector[hLayouts]);
+
+	refreshGeometrySideMenu();
+}
+
 void MainWindow::addFrameScrollingMenu(QPushButton *button, int id) {
 	frameScrollingMenu.push_back(new QMenu());
 	selectBackgroundMenuVector.push_back(new QMenu("Dodaj tlo"));
@@ -1711,13 +2128,18 @@ void MainWindow::addFrameScrollingMenu(QPushButton *button, int id) {
 	selectImagesBackgroundVector.push_back(new QAction("Wybierz folder zdjęć"));
 	selectAviBackgroundVector.push_back(new QAction("Wybierz plik avi"));
 
+	setConfigFromModelVector.push_back(new QAction("Wykorzystaj konfiguracje innego modelu"));
+	setConfigToAllModelsVector.push_back(new QAction("Ustaw konfiguracje dla wszystkich pozostalych modeli"));
+
 	selectBackgroundMenuVector[id]->addAction(selectImagesBackgroundVector[id]);
 	selectBackgroundMenuVector[id]->addAction(selectAviBackgroundVector[id]);
 
 	frameScrollingMenu[id]->addMenu(selectBackgroundMenuVector[id]);
 	frameScrollingMenu[id]->addSeparator();
 	frameScrollingMenu[id]->addAction(showModelInDialogVector[id]);
-
+	frameScrollingMenu[id]->addSeparator();
+	frameScrollingMenu[id]->addAction(setConfigFromModelVector[id]);
+	frameScrollingMenu[id]->addAction(setConfigToAllModelsVector[id]);
 	button->setMenu(frameScrollingMenu[id]);
 }
 
@@ -1727,7 +2149,6 @@ void MainWindow::setQSpinBoxSettings(QSpinBox * qspinbox, int minRange, int maxR
 }
 
 void MainWindow::setRotCheckBoxes(int id) {
-
 	for (int i = 0; i < sideLengthMenuRotCheckBoxesVector.size(); i++) {
 		sideLengthMenuRotCheckBoxesVector[i]->setChecked(false);
 	}
@@ -1773,7 +2194,6 @@ void MainWindow::setLimitsSpinBoxes(int id) {
 	}
 
 	for (int j = 0; j < glWidgetsVector[id]->bonesGeometry.size(); j++) {
-		string name = glWidgetsVector[id]->bonesGeometry[j].name;
 		//OX
 		sideLengthMenuLimVelSpinBoxesVector[j * 9]->setValue(lims[j][0]);
 		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 1]->setValue(lims[j][1]);
@@ -1782,8 +2202,20 @@ void MainWindow::setLimitsSpinBoxes(int id) {
 		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 4]->setValue(lims[j][3]);
 		//OZ
 		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 6]->setValue(lims[j][4]);
-		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 7]->setValue(lims[j][5]);
-				
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 7]->setValue(lims[j][5]);		
+	}
+
+	/* nie moze byc sytuacji gdy min > max oraz max < min */
+	for (int j = 0; j < glWidgetsVector[id]->bonesGeometry.size(); j++) {
+		//OX
+		sideLengthMenuLimVelSpinBoxesVector[j * 9]->setMaximum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 1]->value());
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 1]->setMinimum(sideLengthMenuLimVelSpinBoxesVector[j * 9]->value());
+		//OY
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 3]->setMaximum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 4]->value());
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 4]->setMinimum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 3]->value());
+		//OZ
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 6]->setMaximum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 7]->value());
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 7]->setMinimum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 6]->value());
 	}
 }
 
@@ -1924,23 +2356,11 @@ void MainWindow::updateBoneConfigFromCB() {
 	glWidgetsVector[frameID]->setLimitsVector(glWidgetsVector[frameID]->limits, glWidgetsVector[frameID]->bonesConf, glWidgetsVector[frameID]->bonesGeometry);
 	glWidgetsVector[frameID]->setVelocityVector(glWidgetsVector[frameID]->velocity, glWidgetsVector[frameID]->bonesConf, glWidgetsVector[frameID]->bonesGeometry);
 
-	FileHandler *fileHandler;
-	fileHandler->saveDATToFile(glWidgetsVector[frameID]->bonesConf, glWidgetsVector[frameID]->bonesGeometry, "tmpDatFile.dat");
-
-	glWidgetsVector[frameID]->bonesConf.clear();
-	glWidgetsVector[frameID]->bonesGeometry.clear();
-
-	glWidgetsVector[frameID]->model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, "tmpDatFile.dat");
-	glWidgetsVector[frameID]->model->loadConfig("tmpDatFile.dat", glWidgetsVector[frameID]->bonesConf, glWidgetsVector[frameID]->bonesGeometry);
-
-	std::remove("tmpDatFile.dat");
-
-	glWidgetsVector[frameID]->updateModelStateFromMap(glWidgetsVector[frameID]->modelState, glWidgetsVector[frameID]->bonesRotations, glWidgetsVector[frameID]->bonesConf);
-	glWidgetsVector[frameID]->model->updateModelState(glWidgetsVector[frameID]->modelState[0]);
+	FileHandler *fileHandler = new FileHandler();
+	fileHandler->reloadParams(glWidgetsVector[frameID]);
 
 	reloadGLRotateMenu();
-
-	//delete fileHandler;
+	delete fileHandler;
 }
 
 void MainWindow::updateBoneConfigFromLimitsSB() {
@@ -1969,6 +2389,19 @@ void MainWindow::updateBoneConfigFromLimitsSB() {
 		glWidgetsVector[frameID]->bonesConf[i].maxRotY = tmp[3];
 		glWidgetsVector[frameID]->bonesConf[i].minRotZ = tmp[4];
 		glWidgetsVector[frameID]->bonesConf[i].maxRotZ = tmp[5];
+	}
+
+	/* nie moze byc sytuacji gdy min > max oraz max < min */
+	for (int j = 0; j < glWidgetsVector[frameID]->bonesGeometry.size(); j++) {
+		//OX
+		sideLengthMenuLimVelSpinBoxesVector[j * 9]->setMaximum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 1]->value());
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 1]->setMinimum(sideLengthMenuLimVelSpinBoxesVector[j * 9]->value());
+		//OY
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 3]->setMaximum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 4]->value());
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 4]->setMinimum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 3]->value());
+		//OZ
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 6]->setMaximum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 7]->value());
+		sideLengthMenuLimVelSpinBoxesVector[j * 9 + 7]->setMinimum(sideLengthMenuLimVelSpinBoxesVector[j * 9 + 6]->value());
 	}
 
 	glWidgetsVector[frameID]->setLimitsVector(glWidgetsVector[frameID]->limits, glWidgetsVector[frameID]->bonesConf, glWidgetsVector[frameID]->bonesGeometry);
@@ -2060,4 +2493,17 @@ void MainWindow::tabSelected() {
 			glWidgetsVector[i]->update();
 		}
 	}
+}
+
+void MainWindow::addFrameMenuMappers(int id) {
+	increaseButtonMapperVector.push_back(new QSignalMapper(this));
+	reduceButtonMapperVector.push_back(new QSignalMapper(this));
+	minButtonMapperVector.push_back(new QSignalMapper(this));
+	maxButtonMapperVector.push_back(new QSignalMapper(this));
+	showModelInDialogMapperVector.push_back(new QSignalMapper(this));
+	setConfigFromModelMapperVector.push_back(new QSignalMapper(this));
+	setConfigToAllModelsMapperVector.push_back(new QSignalMapper(this));
+	addImagesBackgroundMapperVector.push_back(new QSignalMapper(this));
+	addAviMapperVector.push_back(new QSignalMapper(this));
+	sliderMapperVector.push_back(new QSignalMapper(this));
 }

@@ -1,2 +1,13 @@
 ﻿  Generate moc_predefs.h
+  mainwindow.cpp
+C:\Users\barte\Desktop\Dla studenta\\include\Model3D.h(352): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+mainwindow.cpp(1084): warning C4100: 'i': unreferenced formal parameter
+mainwindow.cpp(1480): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+mainwindow.cpp(1747): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+mainwindow.cpp(1954): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+mainwindow.cpp(2063): warning C4101: 'tmpVal': unreferenced local variable
+mainwindow.cpp(2498): warning C4100: 'id': unreferenced formal parameter
+  Model3D.lib(Model3D.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
+  Generating code
+  Finished generating code
   projekt1.vcxproj -> C:\Users\barte\Documents\projekt1\release\projekt1.exe

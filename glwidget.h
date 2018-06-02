@@ -68,30 +68,16 @@ public:
 	/*czestotliwosc wczytywania klatek z avi - wykorzystywana do zapisu i odczytu z pliku*/
 	int hz = 0;
 
-	// vector zawieraj¹cy limity rotacji poszczególnych koœci
-	vector<pf::range2> limits;
-
+	
+	vector<pf::range2> limits;// vector zawieraj¹cy limity rotacji poszczególnych koœci
 	vector<float> velocity;
-
-	//rotacje
-	vector<pf::Matrixf> rotations;
-
-	//nazwy wykorzystanych kosci
-	vector<string> usedBones;
-
-	//nazwy wszystkich kosci
-	vector<string> allBones;
-
-	//stany modelu
-	vector<vector<float>> modelState;
-
-	vector<vector<float>> radiusVec;
-	//kosci
-	vector<pf::ASFBone> asfBones;
+	vector<pf::Matrixf> rotations;//rotacje
+	vector<string> usedBones;//nazwy wykorzystanych kosci
+	vector<string> allBones;//nazwy wszystkich kosci
+	vector<vector<float>> modelState;//stany modelu
+	vector<pf::ASFBone> asfBones;//kosci
 	map<string, int> idxBonesMap;
-
-	//
-	vector<pf::boneConfig> bonesConf;
+	vector<pf::boneConfig> bonesConf;//parametry kosci
 	vector<pf::boneGeometry> bonesGeometry;
 
 	/*obroty wszystkich kosci wraz z nazwa*/
@@ -114,6 +100,8 @@ public:
 	/* dof -> np. LeftLeg true, true, false */
 	map<string, vector<bool>> modelDOF;
 
+	/*radius -> LeftLeg, topRadius1, topRadius2, bottomRadius1, bottomRadius2*/
+	map<string, vector<float>> modelRadius;
 	/*###############################################*/
 	/* metody */
 
@@ -138,6 +126,10 @@ public:
 	/*zmiana dlugosci kosci*/
 	void updateLength(string boneName, float direction, float value);
 
+	void updateTopRadius(string boneName, float direction, float value);
+
+	void updateBottomRadius(string boneName, float direction, float value);
+
 	/*przesuniecie modelu*/
 	void translate(float direction, pf::Vec3 vect, int value);
 
@@ -146,6 +138,10 @@ public:
 
 	/*pobranie dlugosci kosci*/
 	float getBoneLength(string boneName);
+
+	float getBoneTopRadius(string boneName);
+
+	float getBoneBottomRadius(string boneName);
 
 	/*funkcja zwraca id wybranej kosci w wektorze modelState*/
 	int getModelStateID(pf::Model3D *model, string boneName, pf::Vec3 vect);
@@ -160,6 +156,8 @@ public:
 
 	void saveBonesLengthToMap(map<string, float> &bonesLength, vector<pf::boneGeometry> boneGeometry);
 
+	void saveRadiusToMap(map<string, vector<float>> &bonesRadius, vector<pf::boneGeometry> boneGeometry);
+
 	void saveDOFToMap(map<string, vector<bool>> &bonesDOF, vector<pf::boneConfig> boneConfig);
 
 	void saveLimitsToMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> boneConfig);
@@ -170,6 +168,8 @@ public:
 	void updateModelStateFromMap(vector<vector<float>> &mState, map<string, pf::Vec3f> bonesRotations, vector<pf::boneConfig> bonesConfig);
 
 	void updateBonesLengthFromMap(map<string, float> bonesLength);
+
+	void updateBonesRadiusFromMap(map<string, vector<float>> bonesRadius);
 
 	void updateBonesDOFMap(map<string, vector<bool>> &bonesDOF, string boneName, vector<bool> dofs);
 
@@ -196,12 +196,16 @@ public:
 
 	void loadAviFile(string path, int hz);
 
+	/*zapisanie konfiguracji z jednego modelu do drugiego*/
+	void copyConfigToGlWidget(GLWidget *&dest, GLWidget *source);
+
 private:
 	void initializeBonesRotationsMap();
 	void initializeBonesLengthMap();
 	void initializeBonesLimitsMap();
 	void initializeBonesVelocityMap();
 	void initializeBonesDOFMap();
+	void initializeBonesRadiusMap();
 };
 
 #endif // GLWIDGET_H

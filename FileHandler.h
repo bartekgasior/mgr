@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <glwidget.h>
 
 using namespace std;
 
@@ -32,6 +33,8 @@ public:
 	void saveHelperFileFromAvi(QString aviPath, QString helperFileName, int frameNumber, int hz);
 
 	void saveHelperFileFromImagesFolder(QString imgPath, QString helperFileName);
+
+	void saveHelperFileWithoutBackground(QString helperFileName);
 
 	/*zapis pliku pomocniczego - wykorzystywany przy zapisie sekwencji klatek
 	sciezka do folderu ze zdjeciami
@@ -105,6 +108,9 @@ public:
 
 	/* funkcja sprawdza czy checkbox kosci o podanej nazwie zostal zaznaczony*/
 	bool isBoneChecked(string name, vector<string> allBonesNames);
+
+	/* funkcja wykorzystywana w sytuacji, gdy modelState po zmianie konfiguracji ma inny rozmiar niz wczytany w modelu */
+	void reloadParams(GLWidget *&glWidget);
 
 private:
 	/*zapis wartosci label w pliku .dat*/
