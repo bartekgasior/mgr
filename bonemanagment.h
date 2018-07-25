@@ -28,6 +28,9 @@ public:
 	/*indeksy uzytych kosci*/
 	vector<int> getUsedBonesIDs(vector<pf::boneGeometry> bonesGeometry, vector<string> allBones);
 	
+	/*funkcja zamienia kolejnosc elementow w wektorach, aby pokrywala sie ona z plikiem asf*/
+	void matchBonesWithASF(vector<int> &ids, vector<string> &names, vector<pf::ASFBone> asf);
+
 	/*elementy QTreeWidget*/
 	vector<QTreeWidgetItem*> treeWidgetsItems;
 

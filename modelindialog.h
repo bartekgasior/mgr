@@ -19,9 +19,11 @@ public:
 	QGridLayout *gridLayout;
 	QDialogButtonBox *okButton;
 
-	void setGLWidget(GLWidget *glWidget);
+	void setGLWidget(vector<vector<float>> modelState, pf::Model3D *model, map<string, int> idxBonesMap, vector<pf::boneGeometry> boneGeometry, vector<pf::boneConfig> boneConfig);
 
 	GLWidget *tmpGLWidget;
+	bool closed = false;
+
 
 private slots:
 	void okButtonAccepted();

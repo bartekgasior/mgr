@@ -20,6 +20,7 @@ BoneManagment::BoneManagment(QWidget *parent)
 	gridLayout->addWidget(treeWidget, 0, 0, 20, 20);
 	gridLayout->addWidget(okButton, 21, 9, 1, 2);
 	setLayout(gridLayout);
+
 }
 
 BoneManagment::~BoneManagment()
@@ -138,4 +139,22 @@ void BoneManagment::okButtonAccepted() {
 
 void BoneManagment::okButtonRejected() {
 	close();
+}
+
+void BoneManagment::matchBonesWithASF(vector<int> &ids, vector<string> &names, vector<pf::ASFBone> asf) {
+	vector<int> idTMP;
+	vector<string> nameTMP;
+	for (int i = 0; i < asf.size(); i++) {
+		for (int j = 0; j < names.size(); j++) {
+			if (asf[i].name == names[j]) {
+				idTMP.push_back(ids[j]);
+				nameTMP.push_back(names[j]);
+				break;
+			}
+		}
+	}
+	ids.clear();
+	names.clear();
+	ids = idTMP;
+	names = nameTMP;
 }

@@ -80,6 +80,12 @@
     <ClCompile Include="selectmodelid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ModelHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cameratypedialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asf.h">
@@ -95,6 +101,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <ClInclude Include="FileHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -133,6 +142,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="selectmodelid.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="cameratypedialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -19,7 +19,7 @@ void FileHandler::saveAMCToFile(vector<float> modelState, vector<string> allBone
 	
 	if (amcFileName.isEmpty()) {
 		QMessageBox msgBox;
-		msgBox.setText("Plik musi mieæ nazwê.");
+		msgBox.setText("File must have a name.");
 		msgBox.exec();
 	}
 	else {
@@ -55,7 +55,7 @@ void FileHandler::saveAMCToFile(vector<float> modelState, vector<string> allBone
 void FileHandler::saveASFToFile(vector<pf::ASFBone> bones, QString asfFileName) {
 	if (asfFileName.isEmpty()) {
 		QMessageBox msgBox;
-		msgBox.setText("Plik asf musi mieæ nazwê.");
+		msgBox.setText("asf file must have name.");
 		msgBox.exec();
 	}else
 		pf::MotionData::saveASF(asfFileName.toUtf8().constData(), bones);
@@ -64,7 +64,7 @@ void FileHandler::saveASFToFile(vector<pf::ASFBone> bones, QString asfFileName) 
 void FileHandler::saveDATToFile(vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry, QString datFileName) {
 	if (datFileName.isEmpty()) {
 		QMessageBox msgBox;
-		msgBox.setText("Plik dat musi mieæ nazwê.");
+		msgBox.setText("dat file must have name.");
 		msgBox.exec();
 	}
 	else {
@@ -196,95 +196,167 @@ void FileHandler::saveHelperFile(QString helperFileName, vector<int> frameID, ve
 	plik.close();
 }
 
-void FileHandler::saveAMCSeq(vector<vector<float>> modelState, vector<pf::ASFBone> allbones, vector<string> usedBones, QString fileName) {
+void FileHandler::saveAMCSeq(vector<vector<float>> modelState, vector<pf::ASFBone> allbones, vector<string> usedBones, QString fileName, vector<bool> usedModelState) {
 	if (fileName.isEmpty()) {
 		QMessageBox msgBox;
-		msgBox.setText("Plik musi mieæ nazwê.");
+		msgBox.setText("File must have name.");
 		msgBox.exec();
 	}
 	else {
 		ofstream plik(fileName.toUtf8().constData());
+		if (modelState.size() == usedModelState.size()) {
+			plik << ":FULLY-SPECIFIED" << endl;
+			plik << ":DEGREES" << endl;
+			for (int i = 0; i < modelState.size(); i++) {
+				if (usedModelState[i]) {
+					plik << i + 1 << endl;
+					plik << allbones[0].name << " " << modelState[i][0] << " "
+						<< modelState[i][1] << " " << modelState[i][2] << " "
+						<< modelState[i][3] << " " << modelState[i][4] << " "
+						<< modelState[i][5] << endl;
 
-		plik << ":FULLY-SPECIFIED" << endl;
-		plik << ":DEGREES" << endl;
-
-		for (int i = 0; i < modelState.size(); i++) {
-			plik << i + 1 << endl;
-			plik << allbones[0].name << " " << modelState[i][0] << " "
-				<< modelState[i][1] << " " << modelState[i][2] << " "
-				<< modelState[i][3] << " " << modelState[i][4] << " " 
-				<< modelState[i][5] << endl;
-
-			for (int k = 1; k < allbones.size(); k++) {
-				bool flag = false;
-				for (int j = 1; j < usedBones.size(); j++) {
-					if (allbones[k].name == usedBones[j]) {
-						plik << allbones[k].name << " " << modelState[i][(j + 1) * 3] << " " << modelState[i][(j + 1) * 3 + 1] << " " << modelState[i][(j + 1) * 3 + 2] << endl;
-						flag = true;
-						break;
+					for (int k = 1; k < allbones.size(); k++) {
+						bool flag = false;
+						for (int j = 1; j < usedBones.size(); j++) {
+							if (allbones[k].name == usedBones[j]) {
+								plik << allbones[k].name << " " << modelState[i][(j + 1) * 3] << " " << modelState[i][(j + 1) * 3 + 1] << " " << modelState[i][(j + 1) * 3 + 2] << endl;
+								flag = true;
+								break;
+							}
+						}
+						if (!flag) {}
+						//plik << allbones[k].name << " " << 0 << " " << 0 << " " << 0 << endl;
 					}
 				}
-				if (!flag) {}
-					//plik << allbones[k].name << " " << 0 << " " << 0 << " " << 0 << endl;
 			}
 		}
-
+		else {
+			cout << "modelState i wektor sprawdzajacy czy zapisac dana konfiguracje maja rozne dlugosci" << endl;
+		}
 		plik.close();
 	}
 	//pf::MotionData::saveStateVectorToAMC(fileName.toUtf8().constData(), allbones, usedBones, modelState);
 }
 
-vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<QString> asfPaths, vector<QString> datPaths) {
+vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<string> allBones, vector<bool> &usedFrames, vector<string> &bones) {
 	vector<vector<float>> states;
+	vector<int> usedFramesTMP;
 
 	if (fileName.isEmpty()) {
 		QMessageBox::warning(NULL, QObject::tr("app"),
-			QObject::tr("Nie mo¿na otworzyæ pliku."),
+			QObject::tr("Cannot open file."),
 			QMessageBox::Cancel,
 			QMessageBox::Cancel);
 	}
 
 	else {
-		if (asfPaths.size() != datPaths.size()) {
-			QMessageBox::warning(NULL, QObject::tr("app"),
-				QObject::tr("Niepoprawna iloœæ plików asf lub dat."),
-				QMessageBox::Cancel,
-				QMessageBox::Cancel);
-		}
-		else {
+		if (QFileInfo(fileName).exists()) {
+			//pf::Model3D model3D = pf::Model3D(pf::Model3D::Cylinder, asfPaths[i].toUtf8().constData(), datPaths[i].toUtf8().constData());
+			//pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), allBones, states);
+			bones.clear();
 
-			for (int i = 0; i < asfPaths.size(); i++) {
-				if (QFileInfo(asfPaths[i]).exists() && QFileInfo(datPaths[i]).exists()) {
-					vector<vector<float>> statesTMP;
-					pf::Model3D model3D = pf::Model3D(pf::Model3D::Cylinder, asfPaths[i].toUtf8().constData(), datPaths[i].toUtf8().constData());
-					pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), model3D.getNamesMovingBones(), statesTMP);
-					states.push_back(statesTMP[i]);
-				}
-				else {
-					string tmp = "Brak podanych plików dat lub asf!\n" + asfPaths[i].toStdString() + "\n" + datPaths[i].toStdString();
-					QMessageBox::warning(NULL, QObject::tr("app"),
-						QObject::tr(tmp.c_str()),
-						QMessageBox::Cancel,
-						QMessageBox::Cancel);
+			//vector<float> tmpModelState;
+			char string[100];
+			std::string str;
+			char inputFilename[100];
 
-					states.clear();
-					break;
+			strcpy(inputFilename, fileName.toUtf8().constData());
+
+			ifstream inputFile;
+			inputFile.open(inputFilename);
+			if (!inputFile.is_open())
+				cout << "Cannot open file: " << inputFilename << endl;
+
+			/*pominac 2 pierwsze linie*/
+			//getline(inputFile, str);
+			//getline(inputFile, str);
+
+			while (getline(inputFile, str)) {
+				cout << str << endl;
+				if (str.at(0) != '#' && str.at(0) != ':'){
+					if (isdigit(str.at(0))) {
+						usedFramesTMP.push_back(str.at(0) - '0');
+						//if (tmpModelState.size() > 0)
+						//	states.push_back(tmpModelState);
+						//tmpModelState.clear();
+					}
+					else {
+						/*istringstream iss(str);
+						std::string bone;
+						iss >> bone;*/
+						
+						int strpos = str.find(" ");
+						std::string bone = str.substr(0, strpos);
+						
+						/*if (bone == "root") {
+							float x1, x2, x3, x4, x5, x6;
+							iss >> x1 >> x2 >> x3 >> x4 >> x5 >> x6;
+							tmpModelState.push_back(x1);
+							tmpModelState.push_back(x2);
+							tmpModelState.push_back(x3);
+							tmpModelState.push_back(x4);
+							tmpModelState.push_back(x5);
+							tmpModelState.push_back(x6);
+						}
+						else {
+							float x1, x2, x3;
+							iss >> x1 >> x2 >> x3;
+							tmpModelState.push_back(x1);
+							tmpModelState.push_back(x2);
+							tmpModelState.push_back(x3);
+						}*/
+						bones.push_back(bone);
+						continue;
+					}
 				}
 			}
-			if(!states.empty())
-			QMessageBox::information(NULL, QObject::tr("app"),
-				QObject::tr("Wczytano pomyœlnie"),
+			//if (tmpModelState.size() > 0)
+			//	states.push_back(tmpModelState);
+			if (usedFramesTMP.size() > 1) {
+				int bonesCount = bones.size() / usedFramesTMP.size();
+				bones.erase(bones.begin(), bones.begin() + bonesCount);
+			}
+
+			pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), bones, states);
+
+			usedFrames.clear();
+			int lastID = usedFramesTMP[usedFramesTMP.size() - 1];
+			
+			for (int i = 1; i < lastID + 1; i++) {
+				if (std::find(usedFramesTMP.begin(), usedFramesTMP.end(), i) != usedFramesTMP.end()) {
+					usedFrames.push_back(true);
+				}
+				else {
+					usedFrames.push_back(false);
+				}
+			}
+			//usedFrames = usedFramesTMP;
+			inputFile.close();
+
+		}
+		else {
+			string tmp = "Cannot find amc file!!\n";
+			QMessageBox::warning(NULL, QObject::tr("app"),
+				QObject::tr(tmp.c_str()),
 				QMessageBox::Cancel,
 				QMessageBox::Cancel);
+			
+			states.clear();
 		}
+
+		if(!states.empty())
+		QMessageBox::information(NULL, QObject::tr("app"),
+			QObject::tr("Loaded successfully."),
+			QMessageBox::Cancel,
+			QMessageBox::Cancel);
 	}
 
 	return states;
 }
 
-void FileHandler::loadDatFromFile(string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry) {
-	pf::Model3D model;
-	model.loadConfig(datFileName, bonesConf, bonesGeometry);
+void FileHandler::loadDatFromFile(pf::Model3D *&model, string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry) {
+//	pf::Model3D model;
+	model->loadConfig(datFileName, bonesConf, bonesGeometry);
 }
 
 QString FileHandler::getImagesFolderPath(QString helperFileName) {
@@ -296,7 +368,7 @@ QString FileHandler::getImagesFolderPath(QString helperFileName) {
 	ifstream inputFile;
 	inputFile.open(inputFilename);
 	if (!inputFile.is_open())
-		cout << "B³¹d otwarcia pliku: " << inputFilename << endl;
+		cout << "Cannot open file: " << inputFilename << endl;
 	getline(inputFile, str);
 	getline(inputFile,str);
 	inputFile.close();
@@ -318,7 +390,7 @@ vector<QString> FileHandler::getGlWidgetBackgroudFromFile(QString helperFileName
 	ifstream inputFile;
 	inputFile.open(inputFilename);
 	if (!inputFile.is_open())
-		cout << "B³¹d otwarcia pliku: " << inputFilename << endl;
+		cout << "Cannot open file: " << inputFilename << endl;
 
 	while (strcmp(string, ":glWidgetBackground")) {
 		inputFile >> string;
@@ -350,7 +422,7 @@ vector<string> FileHandler::getGlWidgetBackgroudTypeFromFile(QString helperFileN
 	ifstream inputFile;
 	inputFile.open(inputFilename);
 	if (!inputFile.is_open())
-		cout << "B³¹d otwarcia pliku: " << inputFilename << endl;
+		cout << "Cannot open file: " << inputFilename << endl;
 
 	while (strcmp(string, ":glWidgetBackground")) {
 		inputFile >> string;
@@ -380,7 +452,7 @@ void FileHandler::getGlWidgetBackgroudAviInfoFromFile(QString helperFileName, ve
 	ifstream inputFile;
 	inputFile.open(inputFilename);
 	if (!inputFile.is_open())
-		cout << "B³¹d otwarcia pliku: " << inputFilename << endl;
+		cout << "Cannot open file: " << inputFilename << endl;
 
 	while (strcmp(string, ":glWidgetBackground")) {
 		inputFile >> string;
@@ -497,7 +569,7 @@ void FileHandler::checkExistingFiles(vector<QString> &asfFiles, vector<QString> 
 	}
 	else {
 		QMessageBox::warning(NULL, QObject::tr("app"),
-			QObject::tr("Liczba plików .asf oraz .dat nie jest równa!"),
+			QObject::tr("Number of .asf and .dat files is not equal!"),
 			QMessageBox::Cancel,
 			QMessageBox::Cancel);
 	}
@@ -653,8 +725,8 @@ bool FileHandler::isBoneChecked(string name, vector<string> allBonesNames) {
 	return false;
 }
 
-void FileHandler::reloadParams(GLWidget *&glWidget) {
-	saveDATToFile(glWidget->bonesConf, glWidget->bonesGeometry, "tmpDatFile.dat");
+void FileHandler::reloadParams(GLWidget *&glWidget, vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry) {
+	saveDATToFile(bonesConf, bonesGeometry, "tmpDatFile.dat");
 
 	glWidget->bonesConf.clear();
 	glWidget->bonesGeometry.clear();

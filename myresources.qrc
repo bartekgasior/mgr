@@ -1,2 +1,12 @@
-<!DOCTYPE RCC>
-<RCC version="1.0"/>
+<RCC>
+    <qresource prefix="/images">
+        <file>ETC/buttonImages/plus.png</file>
+        <file>ETC/buttonImages/increase.png</file>
+        <file>ETC/buttonImages/max.png</file>
+        <file>ETC/buttonImages/min.png</file>
+        <file>ETC/buttonImages/reduce.png</file>
+        <file>ETC/buttonImages/substract.png</file>
+        <file>ETC/buttonImages/pause.png</file>
+        <file>ETC/buttonImages/play.png</file>
+    </qresource>
+</RCC>

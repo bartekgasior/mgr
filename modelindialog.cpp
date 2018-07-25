@@ -6,7 +6,7 @@ ModelInDialog::ModelInDialog(QWidget *parent)
 	QDialog *dialog = new QDialog();
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-	dialog->setWindowTitle("zarz¹dzaj modelem");
+	dialog->setWindowTitle("Manage model");
 
 	gridLayout = new QGridLayout;
 	okButton = new QDialogButtonBox(QDialogButtonBox::Cancel);
@@ -21,12 +21,13 @@ ModelInDialog::ModelInDialog(QWidget *parent)
 
 ModelInDialog::~ModelInDialog()
 {
+	closed = true;
 }
 
-void ModelInDialog::setGLWidget(GLWidget *glWidget) {
-	tmpGLWidget = new GLWidget();
+void ModelInDialog::setGLWidget(vector<vector<float>> modelState, pf::Model3D *model, map<string, int> idxBonesMap, vector<pf::boneGeometry> boneGeometry, vector<pf::boneConfig> boneConfig) {
+	GLWidget *tmpGLWidget = new GLWidget();
 	
-	tmpGLWidget->isInMainWindow = false;
+	/*tmpGLWidget->isInMainWindow = false;
 	tmpGLWidget->model = glWidget->model;
 	tmpGLWidget->bonesConf = glWidget->bonesConf;
 	tmpGLWidget->bonesGeometry = glWidget->bonesGeometry;
@@ -37,15 +38,22 @@ void ModelInDialog::setGLWidget(GLWidget *glWidget) {
 	tmpGLWidget->allBones = glWidget->allBones;
 	tmpGLWidget->asfBones = glWidget->asfBones;
 	tmpGLWidget->idxBonesMap = glWidget->idxBonesMap;
-	tmpGLWidget->bonesRotations = glWidget->bonesRotations;
-
+	tmpGLWidget->bonesRotations = glWidget->bonesRotations;*/
+	tmpGLWidget->isInMainWindow = false;
+	tmpGLWidget->model = model;
+	tmpGLWidget->modelState = modelState;
+	tmpGLWidget->idxBonesMap = idxBonesMap;
+	tmpGLWidget->bonesConf = boneConfig;
+	tmpGLWidget->bonesGeometry = boneGeometry;
 	gridLayout->addWidget(tmpGLWidget, 0, 0, 20, 20);
 }
 
 void ModelInDialog::okButtonAccepted() {
+	closed = true;
 	close();
 }
 
 void ModelInDialog::okButtonRejected() {
+	closed = true;
 	close();
 }

@@ -5,7 +5,7 @@ SelectModelID::SelectModelID(QWidget *parent)
 {
 	QDialog *dialog = new QDialog();
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-	dialog->setWindowTitle("Wybierz konfiguracje modelu");
+	dialog->setWindowTitle("Select model configuration");
 
 	okButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
@@ -13,7 +13,7 @@ SelectModelID::SelectModelID(QWidget *parent)
 	connect(okButton, &QDialogButtonBox::rejected, this, &SelectModelID::okButtonRejected);
 
 	mainLayout = new QGridLayout(this);
-	label = new QLabel("Wybierz model: ");
+	label = new QLabel("Select model: ");
 	comboBox = new QComboBox(this);
 
 	mainLayout->addWidget(label, 0, 0, 1, 1);
@@ -27,24 +27,31 @@ SelectModelID::~SelectModelID()
 }
 
 void SelectModelID::okButtonAccepted() {
+	selected = true;
+	if(comboBox->isEnabled())
 	id = comboBox->currentText().toInt();
 	close();
 }
 
 void SelectModelID::okButtonRejected() {
+	selected = false;
 	close();
 }
 
-void SelectModelID::setComboBox(vector<int> ids, int id) {
-	for (int i = 0; i < ids.size(); i++) {
-		if (ids[i] != id) {
-			comboBox->addItem(QString::number(ids[i]), ids[i]);
-		}
-	}
+void SelectModelID::setComboBox(int j) {
+	for (int i = 0; i < j; i++) 
+		comboBox->addItem(QString::number(i));
 }
+
+void SelectModelID::setComboBox(vector<int> ids) {
+	for (int i = 0; i < ids.size(); i++)
+		comboBox->addItem(QString::number(ids[i]));
+}
+
 void SelectModelID::setID(int i) {
 	id = i;
 }
 int SelectModelID::getID() {
 	return id;
 }
+

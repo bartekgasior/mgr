@@ -10,6 +10,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QTDIR>C:\Qt\5.9.1\msvc2015_64</QTDIR>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3bC:\QT\5.10.1\MSVC2013_64\bin%3b$(QTDIR)\bin%3bC:\QT\5.10.1\MSVC2013_64\bin%3b$(QTDIR)\bin%3bC:\QT\5.10.1\MSVC2013_64\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

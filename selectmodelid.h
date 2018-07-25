@@ -17,17 +17,20 @@ public:
 	SelectModelID(QWidget *parent);
 	~SelectModelID();
 
-	void setComboBox(vector<int> ids, int i);
+	void setComboBox(int j);
+	void setComboBox(vector<int> ids);
+
 	void setID(int i);
 	int getID();
+	bool selected = false;
+	QComboBox *comboBox;
 
 private:
 	QDialogButtonBox *okButton;
-	QComboBox *comboBox;
 	QLabel *label;
 	QGridLayout *mainLayout;
 	
-	int id;
+	int id = -1;
 
 private slots:
 	void okButtonAccepted();

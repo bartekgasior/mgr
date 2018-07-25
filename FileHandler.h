@@ -44,20 +44,20 @@ public:
 	*/
 	void saveHelperFile(QString helperFileName, vector<int> frameID, vector<vector<string>> imagesPath);
 
-	/*zapis sekwencji klatek do pliku - wektor stanow modelu, nazwy wszystkich kosci,wykorzystane kosci, nazwa pliku*/
-	void saveAMCSeq(vector<vector<float>> modelState, /*vector<string> allBones,*/ vector<pf::ASFBone> allbones, vector<string> usedBones, QString fileName);
+	/*zapis sekwencji klatek do pliku - wektor stanow modelu, nazwy wszystkich kosci,wykorzystane kosci, nazwa pliku, wektor sprawdzajacy czy dana konfiguracja ma zostac zapisana*/
+	void saveAMCSeq(vector<vector<float>> modelState, /*vector<string> allBones,*/ vector<pf::ASFBone> allbones, vector<string> usedBones, QString fileName, vector<bool> usedModelState);
 
 	/*Wczytanie pliku .amc do wektora stanów*/
-	vector<vector<float>> loadAmcFromFile(QString fileName, vector<QString> asfPath, vector<QString> datPath);
+	vector<vector<float>> loadAmcFromFile(QString fileName, vector<string> allBones, vector<bool> &usedFrames, vector<string> &bones);
 
 	/*wczytywanie pliku .dat*/
-	/*! \brief Load model configuration.
-	*
+	/*
+	*@param bonesConf[out] - model
 	* @param datFileName[in] - Path to model configuration file
 	* @param bonesConf[out] - vector with bones configuration
 	* @param bonesGeometry[out] - vector with bones geometry configuration
 	*/
-	void loadDatFromFile(string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry);
+	void loadDatFromFile(pf::Model3D *&model, string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry);
 
 	/*Sciezka do folderu zdjec tla, zapisana w danym pliku - helperFile.dat*/
 	QString getImagesFolderPath(QString helperFileName);
@@ -110,7 +110,7 @@ public:
 	bool isBoneChecked(string name, vector<string> allBonesNames);
 
 	/* funkcja wykorzystywana w sytuacji, gdy modelState po zmianie konfiguracji ma inny rozmiar niz wczytany w modelu */
-	void reloadParams(GLWidget *&glWidget);
+	void reloadParams(GLWidget *&glWidget, vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry);
 
 private:
 	/*zapis wartosci label w pliku .dat*/

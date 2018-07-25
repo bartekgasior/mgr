@@ -14,6 +14,7 @@ GLWidget::GLWidget(QWidget *parent) :
     p.x = p.y = p.z = 0.0;
     //skeletonBones = ASF::getASF();
 	FileHandler * fileHandler;
+	ModelHandler *modelHandler;
 	try {
 		//cylinder model, default configuration files
 		model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, DAT_TEMPLATE_PATH);
@@ -33,16 +34,26 @@ GLWidget::GLWidget(QWidget *parent) :
 	pf::MotionData::loadASF(ASF_TEMPLATE_PATH, idxBonesMap, asfBones);
 	model->loadConfig(DAT_TEMPLATE_PATH, bonesConf, bonesGeometry);
 
-	initializeBonesRotationsMap();
+	/*initializeBonesRotationsMap();
 	initializeBonesLengthMap();
 	initializeBonesLimitsMap();
 	initializeBonesVelocityMap();
 	initializeBonesDOFMap();
-	initializeBonesRadiusMap();
+	initializeBonesRadiusMap();*/
+	map<string, pf::Vec3f> bonesRotationsTMP;
+	vector<float> modelTranslationTMP;
+	bonesRotations.push_back(bonesRotationsTMP);
+	modelTranslation.push_back(modelTranslationTMP);
+	saveModelState.push_back(false);
 
-	modelTranslation.push_back(0);
-	modelTranslation.push_back(0);
-	modelTranslation.push_back(0);
+	modelHandler->initializeBonesRotationsMap(this->bonesRotations[0], this->asfBones);
+	modelTranslation[0].push_back(0);
+	modelTranslation[0].push_back(0);
+	modelTranslation[0].push_back(0);
+}
+
+GLWidget::~GLWidget() {
+
 }
 
 void GLWidget::initializeGL(){
@@ -65,10 +76,9 @@ void GLWidget::initializeGL(){
 }
 
 void GLWidget::paintGL(){
-
     glRotatef(yRot, 0.0, 1.0, 0.0);
-	
 	vector<vector<pf::Vec3f> > vertices = this->model->getRotatedVertices();
+	vector<vector<float>> radiusVec = model->getRadiusVec();
 	//glColor3f(0.0f, 0.0f, 0.8f);
 
 	if (isInMainWindow) {
@@ -88,9 +98,10 @@ void GLWidget::paintGL(){
 		this->drawSkeletonModel(vertices);
 	}
 	else if (mode == 2) {
-		vector<vector<float>> radiusVec = model->getRadiusVec();
+		//cout << radiusVec.size() << endl;
 		this->drawCylinderModel(vertices, radiusVec);
 	}
+	//cout << endl;
 	glLineWidth(1);
 
 	glPopMatrix();
@@ -119,15 +130,40 @@ void GLWidget::resizeGL(int width, int height){
 
 void GLWidget::drawSkeletonModel(vector<vector<pf::Vec3f> > modelVertices)
 {
+	GLUquadricObj *sphere = gluNewQuadric();
+	gluQuadricOrientation(sphere, GLU_INSIDE);
+
 	for (int i = 0; i<(int)modelVertices.size(); ++i)
 	{
+		
+		pf::Vec3 ver(modelVertices[i][0].x(), modelVertices[i][0].y(), -modelVertices[i][0].z());
+		pf::Vec3 ver1(modelVertices[i][1].x(), modelVertices[i][1].y(), -modelVertices[i][1].z());
+
+		if (cast == true) {
+			ver = camera->cast(ver);
+			//cout << ver.x() << endl;
+			ver1 = camera->cast(ver1);
+		}
+		
+		glPushMatrix();
+			glColor3f(255.0f, 0.0f, 0.0f);
+			glTranslatef(ver.x(), ver.y(), -ver.z());
+			gluSphere(sphere, 30, 100, 100);
+		glPopMatrix();
+
+		glPushMatrix();
+			glColor3f(255.0f, 0.0f, 0.0f);
+			glTranslatef(ver1.x(), ver1.y(), -ver1.z());
+			gluSphere(sphere, 30, 100, 100);
+		glPopMatrix();
+
 		glBegin(GL_LINES);
 			glColor3f(1.0f, 1.0f, 1.0f);
-			glVertex3f(modelVertices[i][0].x(), modelVertices[i][0].y(), -modelVertices[i][0].z());
-			glVertex3f(modelVertices[i][1].x(), modelVertices[i][1].y(), -modelVertices[i][1].z());
+			glVertex3f(ver.x(), ver.y(), -ver.z());
+			glVertex3f(ver1.x(), ver1.y(), -ver1.z());
 		glEnd();
-
 	}
+	gluDeleteQuadric(sphere);
 }
 
 void GLWidget::drawCylinderModel(vector<vector<pf::Vec3> > vertex, vector<vector<float> > radius) {
@@ -144,43 +180,93 @@ void GLWidget::drawCylinderModel(vector<vector<pf::Vec3> > vertex, vector<vector
 		pf::Vec3 v;
 		//glColor3f(0.1f, 0.2f + c, 0.8f);
 
-		// paint cylinder side
-		glBegin(GL_QUADS);
-		v = cylinderVertices[i][0];
-		glVertex3f(v.x(), v.y(), -v.z());
-		v = cylinderVertices[i][2];
-		glVertex3f(v.x(), v.y(), -v.z());
-		v = cylinderVertices[i][6];
-		glVertex3f(v.x(), v.y(), -v.z());
-		v = cylinderVertices[i][4];
-		glVertex3f(v.x(), v.y(), -v.z());
-		glEnd();
+		if (cast == true) {
+			glBegin(GL_QUADS);
+			v = cylinderVertices[i][0];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), -v.z());
+			v = cylinderVertices[i][2];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), -v.z());
+			v = cylinderVertices[i][6];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), -v.z());
+			v = cylinderVertices[i][4];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), -v.z());
+			glEnd();
 
-		// paint cylinder top
-		glBegin(GL_QUADS);
-		v = cylinderVertices[i][0];
-		glVertex3f(v.x(), v.y(), v.z());
-		v = cylinderVertices[i][1];
-		glVertex3f(v.x(), v.y(), v.z());
-		v = cylinderVertices[i][2];
-		glVertex3f(v.x(), v.y(), v.z());
-		v = cylinderVertices[i][3];
-		glVertex3f(v.x(), v.y(), v.z());
-		glEnd();
+			// paint cylinder top
+			glBegin(GL_QUADS);
+			v = cylinderVertices[i][0];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][1];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][2];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][3];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			glEnd();
 
-		// paint cylinder bottom
-		glBegin(GL_QUADS);
-		v = cylinderVertices[i][7];
-		glVertex3f(v.x(), v.y(), v.z());
-		v = cylinderVertices[i][6];
-		glVertex3f(v.x(), v.y(), v.z());
-		v = cylinderVertices[i][5];
-		glVertex3f(v.x(), v.y(), v.z());
-		v = cylinderVertices[i][4];
-		glVertex3f(v.x(), v.y(), v.z());
-		glEnd();
+			// paint cylinder bottom
+			glBegin(GL_QUADS);
+			v = cylinderVertices[i][7];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][6];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][5];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][4];
+			v = camera->cast(v);
+			glVertex3f(v.x(), v.y(), v.z());
+			glEnd();
+		}
+		else {
+			// paint cylinder side
+			glBegin(GL_QUADS);
+			v = cylinderVertices[i][0];
+			glVertex3f(v.x(), v.y(), -v.z());
+			v = cylinderVertices[i][2];
+			glVertex3f(v.x(), v.y(), -v.z());
+			v = cylinderVertices[i][6];
+			glVertex3f(v.x(), v.y(), -v.z());
+			v = cylinderVertices[i][4];
+			glVertex3f(v.x(), v.y(), -v.z());
+			glEnd();
 
+			// paint cylinder top
+			glBegin(GL_QUADS);
+			v = cylinderVertices[i][0];
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][1];
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][2];
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][3];
+			glVertex3f(v.x(), v.y(), v.z());
+			glEnd();
+
+			// paint cylinder bottom
+			glBegin(GL_QUADS);
+			v = cylinderVertices[i][7];
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][6];
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][5];
+			glVertex3f(v.x(), v.y(), v.z());
+			v = cylinderVertices[i][4];
+			glVertex3f(v.x(), v.y(), v.z());
+			glEnd();
+		}
 		c += 0.03f;
+
 	}
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -270,17 +356,17 @@ void GLWidget::drawSkeleton(){
     }
 }
 
-void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVal) {
+void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame) {
 
 	int actualBoneNameIDtmp, limitID; 
 
 	//id kosci wsrod wykorzystywanych w modelu
-	for (int i = 0; i < bonesConf.size(); i++) {
-		if (bonesConf[i].name == boneName)
+	for (int i = 0; i < bConf.size(); i++) {
+		if (bConf[i].name == boneName)
 			actualBoneNameIDtmp = i;
 	}
 	//limit kazdej z wykorzystanych kosci opisany jest przez 3 kolejne el. wektora 'limits'
-	for (int i = 3; i < limits.size(); i++) {
+	for (int i = 3; i < limitsVector.size(); i++) {
 		if (actualBoneNameIDtmp+1 == i / 3) {
 			limitID = i;
 			break;
@@ -290,26 +376,26 @@ void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVa
 	float angle;
 	//float rotVal = 5.0f;
 	if (vect == pf::Model3D::axisX) {
-		angle = modelState[0][limitID] + rotVal*direction;
+		angle = modelState[frame][limitID] + rotVal*direction;
 		//cout << "min: " << limits[limitID].min << " max: " << limits[limitID].max << endl;
-		if (limits[limitID].min <= angle && angle <= limits[limitID].max) 
-			modelState[0][limitID] += rotVal*direction;
+		if (limitsVector[limitID].min <= angle && angle <= limitsVector[limitID].max)
+			modelState[frame][limitID] += rotVal*direction;
 
 		//cout << "angle: " << angle << " min: " << limits[limitID].min << " max: " << limits[limitID].max << endl;
 	}
 	if (vect == pf::Model3D::axisY) {
 
-		angle = modelState[0][limitID+1] + rotVal*direction;
-		if (limits[limitID+1].min <= angle && angle <= limits[limitID+1].max)
-			modelState[0][limitID+1] += rotVal*direction;
+		angle = modelState[frame][limitID+1] + rotVal*direction;
+		if (limitsVector[limitID+1].min <= angle && angle <= limitsVector[limitID+1].max)
+			modelState[frame][limitID+1] += rotVal*direction;
 
 		//cout << "angle: " << angle << " min: " << limits[limitID+1].min << " max: " << limits[limitID+1].max << endl;
 	}
 	if (vect == pf::Model3D::axisZ) {
 
-		angle = modelState[0][limitID+2] + rotVal*direction;
-		if (limits[limitID+2].min <= angle && angle <= limits[limitID+2].max)
-			modelState[0][limitID+2] += rotVal*direction;
+		angle = modelState[frame][limitID+2] + rotVal*direction;
+		if (limitsVector[limitID+2].min <= angle && angle <= limitsVector[limitID+2].max)
+			modelState[frame][limitID+2] += rotVal*direction;
 
 		//cout << "angle: " << angle << " min: " << limits[limitID+2].min << " max: " << limits[limitID+2].max << endl;
 	}
@@ -317,86 +403,30 @@ void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVa
 	//cout << modelState[0][limitID] << " " << modelState[0][limitID+1] << " " << modelState[0][limitID + 2] << endl;
 	//cout << endl;
 
-	model->setModelState(modelState[0]);
+	model->setModelState(modelState[frame]);
 
 	update();
 }
 
-void GLWidget::updateLength(string boneName, float direction, float value) {
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		if (bonesGeometry[i].name == boneName) {
-			
-			bonesGeometry[i].length += value*direction;
-
-			if (bonesGeometry[i].length < 0)
-				bonesGeometry[i].length = 0;
-
-			model->updateBoneGeometry(boneName, bonesGeometry[i]);
-			break;
-		}
-	}
-	update();
-}
-
-void GLWidget::updateTopRadius(string boneName, float direction, float value) {
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		if (bonesGeometry[i].name == boneName) {
-
-			bonesGeometry[i].topRadius1 += value*direction;
-			bonesGeometry[i].topRadius2 += value*direction;
-
-			if (bonesGeometry[i].topRadius1 < 0)
-				bonesGeometry[i].topRadius1 = 0;
-
-			if (bonesGeometry[i].topRadius2 < 0)
-				bonesGeometry[i].topRadius2 = 0;
-
-			model->updateBoneGeometry(boneName, bonesGeometry[i]);
-			break;
-		}
-	}
-	update();
-}
-
-void GLWidget::updateBottomRadius(string boneName, float direction, float value) {
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		if (bonesGeometry[i].name == boneName) {
-
-			bonesGeometry[i].bottomRadius1 += value*direction;
-			bonesGeometry[i].bottomRadius2 += value*direction;
-
-			if (bonesGeometry[i].bottomRadius1 < 0)
-				bonesGeometry[i].bottomRadius1 = 0;
-
-			if (bonesGeometry[i].bottomRadius2 < 0)
-				bonesGeometry[i].bottomRadius2 = 0;
-
-			model->updateBoneGeometry(boneName, bonesGeometry[i]);
-			break;
-		}
-	}
-	update();
-}
-
-void GLWidget::translate(float direction, pf::Vec3 vect, int value) {
+void GLWidget::translate(float direction, pf::Vec3 vect, int value, int frame) {
 	if (vect == pf::Model3D::axisX){
-		modelState[0][0] += value*direction;
-		modelTranslation[0] = modelState[0][0];
+		modelState[frame][0] += value*direction;
+		modelTranslation[frame][0] = modelState[0][0];
 	}
 
 	if (vect == pf::Model3D::axisY) {
-		modelState[0][1] += value*direction;
-		modelTranslation[1] = modelState[0][1];
+		modelState[frame][1] += value*direction;
+		modelTranslation[frame][1] = modelState[0][1];
 	}
 
 	if (vect == pf::Model3D::axisZ) {
-		//modelState[0][2] += value*direction;
-		//modelTranslation[2] = modelState[0][2];
+		modelState[frame][2] += value*direction;
+		modelTranslation[frame][2] = modelState[0][2];
 	}
 
 	//cout << modelState[0][0] << " " << modelState[0][1] << " " << modelState[0][2] << endl;
 
-	model->setModelState(modelState[0]);
+	model->setModelState(modelState[frame]);
 	update();
 }
 
@@ -415,58 +445,6 @@ void GLWidget::scale(float direction, int value) {
 		}
 	}
 	update();
-}
-
-float GLWidget::getBoneLength(string boneName) {
-	float res = 0;
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		if (boneName == bonesGeometry[i].name) {
-			res = bonesGeometry[i].length;
-			break;
-		}
-	}
-	return res;
-}
-
-float GLWidget::getBoneTopRadius(string boneName){
-	float res = 0;
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		if (boneName == bonesGeometry[i].name) {
-			res = bonesGeometry[i].topRadius1;
-			break;
-		}
-	}
-	return res;
-}
-
-float GLWidget::getBoneBottomRadius(string boneName) {
-	float res = 0;
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		if (boneName == bonesGeometry[i].name) {
-			res = bonesGeometry[i].bottomRadius1;
-			break;
-		}
-	}
-	return res;
-}
-
-int GLWidget::getModelStateID(pf::Model3D *model, string boneName, pf::Vec3 vect) {
-	int result;
-	vector <string> usedBonesNames = model->getNamesMovingBones();
-	for (int i = 0; i < usedBonesNames.size(); i++) {
-		if (boneName == usedBonesNames[i]) {
-			result = i + 3;
-			break;
-		}
-	}
-	if (vect == pf::Model3D::axisX)
-		return result;
-	else if (vect == pf::Model3D::axisY)
-		return result + 1;
-	else if (vect == pf::Model3D::axisZ)
-		return result + 2;
-
-	//vector<string>().swap(usedBonesNames);
 }
 
 void GLWidget::drawBackgroud(string img) {
@@ -569,1073 +547,43 @@ void GLWidget::drawBackground(cv::Mat mat) {
 	mat.release();
 }
 
-void GLWidget::setLimitsVector(vector<pf::range2> &limits, vector<pf::boneConfig> bones, vector<pf::boneGeometry> bonesGeometry) {
-	limits.clear();
-	pf::range2 r;
-	r.min = -360;
-	r.max = 360;
-	/*root ma 6x -360;360*/
-	limits.push_back(r);
-	limits.push_back(r);
-	limits.push_back(r);
-	limits.push_back(r);
-	limits.push_back(r);
-	limits.push_back(r);
-	for (int j = 0; j < bonesGeometry.size(); j++) {
-		for (int i = 0; i < bones.size(); i++) {
-			if (bonesGeometry[j].name == bones[i].name) {
-				//cout << bones[i].name << endl;
-
-				pf::range2 rangeX, rangeY, rangeZ;
-				rangeX.min = bones[i].minRotX;
-				rangeX.max = bones[i].maxRotX;
-
-				rangeY.min = bones[i].minRotY;
-				rangeY.max = bones[i].maxRotY;
-
-				rangeZ.min = bones[i].minRotZ;
-				rangeZ.max = bones[i].maxRotZ;
-
-				limits.push_back(rangeX);
-				limits.push_back(rangeY);
-				limits.push_back(rangeZ);
-
-				//cout << rangeX.min << " " << rangeX.max << endl;
-				//cout << rangeY.min << " " << rangeY.max << endl;
-				//cout << rangeZ.min << " " << rangeZ.max << endl;
-				break;
-			}
-		}
-	}
-}
-
-void GLWidget::setVelocityVector(vector<float> &velocity, vector<pf::boneConfig> bones, vector<pf::boneGeometry> bonesGeometry) {
-	velocity.clear();
-	velocity.push_back(160);
-	velocity.push_back(160);
-	velocity.push_back(120);
-	velocity.push_back(10);
-	velocity.push_back(10);
-	velocity.push_back(10);
-
-	for (int j = 0; j < bonesGeometry.size(); j++) {
-		for (int i = 0; i < bones.size(); i++) {
-			if (bonesGeometry[j].name == bones[i].name) {
-				//cout << bones[i].name << endl;
-
-				float vX, vY, vZ;
-				vX = bones[i].vRotX;
-				vY = bones[i].vRotY;
-				vZ = bones[i].vRotZ;
-
-				velocity.push_back(vX);
-				velocity.push_back(vY);
-				velocity.push_back(vZ);
-
-				break;
-			}
-		}
-	}
-}
-
-void GLWidget::initializeBonesRotationsMap() {
-	bonesRotations.clear();
-	for (int i = 0; i < asfBones.size(); i++) {
-		pf::Vec3f vec(0, 0, 0);
-		bonesRotations[asfBones[i].name] = vec;
-	}
-}
-
-void GLWidget::initializeBonesLengthMap() {
-	bonesLength.clear();
-	for (int i = 0; i < asfBones.size(); i++) {
-		float length = asfBones[i].length;
-		bonesLength[asfBones[i].name] = length;
-	}
-}
-
-void GLWidget::initializeBonesVelocityMap() {
-	modelVelocity.clear();
-	for (int i = 0; i < asfBones.size(); i++) {
-		string str = asfBones[i].name;
-		vector<float> velocityTmp;
-		if (str == "root") {
-			velocityTmp.push_back(160);
-			velocityTmp.push_back(160);
-			velocityTmp.push_back(120);
-			velocityTmp.push_back(10);
-			velocityTmp.push_back(10);
-			velocityTmp.push_back(10);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftUpLeg_dum") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightUpLeg_dum") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Spine_dum") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftUpLeg") {
-			velocityTmp.push_back(32);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(10);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftLeg") {
-			velocityTmp.push_back(25);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftFoot") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftToeBase") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightUpLeg") {
-			velocityTmp.push_back(32);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(10);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightLeg") {
-			velocityTmp.push_back(25);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightFoot") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightToeBase") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Spine") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Spine1") {
-			velocityTmp.push_back(10);
-			velocityTmp.push_back(10);
-			velocityTmp.push_back(10);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Spine1_dum1") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Spine1_dum2") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Spine1_dum3") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Neck") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "Head") {
-			velocityTmp.push_back(10);
-			velocityTmp.push_back(10);
-			velocityTmp.push_back(10);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftShoulder") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftArm") {
-			velocityTmp.push_back(25);
-			velocityTmp.push_back(15);
-			velocityTmp.push_back(25);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftForeArm") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(15);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftHand") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftHand_dum1") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftHand_dum2") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "LeftHandThumb") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightShoulder") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightArm") {
-			velocityTmp.push_back(25);
-			velocityTmp.push_back(15);
-			velocityTmp.push_back(25);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightForeArm") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(15);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightHand") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightHand_dum1") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightHand_dum2") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else if (str == "RightHandThumb") {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		else {
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			velocityTmp.push_back(0);
-			modelVelocity[str] = velocityTmp;
-		}
-		//std::string().swap(str);
-		//vector<int>().swap(velocityTmp);
-	}
-}
-
-void GLWidget::initializeBonesLimitsMap(){
-	modelLimits.clear();
-	for (int i = 0; i < asfBones.size(); i++) {
-		string str = asfBones[i].name;
-		vector<int> limitsTMP;
-		if (str == "root") {
-			limitsTMP.push_back(-360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(-360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(-360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(-360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(-360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(-360);
-			limitsTMP.push_back(360);
-			modelLimits[str] = limitsTMP;
-		} else if (str == "LeftUpLeg_dum"){
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightUpLeg_dum") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Spine_dum") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftUpLeg") {
-			limitsTMP.push_back(-95);
-			limitsTMP.push_back(50);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(-35);
-			limitsTMP.push_back(50);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftLeg") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(140);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftFoot") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftToeBase") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightUpLeg") {
-			limitsTMP.push_back(-95);
-			limitsTMP.push_back(50);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(-50);
-			limitsTMP.push_back(35);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightLeg") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(140);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightFoot") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightToeBase") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Spine") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Spine1") {
-			limitsTMP.push_back(-15);
-			limitsTMP.push_back(25);
-			limitsTMP.push_back(-25);
-			limitsTMP.push_back(25);
-			limitsTMP.push_back(-25);
-			limitsTMP.push_back(25);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Spine1_dum1") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Spine1_dum2") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Spine1_dum3") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Neck") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "Head") {
-			limitsTMP.push_back(-50);
-			limitsTMP.push_back(95);
-			limitsTMP.push_back(-95);
-			limitsTMP.push_back(95);
-			limitsTMP.push_back(-50);
-			limitsTMP.push_back(50);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftShoulder") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftArm") {
-			limitsTMP.push_back(-150);
-			limitsTMP.push_back(180);
-			limitsTMP.push_back(-150);
-			limitsTMP.push_back(180);
-			limitsTMP.push_back(-150);
-			limitsTMP.push_back(180);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftForeArm") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(-140);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftHand") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftHand_dum1") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftHand_dum2") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "LeftHandThumb") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightShoulder") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightArm") {
-			limitsTMP.push_back(-180);
-			limitsTMP.push_back(150);
-			limitsTMP.push_back(-180);
-			limitsTMP.push_back(150);
-			limitsTMP.push_back(-180);
-			limitsTMP.push_back(150);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightForeArm") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(140);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightHand") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightHand_dum1") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightHand_dum2") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else if (str == "RightHandThumb") {
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			limitsTMP.push_back(0);
-			modelLimits[str] = limitsTMP;
-		}
-		else {
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(360);
-			limitsTMP.push_back(360);
-			modelLimits[str] = limitsTMP;
-		}
-		//std::string().swap(str);
-		//vector<int>().swap(limitsTMP);
-	}
-}
-
-void GLWidget::initializeBonesDOFMap() {
-	modelDOF.clear();
-	for (int i = 0; i < asfBones.size(); i++) {
-		string str = asfBones[i].name;
-		vector<bool> dofTMP;
-		if (str == "root") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftUpLeg_dum") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightUpLeg_dum") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Spine_dum") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftUpLeg") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(0);
-			dofTMP.push_back(1);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftLeg") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftFoot") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;;
-		}
-		else if (str == "LeftToeBase") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightUpLeg") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(0);
-			dofTMP.push_back(1);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightLeg") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightFoot") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightToeBase") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Spine") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Spine1") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Spine1_dum1") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Spine1_dum2") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Spine1_dum3") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Neck") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "Head") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftShoulder") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftArm") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftForeArm") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(1);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftHand") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftHand_dum1") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftHand_dum2") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "LeftHandThumb") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightShoulder") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightArm") {
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			dofTMP.push_back(1);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightForeArm") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(1);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightHand") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightHand_dum1") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightHand_dum2") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else if (str == "RightHandThumb") {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		else {
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			dofTMP.push_back(0);
-			modelDOF[str] = dofTMP;
-		}
-		//vector<bool>().swap(dofTMP);
-		//std::string(str).swap(str);
-	}
-}
-
-void GLWidget::initializeBonesRadiusMap() {
-	modelRadius.clear();
-	for (int i = 0; i < asfBones.size(); i++) {
-		vector<float> radiusTmp;
-		bool found = false;
-		string str = asfBones[i].name;
-		for (int j = 0; j < bonesGeometry.size(); j++) {
-			if (str == bonesGeometry[j].name) {
-				radiusTmp.push_back(bonesGeometry[j].topRadius1);
-				radiusTmp.push_back(bonesGeometry[j].topRadius2);
-				radiusTmp.push_back(bonesGeometry[j].bottomRadius1);
-				radiusTmp.push_back(bonesGeometry[j].bottomRadius2);
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
-			radiusTmp.push_back(20);
-			radiusTmp.push_back(20);
-			radiusTmp.push_back(20);
-			radiusTmp.push_back(20);
-		}
-
-		modelRadius[str] = radiusTmp;
-	}
-}
-
-void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<vector<float>> mState, vector<pf::boneConfig> bonesConfig) {
+void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<pf::boneConfig> bonesConfig) {
 	for (int i = 0; i < bonesConfig.size(); i++) {
-		//std::map<char, int>::iterator it = bonesRotations.find(bonesConfig[i].name);
 		int j = i + 1;
-		pf::Vec3f vec(mState[0][j*3], mState[0][j*3+1], mState[0][j*3+2]);
+		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
 		bonesRotations.at(bonesConfig[i].name) = vec;
 	}
+}
 
-	for (auto it = bonesRotations.cbegin(); it != bonesRotations.cend(); ++it)
-	{
-		std::cout << it->first << " " << it->second.x() << " " << it->second.y() << " " << it->second.z() << "\n";
+void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<string> allBones) {
+	for (int i = 0; i < allBones.size(); i++) {
+		int j = i + 1;
+		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
+		bonesRotations.at(allBones[i]) = vec;
 	}
 }
 
-void GLWidget::saveBonesLengthToMap(map<string, float> &bonesLength, vector<pf::boneGeometry> boneGeometry) {
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		bonesLength.at(bonesGeometry[i].name) = bonesGeometry[i].length;
-	}
-}
-
-void GLWidget::saveRadiusToMap(map<string, vector<float>> &bonesRadius, vector<pf::boneGeometry> boneGeometry) {
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		vector<float> tmp;
-		tmp.push_back(bonesGeometry[i].topRadius1);
-		tmp.push_back(bonesGeometry[i].topRadius2);
-		tmp.push_back(bonesGeometry[i].bottomRadius1);
-		tmp.push_back(bonesGeometry[i].bottomRadius2);
-		bonesRadius.at(bonesGeometry[i].name) = tmp;
-	}
-}
-
-void GLWidget::saveDOFToMap(map<string, vector<bool>> &bonesDOF, vector<pf::boneConfig> boneConfig) {
-	for (int i = 0; i < boneConfig.size(); i++) {
-		//cout << boneConfig[i].name << " " << boneConfig[i].isRotX << boneConfig[i].isRotY << boneConfig[i].isRotZ << endl;
-	}
-
-	for (int i = 0; i < boneConfig.size(); i++) {
-		vector<bool> tmp;
-		if (boneConfig[i].isRotX)
-			tmp.push_back(1);
-		else tmp.push_back(0);
-
-		if (boneConfig[i].isRotY)
-			tmp.push_back(1);
-		else tmp.push_back(0);
-
-		if (boneConfig[i].isRotZ)
-			tmp.push_back(1);
-		else tmp.push_back(0);
-
-		bonesDOF.at(boneConfig[i].name) = tmp;
-		//vector<bool>().swap(tmp);
-	}
-
-	/*for (auto const& x : bonesDOF)
-	{
-		std::cout << x.first  // string (key)
-			<< ':'
-			<< x.second[0] << x.second[1] << x.second[2] << endl;// string's value 
-	}
-	cout << endl;*/
-}
-
-void GLWidget::saveLimitsToMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> boneConfig) {
-	for (int i = 0; i < boneConfig.size(); i++) {
-		vector<int> tmp;
-		if (boneConfig[i].name == "root") {
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			modelLimits.at(boneConfig[i].name) = tmp;
-		}
-		else {
-			tmp.push_back(boneConfig[i].minRotX);
-			tmp.push_back(boneConfig[i].maxRotX);
-			tmp.push_back(boneConfig[i].minRotY);
-			tmp.push_back(boneConfig[i].maxRotY);
-			tmp.push_back(boneConfig[i].minRotZ);
-			tmp.push_back(boneConfig[i].maxRotZ);
-			modelLimits.at(boneConfig[i].name) = tmp;
-		}
-		//vector<int>().swap(tmp);
-	}
-}
-
-void GLWidget::saveVelocityToMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> boneConfig) {
-	for (int i = 0; i < boneConfig.size(); i++) {
-		vector<float> tmp;
-		if (boneConfig[i].name == "root") {
-			tmp.push_back(160);
-			tmp.push_back(160);
-			tmp.push_back(120);
-			tmp.push_back(10);
-			tmp.push_back(10);
-			tmp.push_back(10);
-			modelVelocity.at(boneConfig[i].name) = tmp;
-		}
-		else {
-			tmp.push_back(boneConfig[i].vRotX);
-			tmp.push_back(boneConfig[i].vRotY);
-			tmp.push_back(boneConfig[i].vRotZ);
-			modelVelocity.at(boneConfig[i].name) = tmp;
-		}
-		//vector<int>().swap(tmp);
-	}
-}
-
-void GLWidget::updateModelStateFromMap(vector<vector<float>> &mState, map<string, pf::Vec3f> bonesRotations, vector<pf::boneConfig> bonesConfig) {
+void GLWidget::updateModelStateFromMap(vector<vector<float>> &mState, vector<map<string, pf::Vec3f>> bonesRotations, vector<pf::boneConfig> bonesConfig) {
 	mState.clear();
-	vector<float> newModelState;
+	for (int j = 0; j < bonesRotations.size(); j++) {
+		vector<float> newModelState;
 
-	newModelState.push_back(modelTranslation[0]);
-	newModelState.push_back(modelTranslation[1]); // ############################# przesuniecie root
-	newModelState.push_back(modelTranslation[2]);
+		newModelState.push_back(modelTranslation[j][0]);
+		newModelState.push_back(modelTranslation[j][1]); // ############################# przesuniecie root
+		newModelState.push_back(modelTranslation[j][2]);
 
-	//cout << endl;
+		//cout << endl;
 
-	for (int i = 0; i < bonesConfig.size(); i++) {
-		pf::Vec3f vec = bonesRotations.at(bonesConfig[i].name);
-		//cout << vec.x() << " " << vec.y() << " " << vec.z() << endl;
-		newModelState.push_back(vec.x());
-		newModelState.push_back(vec.y());
-		newModelState.push_back(vec.z());
+		for (int i = 0; i < bonesConfig.size(); i++) {
+			pf::Vec3f vec = bonesRotations[j].at(bonesConfig[i].name);
+			//cout << vec.x() << " " << vec.y() << " " << vec.z() << endl;
+			newModelState.push_back(vec.x());
+			newModelState.push_back(vec.y());
+			newModelState.push_back(vec.z());
+		}
+		mState.push_back(newModelState);
 	}
-	mState.push_back(newModelState);
-
 	//vector<float>().swap(newModelState);
-}
-
-void GLWidget::updateBonesLengthFromMap(map<string, float> bonesLength) {
-	for (int i = 0; i < bonesGeometry.size(); i++) 
-		bonesGeometry[i].length = bonesLength.find(bonesGeometry[i].name)->second;
-}
-
-void GLWidget::updateBonesRadiusFromMap(map<string, vector<float>> bonesRadius) {
-	for (int i = 0; i < bonesGeometry.size(); i++) {
-		bonesGeometry[i].topRadius1 = bonesRadius.find(bonesGeometry[i].name)->second[0];
-		bonesGeometry[i].topRadius2 = bonesRadius.find(bonesGeometry[i].name)->second[1];
-		bonesGeometry[i].bottomRadius1 = bonesRadius.find(bonesGeometry[i].name)->second[2];
-		bonesGeometry[i].bottomRadius2 = bonesRadius.find(bonesGeometry[i].name)->second[3];
-	}
-}
-
-void GLWidget::updateBonesDOFMap(map<string, vector<bool>> &bonesDOF, string boneName, vector<bool> dofs) {
-	bonesDOF.at(boneName) = dofs;	
-}
-
-void GLWidget::updateDOFFromMap(map<string, vector<bool>> bonesDOF, vector<pf::boneConfig> &bonesConfig) {
-	for (int i = 0; i < bonesConfig.size(); i++) {
-		vector<bool> dof;
-		dof = bonesDOF.find(bonesConfig[i].name)->second;
-		if (dof[0])
-			bonesConfig[i].isRotX = true;
-		else 
-			bonesConfig[i].isRotX = false;
-
-		if (dof[1])
-			bonesConfig[i].isRotY = true;
-		else
-			bonesConfig[i].isRotY = false;
-
-		if (dof[2])
-			bonesConfig[i].isRotZ = true;
-		else
-			bonesConfig[i].isRotZ = false;
-
-		//vector<bool>().swap(dof);
-	}
-}
-
-void GLWidget::updateLimitsFromMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> &bonesConfig) {
-	for (int i = 0; i < bonesConfig.size(); i++) {
-		vector<int> limits = modelLimits.find(bonesConfig[i].name)->second;
-
-		bonesConfig[i].minRotX = limits[0];
-		bonesConfig[i].maxRotX = limits[1];
-		bonesConfig[i].minRotY = limits[2];
-		bonesConfig[i].maxRotY = limits[3];
-		bonesConfig[i].minRotZ = limits[4];
-		bonesConfig[i].maxRotZ = limits[5];
-	}
-}
-
-void GLWidget::updateVelocityFromMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> &bonesConfig) {
-	for (int i = 0; i < bonesConfig.size(); i++) {
-		vector<float> velocity = modelVelocity.find(bonesConfig[i].name)->second;
-
-		bonesConfig[i].vRotX = velocity[0];
-		bonesConfig[i].vRotY = velocity[1];
-		bonesConfig[i].vRotZ = velocity[2];
-	}
 }
 
 void GLWidget::updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig> bonesConfig) {
@@ -1646,25 +594,37 @@ void GLWidget::updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig>
 }
 
 void GLWidget::loadFiles() {
-	loadedImagesFolderPath = new QString(QFileDialog::getExistingDirectory(this, tr("Img folder")));
-	if (!loadedImagesFolderPath->isEmpty()) {
+	
+	QString fileName = QFileDialog::getOpenFileName(this,
+		tr("Load image"), "",
+		tr("Image files(*.png *.jpg *.jpeg *.bmp) ;; PNG (*.png);; JPG (*.jpg);; JPEG (*.jpeg) ;; BMP (*.bmp) ;; All Files(*)"));
 
-		QDir dir(*loadedImagesFolderPath);
-		QStringList filter;
-		filter << QLatin1String("*.png");
-		filter << QLatin1String("*.jpg");
-		filter << QLatin1String("*.jpeg");
-		filter << QLatin1String("*.bmp");
-		dir.setNameFilters(filter);
-		list = dir.entryInfoList();	
+	if (!fileName.isEmpty()) {
+		loadedImagesFolderPath = QFileInfo(fileName).absolutePath();
 
-		isAvi = false;
+		if (!loadedImagesFolderPath.isEmpty()) {
+			aviFrames.clear();
+			list.clear();
+			QDir dir(loadedImagesFolderPath);
+			QStringList filter;
+			filter << QLatin1String("*.png");
+			filter << QLatin1String("*.jpg");
+			filter << QLatin1String("*.jpeg");
+			filter << QLatin1String("*.bmp");
+			dir.setNameFilters(filter);
+			list = dir.entryInfoList();
+
+			checkImagesList(fileName);
+
+			isAvi = false;
+		}
 	}
 }
 
 void GLWidget::loadAviFile() {
+	//isAvi = false;
 	aviFilePath = QFileDialog::getOpenFileName(this,
-		tr("Wczytaj .avi"), "",
+		tr("Load .avi"), "",
 		tr("AVI (*.avi);;All Files(*)"));
 
 	if (!aviFilePath.isEmpty()) {
@@ -1673,47 +633,105 @@ void GLWidget::loadAviFile() {
 		cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
 		cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 		AviHzDialog *aviDialog = new AviHzDialog(this);
-		aviDialog->setFramesCounter(cap.get(CV_CAP_PROP_FRAME_COUNT));
+
+		int framesCount = cap.get(CV_CAP_PROP_FRAME_COUNT);
+		aviDialog->setFramesCounter(framesCount);
+		aviDialog->setLowerHigherSpinBoxes(framesCount);
 
 		aviDialog->resize(200, 100);
 		aviDialog->exec();
 
-		hz = aviDialog->getHz();
-		delete aviDialog;
-
-		if (!cap.isOpened()) {
-			QMessageBox::warning(NULL, QObject::tr("app"),
-				QObject::tr("B³¹d w czasie otwierania pliku avi"),
-				QMessageBox::Cancel,
-				QMessageBox::Cancel);
-		}
-		else {
-			aviFrames.clear();
-			Mat frame;
-
-			bool stop = false;
-			int i = 0;
-			while (!stop) {
-				
-				cap >> frame;
-				
-				if (frame.empty()) {
-					stop = true;
-					continue;
-				}
-				if (i%hz == 0) {
-					cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
-					cout << "." << endl;
-					aviFrames.push_back(frame);
-				}
-				i++;
-				//frame.release();
+		int mode = aviDialog->mode;
+		if (aviDialog->clicked) {
+			if (!cap.isOpened()) {
+				QMessageBox::warning(NULL, QObject::tr("app"),
+					QObject::tr("Error while opening avi file"),
+					QMessageBox::Cancel,
+					QMessageBox::Cancel);
 			}
-			isAvi = true;
-			cap.release();
+			else {
+				if (mode == 0) {
+					list.clear();
+					aviFrames.clear();
+					Mat frame;
+
+					bool stop = false;
+					int i = 0;
+					while (!stop) {
+
+						cap >> frame;
+
+						if (frame.empty()) {
+							stop = true;
+							continue;
+						}
+						cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+						std::cout << "." << endl;
+						aviFrames.push_back(frame);
+						i++;
+
+					}
+				}
+				if (mode == 1) {
+					int hz = aviDialog->getHz();
+					list.clear();
+					aviFrames.clear();
+					Mat frame;
+
+					bool stop = false;
+					int i = 0;
+					while (!stop) {
+
+						cap >> frame;
+
+						if (frame.empty()) {
+							stop = true;
+							continue;
+						}
+						if (i%hz == 0) {
+							cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+							std::cout << "." << endl;
+							aviFrames.push_back(frame);
+						}
+						i++;
+
+					}
+				}
+				if (mode == 2) {
+					int higher = aviDialog->getSpinBox3Value();
+					int lower = aviDialog->getSpinBox2Value();
+
+					cout << lower << " " << higher << endl;
+					list.clear();
+					aviFrames.clear();
+					Mat frame;
+
+					bool stop = false;
+					int i = 0;
+					while (!stop) {
+
+						cap >> frame;
+
+						if (frame.empty()) {
+							stop = true;
+							continue;
+						}
+						if (i >= lower && i <= higher) {
+							cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+							std::cout << "." << endl;
+							aviFrames.push_back(frame);
+						}
+						i++;
+
+					}
+				}
+				isAvi = true;
+				cap.release();
+			}
 		}
-		
+		delete aviDialog;
 	}
+	cout << aviFilePath.toUtf8().constData() << endl;
 }
 
 void GLWidget::loadAviFile(string path, int hz) {
@@ -1723,12 +741,13 @@ void GLWidget::loadAviFile(string path, int hz) {
 
 	if (!cap.isOpened()) {
 		QMessageBox::warning(NULL, QObject::tr("app"),
-			QObject::tr("B³¹d w czasie otwierania pliku avi"),
+			QObject::tr("Error while opening avi file"),
 			QMessageBox::Cancel,
 			QMessageBox::Cancel);
 	}
 	else {
 		aviFrames.clear();
+		list.clear();
 		Mat frame;
 
 		bool stop = false;
@@ -1752,11 +771,11 @@ void GLWidget::loadAviFile(string path, int hz) {
 		isAvi = true;
 		cap.release();
 	}
-
+	
 }
 
 void GLWidget::copyConfigToGlWidget(GLWidget *&dest, GLWidget *source) {
-	dest->limits = source->limits;
+	/*dest->limits = source->limits;
 	dest->rotations = source->rotations;
 	dest->usedBones = source->usedBones;
 	dest->allBones = source->allBones;
@@ -1781,5 +800,96 @@ void GLWidget::copyConfigToGlWidget(GLWidget *&dest, GLWidget *source) {
 	FileHandler *fileHandler = new FileHandler();
 	fileHandler->reloadParams(dest);
 
-	delete fileHandler;
+	delete fileHandler;*/
+}
+
+void GLWidget::setGLWidgetCamera(pf::Camera *cam) {
+	if (cam->getType() == pf::Camera::TSAI1) {
+		pf::TSAI1Camera tsai1Camera;
+		tsai1Camera.trans.x = cam->getTSAI1Param().trans.x;
+		tsai1Camera.trans.y = cam->getTSAI1Param().trans.y;
+		tsai1Camera.trans.z = cam->getTSAI1Param().trans.z;
+		tsai1Camera.rot.x = cam->getTSAI1Param().rot.x;
+		tsai1Camera.rot.y = cam->getTSAI1Param().rot.y;
+		tsai1Camera.rot.z = cam->getTSAI1Param().rot.z;
+		tsai1Camera.focal = cam->getTSAI1Param().focal;
+		tsai1Camera.kappa1 = cam->getTSAI1Param().kappa1;
+		tsai1Camera.c.x = cam->getTSAI1Param().c.x;
+		tsai1Camera.c.y = cam->getTSAI1Param().c.y;
+		tsai1Camera.sx = cam->getTSAI1Param().sx;
+		tsai1Camera.ncx = cam->getTSAI1Param().ncx;
+		tsai1Camera.nfx = cam->getTSAI1Param().nfx;
+		tsai1Camera.d.x = cam->getTSAI1Param().d.x;
+		tsai1Camera.d.y = cam->getTSAI1Param().d.y;
+		tsai1Camera.dp.x = cam->getTSAI1Param().dp.x;
+		tsai1Camera.dp.y = cam->getTSAI1Param().dp.y;
+
+		this->camera = new pf::Camera(tsai1Camera, cam->getWidth(), cam->getHeight());
+	}
+	if (cam->getType() == pf::Camera::TSAI2) {
+		pf::TSAI2Camera tsai2Camera;
+		tsai2Camera.trans.x = cam->getTSAI2Param().trans.x;
+		tsai2Camera.trans.y = cam->getTSAI2Param().trans.y;
+		tsai2Camera.trans.z = cam->getTSAI2Param().trans.z;
+		tsai2Camera.rot.x = cam->getTSAI2Param().rot.x;
+		tsai2Camera.rot.y = cam->getTSAI2Param().rot.y;
+		tsai2Camera.rot.z = cam->getTSAI2Param().rot.z;
+		tsai2Camera.focal1 = cam->getTSAI2Param().focal1;
+		tsai2Camera.focal2 = cam->getTSAI2Param().focal2;
+		tsai2Camera.c.x = cam->getTSAI2Param().c.x;
+		tsai2Camera.c.y = cam->getTSAI2Param().c.y;
+		tsai2Camera.K1 = cam->getTSAI2Param().K1;
+		tsai2Camera.K2 = cam->getTSAI2Param().K2;
+		tsai2Camera.P1 = cam->getTSAI2Param().P1;
+		tsai2Camera.P2 = cam->getTSAI2Param().P2;
+
+		this->camera = new pf::Camera(tsai2Camera, cam->getWidth(), cam->getHeight());
+	}
+}
+
+void GLWidget::updateModelStateVector(int frames) {
+
+	/*jesli wczesniej wczytano jakies tlo - usun ustawione modelState*/
+	if (modelState.size() > 1) {
+		modelState.erase(modelState.begin() + 1, modelState.end());
+		bonesRotations.erase(bonesRotations.begin() + 1, bonesRotations.end());
+		modelTranslation.erase(modelTranslation.begin() + 1, modelTranslation.end());
+		saveModelState.erase(saveModelState.begin() + 1, saveModelState.end());
+	}
+	
+	for (int i = 0; i < frames - 1; i++) {
+		modelState.push_back(modelState[0]);
+		bonesRotations.push_back(bonesRotations[0]);
+		modelTranslation.push_back(modelTranslation[0]);
+		saveModelState.push_back(false);
+	}
+}
+
+void GLWidget::setGLWidgetModelState(int i) {
+	model->setModelState(modelState[i]);
+}
+
+void GLWidget::checkImagesList(QString fileName) {
+	QString prefix, sufix;
+	QFileInfoList listTMP;
+	QString name = QFileInfo(fileName).baseName();
+	for (int j = name.length() - 1; j >= 0; j--) {
+		if (!name[j].isDigit()) {
+			prefix = name.mid(0, j + 1);
+			sufix = name.right(j + 1);
+			break;
+		}
+	}
+
+	for (int i = 0; i < list.size(); i++) {
+		if (list[i].baseName().mid(0, prefix.length()) == prefix) {
+			if (list[i].baseName().right(prefix.length()).toInt() >= sufix.toInt()) {
+				cout << list[i].baseName().toUtf8().constData() << endl;
+				listTMP.push_back(list[i]);
+			}
+		}
+	}
+	cout << endl;
+	list.clear();
+	list = listTMP;
 }

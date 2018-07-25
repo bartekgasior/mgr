@@ -1,9 +1,9 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
+
 #include "bone.h"
 #include "asf.h"
 #include "Model3D.h"
-
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -20,16 +20,21 @@
 #include <cstring>
 
 #include "avihzdialog.h"
+#include "Camera.h"
+#include "ModelHandler.h"
 
 #define ASF_TEMPLATE_PATH "ETC/modelTemplate.asf"
 #define AMC_TEMPLATE_PATH "ETC/modelTemplate.amc"
 #define DAT_TEMPLATE_PATH "ETC/modelTemplate.dat"
+
+#define GOLDEN_RATIO 1.61803398875
 
 class GLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 public:
     explicit GLWidget(QWidget *parent = 0);
+	~GLWidget();
 
 	int mode = 1;
 
@@ -39,7 +44,7 @@ public:
 	GLfloat ar;
 
 	//sciezka do folderu ze zdjeciami
-	QString *loadedImagesFolderPath;
+	QString loadedImagesFolderPath;
 	//sciezka do pliku avi
 	QString aviFilePath;
 	QVector<cv::Mat> aviFrames;
@@ -66,42 +71,33 @@ public:
 	bool drawBckg = false;
 	
 	/*czestotliwosc wczytywania klatek z avi - wykorzystywana do zapisu i odczytu z pliku*/
-	int hz = 0;
+	//int hz = 0;
 
-	
+	/*czy wykorzystywac kamere*/
+	bool cast = false;
+	int cameraID = 0;
+	pf::Camera *camera;
+
+	vector<vector<float>> modelState;//stany modelu
 	vector<pf::range2> limits;// vector zawieraj¹cy limity rotacji poszczególnych koœci
 	vector<float> velocity;
 	vector<pf::Matrixf> rotations;//rotacje
 	vector<string> usedBones;//nazwy wykorzystanych kosci
 	vector<string> allBones;//nazwy wszystkich kosci
-	vector<vector<float>> modelState;//stany modelu
 	vector<pf::ASFBone> asfBones;//kosci
 	map<string, int> idxBonesMap;
 	vector<pf::boneConfig> bonesConf;//parametry kosci
 	vector<pf::boneGeometry> bonesGeometry;
 
-	/*obroty wszystkich kosci wraz z nazwa*/
-	map<string, pf::Vec3f> bonesRotations;
+	/*wektor o rozmiarze modelState, gdy true zapisuje konfiguracje*/
+	vector<bool> saveModelState;
 
-	/*dlugosci kosci oraz ich nazwa*/
-	map<string, float> bonesLength;
+	/*obroty wszystkich kosci wraz z nazwa*/
+	vector<map<string, pf::Vec3f>> bonesRotations;
 
 	/*przesuniecie modelu*/
-	vector<float> modelTranslation;
+	vector<vector<float>> modelTranslation;
 
-	/*limity obrotow danej kosci
-		np. LeftLeg 50, 50, 50, 50, 50, 50 -> odpowiednio limity w osi X, Y, Z
-	*/
-	map<string, vector<int>> modelLimits;
-
-	/* velocity -> LeftLeg 0, 10, 15*/
-	map<string, vector<float>> modelVelocity;
-
-	/* dof -> np. LeftLeg true, true, false */
-	map<string, vector<bool>> modelDOF;
-
-	/*radius -> LeftLeg, topRadius1, topRadius2, bottomRadius1, bottomRadius2*/
-	map<string, vector<float>> modelRadius;
 	/*###############################################*/
 	/* metody */
 
@@ -121,63 +117,21 @@ public:
     void drawSkeleton();
 
 	//obrot modelu
-	void rotate(string boneName, float direction, pf::Vec3 vect, int rotVal);
-
-	/*zmiana dlugosci kosci*/
-	void updateLength(string boneName, float direction, float value);
-
-	void updateTopRadius(string boneName, float direction, float value);
-
-	void updateBottomRadius(string boneName, float direction, float value);
+	void rotate(string boneName, float direction, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame);
 
 	/*przesuniecie modelu*/
-	void translate(float direction, pf::Vec3 vect, int value);
+	void translate(float direction, pf::Vec3 vect, int value, int frame);
 
 	/*skalowanie wszystkich kosci modelu*/
-	void scale(float direction, int value);
-
-	/*pobranie dlugosci kosci*/
-	float getBoneLength(string boneName);
-
-	float getBoneTopRadius(string boneName);
-
-	float getBoneBottomRadius(string boneName);
-
-	/*funkcja zwraca id wybranej kosci w wektorze modelState*/
-	int getModelStateID(pf::Model3D *model, string boneName, pf::Vec3 vect);
-
-	/*funkcja aktualizuje limity obrotow wybranych kosci*/
-	void setLimitsVector(vector<pf::range2> &limits, vector<pf::boneConfig> bones, vector<pf::boneGeometry> bonesGeometry);
-
-	void setVelocityVector(vector<float> &velocity, vector<pf::boneConfig> bones, vector<pf::boneGeometry> bonesGeometry);
+	void scale(float direction, int value);	
 
 	/*zapis rotacji do mapy bonesRotations*/
-	void saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<vector<float>> mState, vector<pf::boneConfig> bonesConfig);
+	void saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<pf::boneConfig> bonesConfig);
 
-	void saveBonesLengthToMap(map<string, float> &bonesLength, vector<pf::boneGeometry> boneGeometry);
-
-	void saveRadiusToMap(map<string, vector<float>> &bonesRadius, vector<pf::boneGeometry> boneGeometry);
-
-	void saveDOFToMap(map<string, vector<bool>> &bonesDOF, vector<pf::boneConfig> boneConfig);
-
-	void saveLimitsToMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> boneConfig);
-
-	void saveVelocityToMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> boneConfig);
+	void saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<string> allBones);
 
 	/*aktualizacja wektora modelState po zmianie ilosci kosci modelu*/
-	void updateModelStateFromMap(vector<vector<float>> &mState, map<string, pf::Vec3f> bonesRotations, vector<pf::boneConfig> bonesConfig);
-
-	void updateBonesLengthFromMap(map<string, float> bonesLength);
-
-	void updateBonesRadiusFromMap(map<string, vector<float>> bonesRadius);
-
-	void updateBonesDOFMap(map<string, vector<bool>> &bonesDOF, string boneName, vector<bool> dofs);
-
-	void updateDOFFromMap(map<string, vector<bool>> bonesDOF, vector<pf::boneConfig> &bonesConfig);
-	
-	void updateLimitsFromMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> &boneConfig);
-
-	void updateVelocityFromMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> &bonesConfig);
+	void updateModelStateFromMap(vector<vector<float>> &mState, vector<map<string, pf::Vec3f>> bonesRotations, vector<pf::boneConfig> bonesConfig);
 
 	void updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig> bonesConfig);
 
@@ -199,13 +153,16 @@ public:
 	/*zapisanie konfiguracji z jednego modelu do drugiego*/
 	void copyConfigToGlWidget(GLWidget *&dest, GLWidget *source);
 
+	void setGLWidgetCamera(pf::Camera *cam);
+
+	/*po wczytaniu tla funkcja tworzy wektor model state o rozmiarze rownym ilosci zaladowanych klatek*/
+	void updateModelStateVector(int frames);
+
+	/*ustawienie aktualnego modelState modelu*/
+	void setGLWidgetModelState(int i);
+
 private:
-	void initializeBonesRotationsMap();
-	void initializeBonesLengthMap();
-	void initializeBonesLimitsMap();
-	void initializeBonesVelocityMap();
-	void initializeBonesDOFMap();
-	void initializeBonesRadiusMap();
+	void checkImagesList(QString fileName);
 };
 
 #endif // GLWIDGET_H
