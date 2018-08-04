@@ -10,6 +10,7 @@ CamerasConfig::CamerasConfig(QWidget *parent)
 	prepareLayout();
 
 	setLayout(mainLayout);
+
 }
 
 CamerasConfig::~CamerasConfig()
@@ -417,9 +418,9 @@ void CamerasConfig::addPerspectiveTab() {
 	}
 	for (int i = 0; i < 2; i++) {
 		perspectiveSpinBoxes[i]->setFixedWidth(125);
-		perspectiveSpinBoxes[i]->setDecimals(0);
+		perspectiveSpinBoxes[i]->setDecimals(1);
 		perspectiveSpinBoxes[i]->setMinimum(0);
-		perspectiveSpinBoxes[i]->setMaximum(11111111);
+		perspectiveSpinBoxes[i]->setMaximum(1111111);
 	}
 
 	for (int i = 2; i < perspectiveSpinBoxes.size(); i++) {
@@ -655,7 +656,7 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 	int cameraTypeID = cameraType[cameraID];
 	cameraStackedWidget->setCurrentIndex(cameraTypeID);
 
-	int w, h;
+	float w, h;
 	vector<double> tsai1Params, tsai2Params, perspectiveParams, perspectiveDisortionParams;
 
 	w = cameras[cameraID]->getWidth();
@@ -734,7 +735,6 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 		tsai2SpinBoxes[15]->setValue(tsai2Params[13]);
 	}
 	else if (cameraTypeID == 2) {
-
 		perspectiveParams.push_back(cameras[cameraID]->getEye().x());
 		perspectiveParams.push_back(cameras[cameraID]->getEye().y());
 		perspectiveParams.push_back(cameras[cameraID]->getEye().z());
@@ -743,13 +743,13 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 		perspectiveParams.push_back(cameras[cameraID]->getOrientation().y());
 		perspectiveParams.push_back(cameras[cameraID]->getOrientation().z());
 		perspectiveParams.push_back(cameras[cameraID]->getOrientation().w());
-		perspectiveParams.push_back(cameras[cameraID]->getAlpha());
-		perspectiveParams.push_back(cameras[cameraID]->getBeta());
-		perspectiveParams.push_back(cameras[cameraID]->getGama());
-
+		perspectiveParams.push_back(cameras[cameraID]->getAlpha()*RAD_TO_DEG);
+		perspectiveParams.push_back(cameras[cameraID]->getBeta()*RAD_TO_DEG);
+		perspectiveParams.push_back(cameras[cameraID]->getGama()*RAD_TO_DEG);
 		perspectiveParams.push_back(cameras[cameraID]->getFovy());
-
-		perspectiveSpinBoxes[0]->setValue(w);
+		cout << "value: " << perspectiveSpinBoxes[0]->value() << endl;
+		cout << "W: " << w << endl;
+		/*perspectiveSpinBoxes[0]->setValue(w);
 		perspectiveSpinBoxes[1]->setValue(h);
 		perspectiveSpinBoxes[2]->setValue(perspectiveParams[0]);
 		perspectiveSpinBoxes[3]->setValue(perspectiveParams[1]);
@@ -779,7 +779,7 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 		else
 			perspectiveSpinBoxes[11]->setValue(perspectiveParams[10]);
 
-		perspectiveSpinBoxes[12]->setValue(perspectiveParams[11]);
+		perspectiveSpinBoxes[12]->setValue(perspectiveParams[11]);*/
 	}
 	else if (cameraTypeID == 3) {
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getEye().x());
@@ -790,9 +790,9 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getOrientation().y());
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getOrientation().z());
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getOrientation().w());
-		perspectiveDisortionParams.push_back(cameras[cameraID]->getAlpha());
-		perspectiveDisortionParams.push_back(cameras[cameraID]->getBeta());
-		perspectiveDisortionParams.push_back(cameras[cameraID]->getGama());
+		perspectiveDisortionParams.push_back(cameras[cameraID]->getAlpha()*RAD_TO_DEG);
+		perspectiveDisortionParams.push_back(cameras[cameraID]->getBeta()*RAD_TO_DEG);
+		perspectiveDisortionParams.push_back(cameras[cameraID]->getGama()*RAD_TO_DEG);
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getFovy());
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getDisortionParams().K1);
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getDisortionParams().K2);
@@ -859,13 +859,12 @@ void CamerasConfig::buttonAddCameraPressed() {
 		if (dialog->okClicked) {
 			selectedCameraID = dialog->id;
 			cameraType.push_back(selectedCameraID);
-			//cout << selectedCameraID << endl;
+
 			QStringList list;
 			int currentID;
 
-			//if(selectedCameraID == 3)
-				cameras.push_back(new pf::Camera());
-
+			cameras.push_back(new pf::Camera());
+			useQuat.push_back(false);
 			for (int i = 0; i < cameras.size(); i++) {
 				list.push_back("Camera " + QString::number(i));
 			}
@@ -881,6 +880,7 @@ void CamerasConfig::buttonAddCameraPressed() {
 		}
 		delete dialog;
 	}
+
 	else {
 		QStringList list;
 		int currentID;
@@ -889,7 +889,6 @@ void CamerasConfig::buttonAddCameraPressed() {
 			currentID = cameraComboBox->currentIndex();
 
 		cameras.push_back(new pf::Camera());
-
 		for (int i = 0; i < cameras.size(); i++) {
 			list.push_back("Camera " + QString::number(i));
 		}
@@ -967,18 +966,21 @@ void CamerasConfig::saveCameraParametersFromSB() {
 		float pos_x = perspectiveSpinBoxes[2]->value();
 		float pos_y = perspectiveSpinBoxes[3]->value();
 		float pos_z = perspectiveSpinBoxes[4]->value();
-		bool useQuat = false;
+		if (perspectiveQuatCB->isChecked())
+			useQuat[cameraID] = true;
+		else
+			useQuat[cameraID] = false;
 		float quat_x = perspectiveSpinBoxes[5]->value();
 		float quat_y = perspectiveSpinBoxes[6]->value();
 		float quat_z = perspectiveSpinBoxes[7]->value();
 		float quat_w = perspectiveSpinBoxes[8]->value();
-		float rot_x = perspectiveSpinBoxes[9]->value();
-		float rot_y = perspectiveSpinBoxes[10]->value();
-		float rot_z = perspectiveSpinBoxes[11]->value();
+		float rot_x = perspectiveSpinBoxes[9]->value() * DEG_TO_RAD;
+		float rot_y = perspectiveSpinBoxes[10]->value()* DEG_TO_RAD;
+		float rot_z = perspectiveSpinBoxes[11]->value()* DEG_TO_RAD;
 		float fovy = perspectiveSpinBoxes[12]->value();
 
 		pf::Camera *camTmp;
-		if (useQuat) camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h);
+		if (useQuat[cameraID]) camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h);
 		else camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, w, h);
 
 		delete cameras[cameraID];
@@ -990,14 +992,18 @@ void CamerasConfig::saveCameraParametersFromSB() {
 		float pos_x = perspectiveDisortionsSpinBoxes[2]->value();
 		float pos_y = perspectiveDisortionsSpinBoxes[3]->value();
 		float pos_z = perspectiveDisortionsSpinBoxes[4]->value();
-		bool useQuat = false;
+		
+		if (perspectiveDisortionQuatCB->isChecked())
+			useQuat[cameraID] = true;
+		else
+			useQuat[cameraID] = false;
 		float quat_x = perspectiveDisortionsSpinBoxes[5]->value();
 		float quat_y = perspectiveDisortionsSpinBoxes[6]->value();
 		float quat_z = perspectiveDisortionsSpinBoxes[7]->value();
 		float quat_w = perspectiveDisortionsSpinBoxes[8]->value();
-		float rot_x = perspectiveDisortionsSpinBoxes[9]->value();
-		float rot_y = perspectiveDisortionsSpinBoxes[10]->value();
-		float rot_z = perspectiveDisortionsSpinBoxes[11]->value();
+		float rot_x = perspectiveDisortionsSpinBoxes[9]->value()* DEG_TO_RAD;
+		float rot_y = perspectiveDisortionsSpinBoxes[10]->value()* DEG_TO_RAD;
+		float rot_z = perspectiveDisortionsSpinBoxes[11]->value()* DEG_TO_RAD;
 		float fovy = perspectiveDisortionsSpinBoxes[12]->value();
 		pf::disortions dis;
 		dis.K1 = perspectiveDisortionsSpinBoxes[13]->value();
@@ -1007,13 +1013,13 @@ void CamerasConfig::saveCameraParametersFromSB() {
 
 		pf::Camera *camTmp;
 
-		if (useQuat) camTmp = new  pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h, dis);
+		if (useQuat[cameraID]) camTmp = new  pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h, dis);
 		else camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, w, h, dis);
 		delete cameras[cameraID];
 		cameras[cameraID] = camTmp;
 	}
 	else {
-		cout << "error cameraType" << endl;
+		cerr << "error cameraType" << endl;
 	}
 }
 
@@ -1037,9 +1043,9 @@ void CamerasConfig::returnCameras(QVector<pf::Camera*> &dest) {
 			tsai1Camera.trans.x = cameras[i]->getTSAI1Param().trans.x;
 			tsai1Camera.trans.y = cameras[i]->getTSAI1Param().trans.y;
 			tsai1Camera.trans.z = cameras[i]->getTSAI1Param().trans.z;
-			tsai1Camera.rot.x = cameras[i]->getTSAI1Param().rot.x;
-			tsai1Camera.rot.y = cameras[i]->getTSAI1Param().rot.y;
-			tsai1Camera.rot.z = cameras[i]->getTSAI1Param().rot.z;
+			tsai1Camera.rot.x = DEG_TO_RAD*cameras[i]->getTSAI1Param().rot.x;
+			tsai1Camera.rot.y = DEG_TO_RAD*cameras[i]->getTSAI1Param().rot.y;
+			tsai1Camera.rot.z = DEG_TO_RAD*cameras[i]->getTSAI1Param().rot.z;
 			tsai1Camera.focal = cameras[i]->getTSAI1Param().focal;
 			tsai1Camera.kappa1 = cameras[i]->getTSAI1Param().kappa1;
 			tsai1Camera.c.x = cameras[i]->getTSAI1Param().c.x;
@@ -1064,9 +1070,9 @@ void CamerasConfig::returnCameras(QVector<pf::Camera*> &dest) {
 			tsai2Camera.trans.x = cameras[i]->getTSAI2Param().trans.x;
 			tsai2Camera.trans.y = cameras[i]->getTSAI2Param().trans.y;
 			tsai2Camera.trans.z = cameras[i]->getTSAI2Param().trans.z;
-			tsai2Camera.rot.x = cameras[i]->getTSAI2Param().rot.x;
-			tsai2Camera.rot.y = cameras[i]->getTSAI2Param().rot.y;
-			tsai2Camera.rot.z = cameras[i]->getTSAI2Param().rot.z;
+			tsai2Camera.rot.x = DEG_TO_RAD*cameras[i]->getTSAI2Param().rot.x;
+			tsai2Camera.rot.y = DEG_TO_RAD*cameras[i]->getTSAI2Param().rot.y;
+			tsai2Camera.rot.z = DEG_TO_RAD*cameras[i]->getTSAI2Param().rot.z;
 			tsai2Camera.focal1 = cameras[i]->getTSAI2Param().focal1;
 			tsai2Camera.focal2 = cameras[i]->getTSAI2Param().focal2;
 			tsai2Camera.K1 = cameras[i]->getTSAI2Param().K1;
@@ -1091,13 +1097,17 @@ void CamerasConfig::returnCameras(QVector<pf::Camera*> &dest) {
 			float quat_y = cameras[i]->getOrientation().y();
 			float quat_z = cameras[i]->getOrientation().z();
 			float quat_w = cameras[i]->getOrientation().w();
-			float rot_x = cameras[i]->getAlpha();
-			float rot_y = cameras[i]->getBeta();
-			float rot_z = cameras[i]->getGama();
+			float rot_x = DEG_TO_RAD*cameras[i]->getAlpha();
+			float rot_y = DEG_TO_RAD*cameras[i]->getBeta();
+			float rot_z = DEG_TO_RAD*cameras[i]->getGama();
 			float fovy = cameras[i]->getFovy();
 
-			pf::Camera *camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h);
-
+			pf::Camera *camTmp;
+			if(useQuat[i])
+				camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h);
+			else 
+				camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, w, h);
+			
 			dest.push_back(camTmp);
 		}
 		else if (cameraType[i] == 3) {
@@ -1111,9 +1121,9 @@ void CamerasConfig::returnCameras(QVector<pf::Camera*> &dest) {
 			float quat_y = cameras[i]->getOrientation().y();
 			float quat_z = cameras[i]->getOrientation().z();
 			float quat_w = cameras[i]->getOrientation().w();
-			float rot_x = cameras[i]->getAlpha();
-			float rot_y = cameras[i]->getBeta();
-			float rot_z = cameras[i]->getGama();
+			float rot_x = DEG_TO_RAD*cameras[i]->getAlpha();
+			float rot_y = DEG_TO_RAD*cameras[i]->getBeta();
+			float rot_z = DEG_TO_RAD*cameras[i]->getGama();
 			float fovy = cameras[i]->getFovy();
 
 			pf::disortions dis;
@@ -1122,7 +1132,11 @@ void CamerasConfig::returnCameras(QVector<pf::Camera*> &dest) {
 			dis.P1 = cameras[i]->getDisortionParams().P1;
 			dis.P2 = cameras[i]->getDisortionParams().P2;
 
-			pf::Camera *camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h, dis);
+			pf::Camera *camTmp;
+			if (useQuat[i])
+				camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h, dis);
+			else
+				camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, w, h, dis);
 
 			dest.push_back(camTmp);
 		}
@@ -1133,14 +1147,12 @@ void CamerasConfig::returnCameras(QVector<pf::Camera*> &dest) {
 }
 
 void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
-	//cout << cams.size() << endl;
-
 	for (int i = 0; i < cams.size(); i++)
 		addNewCamera->click();
 
 	qDeleteAll(cameras);
 	cameras.clear();
-
+	//useQuat.clear();
 	cameraType.clear();
 
 	for (int i = 0; i < cams.size(); i++) {
@@ -1153,9 +1165,9 @@ void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
 			tsai1Camera.trans.x = cams[i]->getTSAI1Param().trans.x;
 			tsai1Camera.trans.y = cams[i]->getTSAI1Param().trans.y;
 			tsai1Camera.trans.z = cams[i]->getTSAI1Param().trans.z;
-			tsai1Camera.rot.x = cams[i]->getTSAI1Param().rot.x;
-			tsai1Camera.rot.y = cams[i]->getTSAI1Param().rot.y;
-			tsai1Camera.rot.z = cams[i]->getTSAI1Param().rot.z;
+			tsai1Camera.rot.x = RAD_TO_DEG*cams[i]->getTSAI1Param().rot.x;
+			tsai1Camera.rot.y = RAD_TO_DEG*cams[i]->getTSAI1Param().rot.y;
+			tsai1Camera.rot.z = RAD_TO_DEG*cams[i]->getTSAI1Param().rot.z;
 			tsai1Camera.focal = cams[i]->getTSAI1Param().focal;
 			tsai1Camera.kappa1 = cams[i]->getTSAI1Param().kappa1;
 			tsai1Camera.c.x = cams[i]->getTSAI1Param().c.x;
@@ -1182,9 +1194,9 @@ void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
 			tsai2Camera.trans.x = cams[i]->getTSAI2Param().trans.x;
 			tsai2Camera.trans.y = cams[i]->getTSAI2Param().trans.y;
 			tsai2Camera.trans.z = cams[i]->getTSAI2Param().trans.z;
-			tsai2Camera.rot.x = cams[i]->getTSAI2Param().rot.x;
-			tsai2Camera.rot.y = cams[i]->getTSAI2Param().rot.y;
-			tsai2Camera.rot.z = cams[i]->getTSAI2Param().rot.z;
+			tsai2Camera.rot.x = RAD_TO_DEG*cams[i]->getTSAI2Param().rot.x;
+			tsai2Camera.rot.y = RAD_TO_DEG*cams[i]->getTSAI2Param().rot.y;
+			tsai2Camera.rot.z = RAD_TO_DEG*cams[i]->getTSAI2Param().rot.z;
 			tsai2Camera.focal1 = cams[i]->getTSAI2Param().focal1;
 			tsai2Camera.focal2 = cams[i]->getTSAI2Param().focal2;
 			tsai2Camera.c.x = cams[i]->getTSAI2Param().c.x;
@@ -1209,12 +1221,16 @@ void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
 			float quat_y = cams[i]->getOrientation().y();
 			float quat_z = cams[i]->getOrientation().z();
 			float quat_w = cams[i]->getOrientation().w();
-			float rot_x = cams[i]->getAlpha();
-			float rot_y = cams[i]->getBeta();
-			float rot_z = cams[i]->getGama();
+			float rot_x = RAD_TO_DEG*cams[i]->getAlpha();
+			float rot_y = RAD_TO_DEG*cams[i]->getBeta();
+			float rot_z = RAD_TO_DEG*cams[i]->getGama();
 			float fovy = cams[i]->getFovy();
 
-			pf::Camera *camTmp  = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h);
+			pf::Camera *camTmp;
+			if(useQuat[i])
+				camTmp  = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h);
+			else
+				camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, w, h);
 
 			cameras.push_back(camTmp);
 			cameraType.push_back(2);
@@ -1230,9 +1246,9 @@ void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
 			float quat_y = cams[i]->getOrientation().y();
 			float quat_z = cams[i]->getOrientation().z();
 			float quat_w = cams[i]->getOrientation().w();
-			float rot_x = cams[i]->getAlpha();
-			float rot_y = cams[i]->getBeta();
-			float rot_z = cams[i]->getGama();
+			float rot_x = RAD_TO_DEG*cams[i]->getAlpha();
+			float rot_y = RAD_TO_DEG*cams[i]->getBeta();
+			float rot_z = RAD_TO_DEG*cams[i]->getGama();
 			float fovy = cams[i]->getFovy();
 
 			pf::disortions dis;
@@ -1241,7 +1257,11 @@ void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
 			dis.P1 = cams[i]->getDisortionParams().P1;
 			dis.P2 = cams[i]->getDisortionParams().P2;
 
-			pf::Camera *camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h, dis);
+			pf::Camera *camTmp;
+			if (useQuat[i])
+				camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, w, h, dis);
+			else
+				camTmp = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, w, h, dis);
 
 			cameras.push_back(camTmp);
 			cameraType.push_back(3);

@@ -807,11 +807,33 @@ void ModelHandler::initializeBonesRadiusMap(map<string, vector<float>> &modelRad
 	}
 }
 
+void ModelHandler::clearBonesLengthMap(map<string, float> &bonesLength) {
+	for (auto& p : bonesLength) {
+		p.second = 0;
+	}
+}
+
 void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float direction, float value) {
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
 			bonesGeometry[i].length += value*direction;
+
+			if (bonesGeometry[i].length < 0)
+				bonesGeometry[i].length = 0;
+
+			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			model->updateBoneLength(boneName, bonesGeometry[i].length);
+			break;
+		}
+	}
+}
+
+void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float value) {
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		if (bonesGeometry[i].name == boneName) {
+
+			bonesGeometry[i].length = value;
 
 			if (bonesGeometry[i].length < 0)
 				bonesGeometry[i].length = 0;
@@ -842,12 +864,50 @@ void ModelHandler::updateTopRadius(pf::Model3D *model, vector<pf::boneGeometry> 
 	}
 }
 
+void ModelHandler::updateTopRadius(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float value) {
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		if (bonesGeometry[i].name == boneName) {
+
+			bonesGeometry[i].topRadius1 = value;
+			bonesGeometry[i].topRadius2 = value;
+
+			if (bonesGeometry[i].topRadius1 < 0)
+				bonesGeometry[i].topRadius1 = 0;
+
+			if (bonesGeometry[i].topRadius2 < 0)
+				bonesGeometry[i].topRadius2 = 0;
+
+			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			break;
+		}
+	}
+}
+
 void ModelHandler::updateBottomRadius(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float direction, float value) {
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
 			bonesGeometry[i].bottomRadius1 += value*direction;
 			bonesGeometry[i].bottomRadius2 += value*direction;
+
+			if (bonesGeometry[i].bottomRadius1 < 0)
+				bonesGeometry[i].bottomRadius1 = 0;
+
+			if (bonesGeometry[i].bottomRadius2 < 0)
+				bonesGeometry[i].bottomRadius2 = 0;
+
+			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			break;
+		}
+	}
+}
+
+void ModelHandler::updateBottomRadius(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float value) {
+	for (int i = 0; i < bonesGeometry.size(); i++) {
+		if (bonesGeometry[i].name == boneName) {
+
+			bonesGeometry[i].bottomRadius1 = value;
+			bonesGeometry[i].bottomRadius2 = value;
 
 			if (bonesGeometry[i].bottomRadius1 < 0)
 				bonesGeometry[i].bottomRadius1 = 0;
@@ -894,9 +954,9 @@ float ModelHandler::getBoneBottomRadius(vector<pf::boneGeometry> bonesGeometry, 
 	return res;
 }
 
-int ModelHandler::getModelStateID(pf::Model3D *model, string boneName, pf::Vec3 vect) {
+int ModelHandler::getModelStateID(vector <string> usedBonesNames, string boneName, pf::Vec3 vect) {
 	int result;
-	vector <string> usedBonesNames = model->getNamesMovingBones();
+	//vector <string> usedBonesNames = model->getNamesMovingBones();
 	for (int i = 0; i < usedBonesNames.size(); i++) {
 		if (boneName == usedBonesNames[i]) {
 			result = i + 3;
@@ -981,10 +1041,30 @@ void ModelHandler::setVelocityVector(vector<float> &velocity, vector<pf::boneCon
 	}
 }
 
+void ModelHandler::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<pf::boneConfig> bonesConfig) {
+	for (int i = 0; i < bonesConfig.size(); i++) {
+		int j = i + 1;
+		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
+		bonesRotations.at(bonesConfig[i].name) = vec;
+	}
+}
+
+void ModelHandler::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<string> allBones) {
+	for (int i = 0; i < allBones.size(); i++) {
+		int j = i + 1;
+		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
+		bonesRotations.at(allBones[i]) = vec;
+	}
+}
+
 void ModelHandler::saveBonesLengthToMap(map<string, float> &bonesLength, vector<pf::boneGeometry> boneGeometry) {
 	for (int i = 0; i < boneGeometry.size(); i++) {
 		bonesLength.at(boneGeometry[i].name) = boneGeometry[i].length;
 	}
+}
+
+void ModelHandler::updateBonesLengthMap(map<string, float> &bonesLength, string boneName, float value) {
+		bonesLength.at(boneName) = value;
 }
 
 void ModelHandler::saveRadiusToMap(map<string, vector<float>> &bonesRadius, vector<pf::boneGeometry> boneGeometry) {
@@ -1070,6 +1150,29 @@ void ModelHandler::saveVelocityToMap(map<string, vector<float>> modelVelocity, v
 	}
 }
 
+void ModelHandler::updateModelStateFromMap(vector<vector<float>> &mState, vector<map<string, pf::Vec3f>> bonesRotations, vector<pf::boneConfig> bonesConfig, vector<vector<float>> modelTranslation) {
+	mState.clear();
+	for (int j = 0; j < bonesRotations.size(); j++) {
+		vector<float> newModelState;
+
+		newModelState.push_back(modelTranslation[j][0]);
+		newModelState.push_back(modelTranslation[j][1]); // ############################# przesuniecie root
+		newModelState.push_back(modelTranslation[j][2]);
+
+		//cout << endl;
+
+		for (int i = 0; i < bonesConfig.size(); i++) {
+			pf::Vec3f vec = bonesRotations[j].at(bonesConfig[i].name);
+			//cout << vec.x() << " " << vec.y() << " " << vec.z() << endl;
+			newModelState.push_back(vec.x());
+			newModelState.push_back(vec.y());
+			newModelState.push_back(vec.z());
+		}
+		mState.push_back(newModelState);
+	}
+	//vector<float>().swap(newModelState);
+}
+
 void ModelHandler::updateBonesLengthFromMap(map<string, float> bonesLength, vector<pf::boneGeometry> &boneGeometry) {
 	for (int i = 0; i < boneGeometry.size(); i++)
 		boneGeometry[i].length = bonesLength.find(boneGeometry[i].name)->second;
@@ -1134,45 +1237,45 @@ void ModelHandler::updateVelocityFromMap(map<string, vector<float>> modelVelocit
 	}
 }
 
-void ModelHandler::setGoldenRatio(map<string, float> &bonesLength) {
+void ModelHandler::setGoldenRatio(map<string, float> &bonesLength, float height) {
 	/*wykorzystywane*/
-	float head = bonesLength.find("Head")->second;
-	float neck = bonesLength.find("Neck")->second;
-	float spine1_dum1 = bonesLength.find("Spine1_dum1")->second;
+	float head;// = bonesLength.find("Head")->second;
+	float neck;// = bonesLength.find("Neck")->second;
+	float spine1_dum1;// = bonesLength.find("Spine1_dum1")->second;
 	//float spine1 = bonesLength.find("Spine1")->second;
-	float spine = bonesLength.find("Spine")->second;
-	float leftUpLeg_dum = bonesLength.find("LeftUpLeg_dum")->second;
-	float leftUpLeg = bonesLength.find("LeftUpLeg")->second;
-	float leftLeg = bonesLength.find("LeftLeg")->second;
-	float rightUpLeg_dum = bonesLength.find("RightUpLeg_dum")->second;
-	float rightUpLeg = bonesLength.find("RightUpLeg")->second;
-	float rightLeg = bonesLength.find("RightLeg")->second;
-	float leftShoulder = bonesLength.find("LeftShoulder")->second;
-	float leftArm = bonesLength.find("LeftArm")->second;
-	float leftForeArm = bonesLength.find("LeftForeArm")->second;
-	float leftHand_dum2 = bonesLength.find("LeftHand_dum2")->second;
-	float rightShoulder = bonesLength.find("RightShoulder")->second;
-	float rightArm = bonesLength.find("RightArm")->second;
-	float rightForeArm = bonesLength.find("RightForeArm")->second;
-	float rightHand_dum2 = bonesLength.find("RightHand_dum2")->second;
-	float rightFoot = bonesLength.find("RightFoot")->second;
-	float leftFoot = bonesLength.find("LeftFoot")->second;
+	float spine;// = bonesLength.find("Spine")->second;
+	float leftUpLeg_dum;// = bonesLength.find("LeftUpLeg_dum")->second;
+	float leftUpLeg;//= bonesLength.find("LeftUpLeg")->second;
+	float leftLeg;//= bonesLength.find("LeftLeg")->second;
+	float rightUpLeg_dum;// = bonesLength.find("RightUpLeg_dum")->second;
+	float rightUpLeg;// = bonesLength.find("RightUpLeg")->second;
+	float rightLeg;// = bonesLength.find("RightLeg")->second;
+	float leftShoulder;// = bonesLength.find("LeftShoulder")->second;
+	float leftArm;// = bonesLength.find("LeftArm")->second;
+	float leftForeArm;// = bonesLength.find("LeftForeArm")->second;
+	float leftHand_dum2;// = bonesLength.find("LeftHand_dum2")->second;
+	float rightShoulder;// = bonesLength.find("RightShoulder")->second;
+	float rightArm;// = bonesLength.find("RightArm")->second;
+	float rightForeArm;//= bonesLength.find("RightForeArm")->second;
+	float rightHand_dum2;// = bonesLength.find("RightHand_dum2")->second;
+	float rightFoot;// = bonesLength.find("RightFoot")->second;
+	float leftFoot;//= bonesLength.find("LeftFoot")->second;
 	/*puste*/
-	float spine_dum = bonesLength.find("Spine_dum")->second;
-	float leftToeBase = bonesLength.find("LeftToeBase")->second;
-	float rightToeBase = bonesLength.find("RightToeBase")->second;
-	float spine1 = bonesLength.find("Spine1")->second;
+	float spine_dum;// = bonesLength.find("Spine_dum")->second;
+	float leftToeBase;//= bonesLength.find("LeftToeBase")->second;
+	float rightToeBase;// = bonesLength.find("RightToeBase")->second;
+	float spine1;// = bonesLength.find("Spine1")->second;
 	//float spine1_dum1 = bonesLength.find("Spine1_dum1")->second;
-	float spine1_dum2 = bonesLength.find("Spine1_dum2")->second;
-	float spine1_dum3 = bonesLength.find("Spine1_dum3")->second;
-	float leftHand = bonesLength.find("LeftHand")->second;
-	float leftHand_dum1 = bonesLength.find("LeftHand_dum1")->second;
-	float leftHandThumb = bonesLength.find("LeftHandThumb")->second;
-	float rightHand = bonesLength.find("RightHand")->second;
-	float rightHand_dum1 = bonesLength.find("RightHand_dum1")->second;
-	float rightHandThumb = bonesLength.find("RightHandThumb")->second;
+	float spine1_dum2;// = bonesLength.find("Spine1_dum2")->second;
+	float spine1_dum3;// = bonesLength.find("Spine1_dum3")->second;
+	float leftHand;//= bonesLength.find("LeftHand")->second;
+	float leftHand_dum1;// = bonesLength.find("LeftHand_dum1")->second;
+	float leftHandThumb;// = bonesLength.find("LeftHandThumb")->second;
+	float rightHand;// = bonesLength.find("RightHand")->second;
+	float rightHand_dum1;// = bonesLength.find("RightHand_dum1")->second;
+	float rightHandThumb;// = bonesLength.find("RightHandThumb")->second;
 
-	float height, width;
+	/*float height, width;
 
 	if ((leftUpLeg + leftLeg) > (rightUpLeg + rightLeg))
 		height = leftUpLeg + leftLeg + spine + spine1_dum1 + spine1 + neck + head;
@@ -1183,7 +1286,7 @@ void ModelHandler::setGoldenRatio(map<string, float> &bonesLength) {
 		width = rightHand_dum2 + rightForeArm + rightArm + rightShoulder + leftHand_dum2 + leftForeArm + leftArm + leftShoulder;
 	else
 		width = rightUpLeg_dum + leftUpLeg_dum;
-
+		*/
 	/*wysokosc*/
 	float mh, eh;
 	eh = height / (GOLDEN_RATIO + 1);
@@ -1223,14 +1326,14 @@ void ModelHandler::setGoldenRatio(map<string, float> &bonesLength) {
 	leftLeg = rightLeg = e1h;
 	spine = m7w;
 
-	rightHand_dum2 = leftHand_dum2 = e7w;
+	rightHand_dum2 = leftHand_dum2 = leftFoot = rightFoot = e7w;
 	leftForeArm = rightForeArm = m7w;
 	leftArm = rightArm = m3h;
 	leftShoulder = rightShoulder = e8w;
 	leftUpLeg_dum = rightUpLeg_dum = m9w;
 
-	width = rightHand_dum2 + rightForeArm + rightArm + rightShoulder + leftHand_dum2 + leftForeArm + leftArm + leftShoulder;
-	cout << width << endl;
+	//width = rightHand_dum2 + rightForeArm + rightArm + rightShoulder + leftHand_dum2 + leftForeArm + leftArm + leftShoulder;
+	//cout << width << endl;
 	//cout << endl;
 	/*zapis do mapy*/
 	bonesLength.at("Head") = head;
@@ -1251,11 +1354,11 @@ void ModelHandler::setGoldenRatio(map<string, float> &bonesLength) {
 	bonesLength.at("RightArm") = rightArm;
 	bonesLength.at("RightForeArm") = rightForeArm;
 	bonesLength.at("RightHand_dum2") = rightHand_dum2;
+	bonesLength.at("LeftFoot") = leftFoot;
+	bonesLength.at("RightFoot") = rightFoot;
 
-	bonesLength.at("Spine_dum") = 0.0;
-	bonesLength.at("LeftFoot") = 0.0;
 	bonesLength.at("LeftToeBase") = 0.0;
-	bonesLength.at("RightFoot") = 0.0;
+	bonesLength.at("Spine_dum") = 0.0;
 	bonesLength.at("RightToeBase") = 0.0;
 	bonesLength.at("Spine1") = 0.0;
 	bonesLength.at("Spine1_dum2") = 0.0;
@@ -1266,4 +1369,112 @@ void ModelHandler::setGoldenRatio(map<string, float> &bonesLength) {
 	bonesLength.at("RightHand") = 0.0;
 	bonesLength.at("RightHand_dum1") = 0.0;
 	bonesLength.at("RightHandThumb") = 0.0;
+}
+
+float ModelHandler::getModelHeightFromMap(map<string, float> &bonesLength) {
+	/*wykorzystywane*/
+	float head = bonesLength.find("Head")->second;
+	float neck = bonesLength.find("Neck")->second;
+	float spine1_dum1 = bonesLength.find("Spine1_dum1")->second;
+	//float spine1 = bonesLength.find("Spine1")->second;
+	float spine = bonesLength.find("Spine")->second;
+	float leftUpLeg_dum = bonesLength.find("LeftUpLeg_dum")->second;
+	float leftUpLeg = bonesLength.find("LeftUpLeg")->second;
+	float leftLeg = bonesLength.find("LeftLeg")->second;
+	float rightUpLeg_dum = bonesLength.find("RightUpLeg_dum")->second;
+	float rightUpLeg = bonesLength.find("RightUpLeg")->second;
+	float rightLeg = bonesLength.find("RightLeg")->second;
+	float leftShoulder = bonesLength.find("LeftShoulder")->second;
+	float leftArm = bonesLength.find("LeftArm")->second;
+	float leftForeArm = bonesLength.find("LeftForeArm")->second;
+	float leftHand_dum2 = bonesLength.find("LeftHand_dum2")->second;
+	float rightShoulder = bonesLength.find("RightShoulder")->second;
+	float rightArm = bonesLength.find("RightArm")->second;
+	float rightForeArm = bonesLength.find("RightForeArm")->second;
+	float rightHand_dum2 = bonesLength.find("RightHand_dum2")->second;
+	float rightFoot = bonesLength.find("RightFoot")->second;
+	float leftFoot = bonesLength.find("LeftFoot")->second;
+	/*puste*/
+	float spine_dum = bonesLength.find("Spine_dum")->second;
+	float leftToeBase = bonesLength.find("LeftToeBase")->second;
+	float rightToeBase = bonesLength.find("RightToeBase")->second;
+	float spine1 = bonesLength.find("Spine1")->second;
+	//float spine1_dum1 = bonesLength.find("Spine1_dum1")->second;
+	float spine1_dum2 = bonesLength.find("Spine1_dum2")->second;
+	float spine1_dum3 = bonesLength.find("Spine1_dum3")->second;
+	float leftHand = bonesLength.find("LeftHand")->second;
+	float leftHand_dum1 = bonesLength.find("LeftHand_dum1")->second;
+	float leftHandThumb = bonesLength.find("LeftHandThumb")->second;
+	float rightHand = bonesLength.find("RightHand")->second;
+	float rightHand_dum1 = bonesLength.find("RightHand_dum1")->second;
+	float rightHandThumb = bonesLength.find("RightHandThumb")->second;
+
+	float height;
+
+	if ((leftUpLeg + leftLeg) > (rightUpLeg + rightLeg))
+		height = leftUpLeg + leftLeg + spine + spine1_dum1 + spine1 + neck + head;
+	else
+		height = rightUpLeg + rightLeg + spine + spine1_dum1 + spine1 + neck + head;
+
+	return height;
+}
+
+float ModelHandler::getModelWidthFromMap(map<string, float> &bonesLength) {
+	/*wykorzystywane*/
+	float head = bonesLength.find("Head")->second;
+	float neck = bonesLength.find("Neck")->second;
+	float spine1_dum1 = bonesLength.find("Spine1_dum1")->second;
+	//float spine1 = bonesLength.find("Spine1")->second;
+	float spine = bonesLength.find("Spine")->second;
+	float leftUpLeg_dum = bonesLength.find("LeftUpLeg_dum")->second;
+	float leftUpLeg = bonesLength.find("LeftUpLeg")->second;
+	float leftLeg = bonesLength.find("LeftLeg")->second;
+	float rightUpLeg_dum = bonesLength.find("RightUpLeg_dum")->second;
+	float rightUpLeg = bonesLength.find("RightUpLeg")->second;
+	float rightLeg = bonesLength.find("RightLeg")->second;
+	float leftShoulder = bonesLength.find("LeftShoulder")->second;
+	float leftArm = bonesLength.find("LeftArm")->second;
+	float leftForeArm = bonesLength.find("LeftForeArm")->second;
+	float leftHand_dum2 = bonesLength.find("LeftHand_dum2")->second;
+	float rightShoulder = bonesLength.find("RightShoulder")->second;
+	float rightArm = bonesLength.find("RightArm")->second;
+	float rightForeArm = bonesLength.find("RightForeArm")->second;
+	float rightHand_dum2 = bonesLength.find("RightHand_dum2")->second;
+	float rightFoot = bonesLength.find("RightFoot")->second;
+	float leftFoot = bonesLength.find("LeftFoot")->second;
+	/*puste*/
+	float spine_dum = bonesLength.find("Spine_dum")->second;
+	float leftToeBase = bonesLength.find("LeftToeBase")->second;
+	float rightToeBase = bonesLength.find("RightToeBase")->second;
+	float spine1 = bonesLength.find("Spine1")->second;
+	//float spine1_dum1 = bonesLength.find("Spine1_dum1")->second;
+	float spine1_dum2 = bonesLength.find("Spine1_dum2")->second;
+	float spine1_dum3 = bonesLength.find("Spine1_dum3")->second;
+	float leftHand = bonesLength.find("LeftHand")->second;
+	float leftHand_dum1 = bonesLength.find("LeftHand_dum1")->second;
+	float leftHandThumb = bonesLength.find("LeftHandThumb")->second;
+	float rightHand = bonesLength.find("RightHand")->second;
+	float rightHand_dum1 = bonesLength.find("RightHand_dum1")->second;
+	float rightHandThumb = bonesLength.find("RightHandThumb")->second;
+
+
+	float width;
+
+	if (rightHand_dum2 + rightForeArm + rightArm + rightShoulder + leftHand_dum2 + leftForeArm + leftArm + leftShoulder > rightUpLeg_dum + leftUpLeg_dum)
+		width = rightHand_dum2 + rightForeArm + rightArm + rightShoulder + leftHand_dum2 + leftForeArm + leftArm + leftShoulder;
+	else
+		width = rightUpLeg_dum + leftUpLeg_dum;
+
+	return width;
+}
+
+float ModelHandler::getBoneGeometryLength(vector<pf::boneGeometry> bonesGeo, string name) {
+	float result = 0.0;
+	for (int i = 0; i < bonesGeo.size(); i++) {
+		if (bonesGeo[i].name == name) {
+			result = bonesGeo[i].length;
+			break;
+		}
+	}
+	return result;
 }

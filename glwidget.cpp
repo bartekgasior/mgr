@@ -3,53 +3,27 @@
 #include "Model3D.h"
 #include "gl/glu.h"
 #include "FileHandler.h"
-
 using namespace std;
 using namespace cv;
 
 GLWidget::GLWidget(QWidget *parent) :
 	QOpenGLWidget(parent) {
-
     yRot = 0;
     p.x = p.y = p.z = 0.0;
-    //skeletonBones = ASF::getASF();
-	FileHandler * fileHandler;
-	ModelHandler *modelHandler;
+	setAcceptDrops(true);
 	try {
 		//cylinder model, default configuration files
 		model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, DAT_TEMPLATE_PATH);
-		modelState = fileHandler->getAMCTemplate(model);
-		model->setModelState(modelState[0]);
+		//modelState = fileHandler->getAMCTemplate(model);
+		//model->setModelState(modelState[0]);
 	}
 	catch (std::exception &e) {
 		QMessageBox::critical(this, "Error", e.what(), QMessageBox::Ok);
 		exit(-1);
 	}
-	limits = model->getLimits();
-	velocity = model->getVelocity();
-	usedBones = model->getNamesMovingBones();
-	allBones = model->getNamesBones();
-	
 
 	pf::MotionData::loadASF(ASF_TEMPLATE_PATH, idxBonesMap, asfBones);
-	model->loadConfig(DAT_TEMPLATE_PATH, bonesConf, bonesGeometry);
-
-	/*initializeBonesRotationsMap();
-	initializeBonesLengthMap();
-	initializeBonesLimitsMap();
-	initializeBonesVelocityMap();
-	initializeBonesDOFMap();
-	initializeBonesRadiusMap();*/
-	map<string, pf::Vec3f> bonesRotationsTMP;
-	vector<float> modelTranslationTMP;
-	bonesRotations.push_back(bonesRotationsTMP);
-	modelTranslation.push_back(modelTranslationTMP);
-	saveModelState.push_back(false);
-
-	modelHandler->initializeBonesRotationsMap(this->bonesRotations[0], this->asfBones);
-	modelTranslation[0].push_back(0);
-	modelTranslation[0].push_back(0);
-	modelTranslation[0].push_back(0);
+	//model->loadConfig(DAT_TEMPLATE_PATH, bonesConf, bonesGeometry);
 }
 
 GLWidget::~GLWidget() {
@@ -57,7 +31,6 @@ GLWidget::~GLWidget() {
 }
 
 void GLWidget::initializeGL(){
-	
     glClearColor(255,255,255,0);
 
     glEnable(GL_DEPTH_TEST);
@@ -77,17 +50,13 @@ void GLWidget::initializeGL(){
 
 void GLWidget::paintGL(){
     glRotatef(yRot, 0.0, 1.0, 0.0);
-	vector<vector<pf::Vec3f> > vertices = this->model->getRotatedVertices();
-	vector<vector<float>> radiusVec = model->getRadiusVec();
 	//glColor3f(0.0f, 0.0f, 0.8f);
 
-	if (isInMainWindow) {
-		if (drawBckg) {
-			if (!isAvi)
-				drawBackgroud(imgPath);
-			else
-				drawBackground(aviFrame);
-		}
+	if (drawBckg) {
+		if (!isAvi)
+			drawBackgroud(imgPath);
+		else
+			drawBackground(aviFrame);
 	}
 	
 	glPushMatrix();
@@ -120,10 +89,15 @@ void GLWidget::resizeGL(int width, int height){
 	glLoadIdentity();
 	w = width;
 	h = height;
+	//cout << width << " " << height << endl;
 	aspectRatio = (GLfloat)width / (GLfloat)height;
 	ar = aspectRatio;
-	if (width <= height) glOrtho(-1000.0, 1000.0, -1000 / aspectRatio, 1000.0 / aspectRatio, 2000.0, -2000.0);
-	else glOrtho(-1000.0 * aspectRatio, 1000.0 * aspectRatio, -1000.0, 1000.0, 2000.0, -2000.0);
+	if (width <= height) 
+		glOrtho(-1000.0, 1000.0, -1000 / aspectRatio, 1000.0 / aspectRatio, 2000.0, -2000.0);
+	else 
+		glOrtho(-1000.0 * aspectRatio, 1000.0 * aspectRatio, -1000.0, 1000.0, 2000.0, -2000.0);
+
+	cout << width << " " << height << endl;
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -144,19 +118,19 @@ void GLWidget::drawSkeletonModel(vector<vector<pf::Vec3f> > modelVertices)
 			//cout << ver.x() << endl;
 			ver1 = camera->cast(ver1);
 		}
-		
-		glPushMatrix();
+		if (drawJoints) {
+			glPushMatrix();
 			glColor3f(255.0f, 0.0f, 0.0f);
 			glTranslatef(ver.x(), ver.y(), -ver.z());
-			gluSphere(sphere, 30, 100, 100);
-		glPopMatrix();
+			gluSphere(sphere, jointRadius, 100, 100);
+			glPopMatrix();
 
-		glPushMatrix();
+			glPushMatrix();
 			glColor3f(255.0f, 0.0f, 0.0f);
 			glTranslatef(ver1.x(), ver1.y(), -ver1.z());
-			gluSphere(sphere, 30, 100, 100);
-		glPopMatrix();
-
+			gluSphere(sphere, jointRadius, 100, 100);
+			glPopMatrix();
+		}
 		glBegin(GL_LINES);
 			glColor3f(1.0f, 1.0f, 1.0f);
 			glVertex3f(ver.x(), ver.y(), -ver.z());
@@ -356,7 +330,7 @@ void GLWidget::drawSkeleton(){
     }
 }
 
-void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame) {
+void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame, vector<vector<float>> &modelState) {
 
 	int actualBoneNameIDtmp, limitID; 
 
@@ -403,12 +377,48 @@ void GLWidget::rotate(string boneName, float direction, pf::Vec3 vect, int rotVa
 	//cout << modelState[0][limitID] << " " << modelState[0][limitID+1] << " " << modelState[0][limitID + 2] << endl;
 	//cout << endl;
 
-	model->setModelState(modelState[frame]);
+	//model->setModelState(modelState[frame]);
 
-	update();
+	//update();
 }
 
-void GLWidget::translate(float direction, pf::Vec3 vect, int value, int frame) {
+void GLWidget::rotate(string boneName, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame, vector<vector<float>> &modelState) {
+	int actualBoneNameIDtmp, limitID;
+
+	//id kosci wsrod wykorzystywanych w modelu
+	for (int i = 0; i < bConf.size(); i++) {
+		if (bConf[i].name == boneName)
+			actualBoneNameIDtmp = i;
+	}
+	//limit kazdej z wykorzystanych kosci opisany jest przez 3 kolejne el. wektora 'limits'
+	for (int i = 3; i < limitsVector.size(); i++) {
+		if (actualBoneNameIDtmp + 1 == i / 3) {
+			limitID = i;
+			break;
+		}
+	}
+
+	float angle;
+	if (vect == pf::Model3D::axisX) {
+		angle = rotVal;
+		if (limitsVector[limitID].min <= angle && angle <= limitsVector[limitID].max)
+			modelState[frame][limitID] = rotVal;
+
+	}
+	if (vect == pf::Model3D::axisY) {
+		angle =rotVal;
+		if (limitsVector[limitID + 1].min <= angle && angle <= limitsVector[limitID + 1].max)
+			modelState[frame][limitID + 1] = rotVal;
+
+	}
+	if (vect == pf::Model3D::axisZ) {
+		angle = rotVal;
+		if (limitsVector[limitID + 2].min <= angle && angle <= limitsVector[limitID + 2].max)
+			modelState[frame][limitID + 2] = rotVal;
+	}
+}
+
+void GLWidget::translate(float direction, pf::Vec3 vect, int value, int frame, vector<vector<float>> &modelTranslation, vector<vector<float>> &modelState) {
 	if (vect == pf::Model3D::axisX){
 		modelState[frame][0] += value*direction;
 		modelTranslation[frame][0] = modelState[0][0];
@@ -430,77 +440,93 @@ void GLWidget::translate(float direction, pf::Vec3 vect, int value, int frame) {
 	update();
 }
 
-void GLWidget::scale(float direction, int value) {
-	for (int i = 0; i < bonesConf.size(); i++) {
-		for (int j = 0; j < bonesGeometry.size(); j++) {
-			if (bonesConf[i].name == bonesGeometry[j].name) {
-				bonesGeometry[j].length += value*direction;
-
-				if (bonesGeometry[j].length < 0)
-					bonesGeometry[j].length = 0;
-
-				model->updateBoneGeometry(bonesGeometry[j].name, bonesGeometry[j]);
-				model->updateBoneLength(bonesGeometry[j].name, bonesGeometry[j].length);
-			}
-		}
+void GLWidget::translate(pf::Vec3 vect, int value, int frame, vector<vector<float>> &modelTranslation, vector<vector<float>> &modelState) {
+	if (vect == pf::Model3D::axisX) {
+		modelState[frame][0] = value;
+		modelTranslation[frame][0] = modelState[0][0];
 	}
+
+	if (vect == pf::Model3D::axisY) {
+		modelState[frame][1] = value;
+		modelTranslation[frame][1] = modelState[0][1];
+	}
+
+	if (vect == pf::Model3D::axisZ) {
+		modelState[frame][2] = value;
+		modelTranslation[frame][2] = modelState[0][2];
+	}
+
+	//cout << modelState[0][0] << " " << modelState[0][1] << " " << modelState[0][2] << endl;
+
+	model->setModelState(modelState[frame]);
 	update();
 }
 
+void GLWidget::scale(float direction, int value) {}
+
 void GLWidget::drawBackgroud(string img) {
 	cv::Mat mat = cv::imread(img, CV_LOAD_IMAGE_COLOR);
-
 	if (mat.empty()) {
-		cout << "img empty" << endl;
+		cerr << "img empty" << endl;
 	}
 	else {
-		cv::Mat tmp;
-		mat.copyTo(tmp);
-		GLuint tex;
-		cv::flip(tmp, tmp, 0);
-		glGenTextures(1, &tex);
-		glBindTexture(GL_TEXTURE_2D, tex);
+		if (scaleFrame)
+			cv::resize(mat, mat, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		else {
+			cv::Mat tmp;
+			mat.copyTo(tmp);
+			GLuint tex;
+			cv::flip(tmp, tmp, 0);
+			glGenTextures(1, &tex);
+			glBindTexture(GL_TEXTURE_2D, tex);
 
-		// Set texture clamping method
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			// Set texture clamping method
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 
-		glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-			0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-			GL_RGB,            // Internal colour format to convert to
-			tmp.cols,          // Image width  i.e. 640 for Kinect in standard mode
-			tmp.rows,          // Image height i.e. 480 for Kinect in standard mode
-			0,                 // Border width in pixels (can either be 1 or 0)
-			GL_BGR, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
-			GL_UNSIGNED_BYTE,  // Image data type
-			tmp.ptr());        // The actual image data itself
+			glTexImage2D(GL_TEXTURE_2D,     // Type of texture
+				0,                 // Pyramid level (for mip-mapping) - 0 is the top level
+				GL_RGB,            // Internal colour format to convert to
+				tmp.cols,          // Image width  i.e. 640 for Kinect in standard mode
+				tmp.rows,          // Image height i.e. 480 for Kinect in standard mode
+				0,                 // Border width in pixels (can either be 1 or 0)
+				GL_BGR, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+				GL_UNSIGNED_BYTE,  // Image data type
+				tmp.ptr());        // The actual image data itself
 
-		glDisable(GL_BLEND);
-		glEnable(GL_TEXTURE_2D);
+			glDisable(GL_BLEND);
+			glEnable(GL_TEXTURE_2D);
 
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-w - (700 * ar), -h - (700 * ar), 1000);
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(w + (700 * ar), -h - (700 * ar), 1000);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(w + (700 * ar), h + (700 * ar), 1000);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-w - (700 * ar), h + (700 * ar), 1000);
-		glEnd();
+			glBegin(GL_QUADS);
+			//glTexCoord2f(0.0f, 0.0f); glVertex3f(-w - (700 * ar), -h - (700 * ar), 1000);
+			//glTexCoord2f(1.0f, 0.0f); glVertex3f(w + (700 * ar), -h - (700 * ar), 1000);
+			//glTexCoord2f(1.0f, 1.0f); glVertex3f(w + (700 * ar), h + (700 * ar), 1000);
+			//glTexCoord2f(0.0f, 1.0f); glVertex3f(-w - (700 * ar), h + (700 * ar), 1000);
 
-		glDisable(GL_TEXTURE_2D);
-		glFinish();
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(-1350, -1000, 1000);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(1350, -1000, 1000);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(1350, 1000, 1000);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(-1350, 1000, 1000);
+			glEnd();
 
-		tmp.release();
-		glDeleteTextures(1, &tex);
+			glDisable(GL_TEXTURE_2D);
+			glFinish();
+
+			tmp.release();
+			glDeleteTextures(1, &tex);
+		}
 	}
 	mat.release();
 }
 
 void GLWidget::drawBackground(cv::Mat mat) {
 	if (mat.empty()) {
-		cout << "img empty" << endl;
+		cerr << "img empty" << endl;
 	}
 	else {
 		cv::Mat tmp;
@@ -532,10 +558,10 @@ void GLWidget::drawBackground(cv::Mat mat) {
 		glEnable(GL_TEXTURE_2D);
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-w - (700 * ar), -h - (700 * ar), 1000);
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(w + (700 * ar), -h - (700 * ar), 1000);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(w + (700 * ar), h + (700 * ar), 1000);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-w - (700 * ar), h + (700 * ar), 1000);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1350, -1000, 1000);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(1350, -1000, 1000);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(1350, 1000, 1000);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1350, 1000, 1000);
 		glEnd();
 
 		glDisable(GL_TEXTURE_2D);
@@ -545,45 +571,6 @@ void GLWidget::drawBackground(cv::Mat mat) {
 		glDeleteTextures(1, &tex);
 	}
 	mat.release();
-}
-
-void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<pf::boneConfig> bonesConfig) {
-	for (int i = 0; i < bonesConfig.size(); i++) {
-		int j = i + 1;
-		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
-		bonesRotations.at(bonesConfig[i].name) = vec;
-	}
-}
-
-void GLWidget::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<string> allBones) {
-	for (int i = 0; i < allBones.size(); i++) {
-		int j = i + 1;
-		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
-		bonesRotations.at(allBones[i]) = vec;
-	}
-}
-
-void GLWidget::updateModelStateFromMap(vector<vector<float>> &mState, vector<map<string, pf::Vec3f>> bonesRotations, vector<pf::boneConfig> bonesConfig) {
-	mState.clear();
-	for (int j = 0; j < bonesRotations.size(); j++) {
-		vector<float> newModelState;
-
-		newModelState.push_back(modelTranslation[j][0]);
-		newModelState.push_back(modelTranslation[j][1]); // ############################# przesuniecie root
-		newModelState.push_back(modelTranslation[j][2]);
-
-		//cout << endl;
-
-		for (int i = 0; i < bonesConfig.size(); i++) {
-			pf::Vec3f vec = bonesRotations[j].at(bonesConfig[i].name);
-			//cout << vec.x() << " " << vec.y() << " " << vec.z() << endl;
-			newModelState.push_back(vec.x());
-			newModelState.push_back(vec.y());
-			newModelState.push_back(vec.z());
-		}
-		mState.push_back(newModelState);
-	}
-	//vector<float>().swap(newModelState);
 }
 
 void GLWidget::updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig> bonesConfig) {
@@ -621,6 +608,30 @@ void GLWidget::loadFiles() {
 	}
 }
 
+void GLWidget::loadFiles(QString fileName) {
+	if (!fileName.isEmpty()) {
+		
+		loadedImagesFolderPath = QFileInfo(fileName).absolutePath();
+			
+		if (!loadedImagesFolderPath.isEmpty()) {
+			aviFrames.clear();
+			list.clear();
+			QDir dir(loadedImagesFolderPath);
+			QStringList filter;
+			filter << QLatin1String("*.png");
+			filter << QLatin1String("*.jpg");
+			filter << QLatin1String("*.jpeg");
+			filter << QLatin1String("*.bmp");
+			dir.setNameFilters(filter);
+			list = dir.entryInfoList();
+				
+			checkImagesList(fileName);
+
+			isAvi = false;
+		}
+	}
+}
+
 void GLWidget::loadAviFile() {
 	//isAvi = false;
 	aviFilePath = QFileDialog::getOpenFileName(this,
@@ -630,8 +641,6 @@ void GLWidget::loadAviFile() {
 	if (!aviFilePath.isEmpty()) {
 
 		VideoCapture cap(aviFilePath.toUtf8().constData());
-		cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-		cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 		AviHzDialog *aviDialog = new AviHzDialog(this);
 
 		int framesCount = cap.get(CV_CAP_PROP_FRAME_COUNT);
@@ -665,7 +674,8 @@ void GLWidget::loadAviFile() {
 							stop = true;
 							continue;
 						}
-						cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+						if (scaleFrame)
+							cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
 						std::cout << "." << endl;
 						aviFrames.push_back(frame);
 						i++;
@@ -689,7 +699,8 @@ void GLWidget::loadAviFile() {
 							continue;
 						}
 						if (i%hz == 0) {
-							cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+							if (scaleFrame)
+								cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
 							std::cout << "." << endl;
 							aviFrames.push_back(frame);
 						}
@@ -717,7 +728,8 @@ void GLWidget::loadAviFile() {
 							continue;
 						}
 						if (i >= lower && i <= higher) {
-							cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
+							if (scaleFrame)
+								cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
 							std::cout << "." << endl;
 							aviFrames.push_back(frame);
 						}
@@ -734,44 +746,113 @@ void GLWidget::loadAviFile() {
 	cout << aviFilePath.toUtf8().constData() << endl;
 }
 
-void GLWidget::loadAviFile(string path, int hz) {
-	VideoCapture cap(path);
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+void GLWidget::loadAviFile(QString path) {
+	if (!path.isEmpty()) {
+		VideoCapture cap(path.toUtf8().constData());
+		AviHzDialog *aviDialog = new AviHzDialog(this);
 
-	if (!cap.isOpened()) {
-		QMessageBox::warning(NULL, QObject::tr("app"),
-			QObject::tr("Error while opening avi file"),
-			QMessageBox::Cancel,
-			QMessageBox::Cancel);
-	}
-	else {
-		aviFrames.clear();
-		list.clear();
-		Mat frame;
+		int framesCount = cap.get(CV_CAP_PROP_FRAME_COUNT);
+		aviDialog->setFramesCounter(framesCount);
+		aviDialog->setLowerHigherSpinBoxes(framesCount);
 
-		bool stop = false;
-		int i = 0;
-		while (!stop) {
+		aviDialog->resize(200, 100);
+		aviDialog->exec();
 
-			cap >> frame;
-
-			if (frame.empty()) {
-				stop = true;
-				continue;
+		int mode = aviDialog->mode;
+		if (aviDialog->clicked) {
+			if (!cap.isOpened()) {
+				QMessageBox::warning(NULL, QObject::tr("app"),
+					QObject::tr("Error while opening avi file"),
+					QMessageBox::Cancel,
+					QMessageBox::Cancel);
 			}
-			if (i%hz == 0) {
-				cv::resize(frame, frame, cv::Size(640, 480), 0, 0, CV_INTER_LINEAR);
-				cout << "." << endl;
-				aviFrames.push_back(frame);
+			else {
+				aviFilePath = path;
+				if (mode == 0) {
+					list.clear();
+					aviFrames.clear();
+					Mat frame;
+
+					bool stop = false;
+					int i = 0;
+					while (!stop) {
+
+						cap >> frame;
+
+						if (frame.empty()) {
+							stop = true;
+							continue;
+						}
+						if(scaleFrame)
+							cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
+						std::cout << "." << endl;
+						aviFrames.push_back(frame);
+						i++;
+
+					}
+				}
+				if (mode == 1) {
+					int hz = aviDialog->getHz();
+					list.clear();
+					aviFrames.clear();
+					Mat frame;
+
+					bool stop = false;
+					int i = 0;
+					while (!stop) {
+
+						cap >> frame;
+
+						if (frame.empty()) {
+							stop = true;
+							continue;
+						}
+						if (i%hz == 0) {
+							if (scaleFrame)
+								cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
+							std::cout << "." << endl;
+							aviFrames.push_back(frame);
+						}
+						i++;
+
+					}
+				}
+				if (mode == 2) {
+					int higher = aviDialog->getSpinBox3Value();
+					int lower = aviDialog->getSpinBox2Value();
+
+					cout << lower << " " << higher << endl;
+					list.clear();
+					aviFrames.clear();
+					Mat frame;
+
+					bool stop = false;
+					int i = 0;
+					while (!stop) {
+
+						cap >> frame;
+
+						if (frame.empty()) {
+							stop = true;
+							continue;
+						}
+						if (i >= lower && i <= higher) {
+							if (scaleFrame)
+								cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
+							std::cout << "." << endl;
+							aviFrames.push_back(frame);
+						}
+						i++;
+
+					}
+				}
+				isAvi = true;
+				cap.release();
 			}
-			i++;
-			//frame.release();
 		}
-		isAvi = true;
-		cap.release();
+		delete aviDialog;
 	}
-	
+	cout << aviFilePath.toUtf8().constData() << endl;
 }
 
 void GLWidget::copyConfigToGlWidget(GLWidget *&dest, GLWidget *source) {
@@ -845,27 +926,54 @@ void GLWidget::setGLWidgetCamera(pf::Camera *cam) {
 
 		this->camera = new pf::Camera(tsai2Camera, cam->getWidth(), cam->getHeight());
 	}
+	if (cam->getType() == pf::Camera::Perspective) {
+		pf::Camera camTmp;
+		float pos_x = cam->getEye().x();
+		float pos_y = cam->getEye().y();
+		float pos_z = cam->getEye().z();
+		bool useQuat = false;
+		float quat_x = cam->getOrientation().x();
+		float quat_y = cam->getOrientation().y();
+		float quat_z = cam->getOrientation().z();
+		float quat_w = cam->getOrientation().w();
+		float rot_x = RAD_TO_DEG*cam->getAlpha();
+		float rot_y = RAD_TO_DEG* cam->getBeta();
+		float rot_z = RAD_TO_DEG*cam->getGama();
+		float fovy = cam->getFovy();
+
+		if (useQuat) 
+			this->camera = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, cam->getWidth(), cam->getHeight());
+		else
+			this->camera = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, cam->getWidth(), cam->getHeight());
+	}
+	if (cam->getType() == pf::Camera::PerspectiveDisortion) {
+		pf::Camera camTmp;
+		float pos_x = cam->getEye().x();
+		float pos_y = cam->getEye().y();
+		float pos_z = cam->getEye().z();
+		bool useQuat = false;
+		float quat_x = cam->getOrientation().x();
+		float quat_y = cam->getOrientation().y();
+		float quat_z = cam->getOrientation().z();
+		float quat_w = cam->getOrientation().w();
+		float rot_x = RAD_TO_DEG*cam->getAlpha();
+		float rot_y = RAD_TO_DEG* cam->getBeta();
+		float rot_z = RAD_TO_DEG*cam->getGama();
+		float fovy = cam->getFovy();
+		pf::disortions dis;
+		dis.K1 = cam->getDisortionParams().K1;
+		dis.K2 = cam->getDisortionParams().K2;
+		dis.P1 = cam->getDisortionParams().P1;
+		dis.P2 = cam->getDisortionParams().P2;
+
+		if (useQuat)
+			this->camera = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), pf::Quat(quat_x, quat_y, quat_z, quat_w), fovy, cam->getWidth(), cam->getHeight(), dis);
+		else
+			this->camera = new pf::Camera(pf::Vec3f(pos_x, pos_y, pos_z), rot_x, rot_y, rot_z, fovy, cam->getWidth(), cam->getHeight(), dis);
+	}
 }
 
-void GLWidget::updateModelStateVector(int frames) {
-
-	/*jesli wczesniej wczytano jakies tlo - usun ustawione modelState*/
-	if (modelState.size() > 1) {
-		modelState.erase(modelState.begin() + 1, modelState.end());
-		bonesRotations.erase(bonesRotations.begin() + 1, bonesRotations.end());
-		modelTranslation.erase(modelTranslation.begin() + 1, modelTranslation.end());
-		saveModelState.erase(saveModelState.begin() + 1, saveModelState.end());
-	}
-	
-	for (int i = 0; i < frames - 1; i++) {
-		modelState.push_back(modelState[0]);
-		bonesRotations.push_back(bonesRotations[0]);
-		modelTranslation.push_back(modelTranslation[0]);
-		saveModelState.push_back(false);
-	}
-}
-
-void GLWidget::setGLWidgetModelState(int i) {
+void GLWidget::setGLWidgetModelState(int i, vector<vector<float>> modelState) {
 	model->setModelState(modelState[i]);
 }
 
@@ -893,3 +1001,38 @@ void GLWidget::checkImagesList(QString fileName) {
 	list.clear();
 	list = listTMP;
 }
+
+void GLWidget::setRadiusVertices(vector<vector<pf::Vec3f>> ver, vector<vector<float>> rad) {
+	vertices.clear();
+	radiusVec.clear();
+	vertices = ver;
+	radiusVec = rad;
+
+	update();
+}
+/*
+void GLWidget::dropEvent(QDropEvent *e) {
+	if (e->mimeData()->hasUrls()){
+			
+		if (e->mimeData()->urls().size() > 1) {
+			cout << "to many files loaded" << endl;
+		}
+		else {
+			QUrl url = e->mimeData()->urls()[0];
+			QString fileName = url.toLocalFile();
+			loadFiles(fileName);
+			droppedInside = true;
+		}
+
+	}
+}
+
+void GLWidget::dragEnterEvent(QDragEnterEvent *e) {
+	if (e->mimeData()->hasUrls()) {
+		e->acceptProposedAction();
+	}
+}
+
+void GLWidget::dragLeaveEvent(QDragLeaveEvent *e) {
+
+}*/

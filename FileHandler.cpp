@@ -15,6 +15,12 @@ vector<vector<float>> FileHandler::getAMCTemplate(pf::Model3D * model) {
 	return modelState;
 }
 
+vector<vector<float>> FileHandler::getAMCFile(pf::Model3D * model, QString amcPath) {
+	vector<vector<float>> modelState;
+	pf::MotionData::loadStateVectorFromAMC(amcPath.toUtf8().constData(), model->getNamesMovingBones(), modelState);
+	return modelState;
+}
+
 void FileHandler::saveAMCToFile(vector<float> modelState, vector<string> allBones, vector<string> usedBones, QString amcFileName) {
 	
 	if (amcFileName.isEmpty()) {
@@ -356,6 +362,12 @@ vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<stri
 
 void FileHandler::loadDatFromFile(pf::Model3D *&model, string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry) {
 //	pf::Model3D model;
+	model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, datFileName);
+	model->loadConfig(datFileName, bonesConf, bonesGeometry);
+}
+
+void FileHandler::loadDatFromFile(pf::Model3D *&model, string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry, QString asfFile) {
+	model = new pf::Model3D(pf::Model3D::Cylinder, asfFile.toUtf8().constData(), datFileName);
 	model->loadConfig(datFileName, bonesConf, bonesGeometry);
 }
 
@@ -725,17 +737,17 @@ bool FileHandler::isBoneChecked(string name, vector<string> allBonesNames) {
 	return false;
 }
 
-void FileHandler::reloadParams(GLWidget *&glWidget, vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry) {
+void FileHandler::reloadParams(GLWidget *&glWidget, vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry, QString asfFile) {
 	saveDATToFile(bonesConf, bonesGeometry, "tmpDatFile.dat");
 
-	glWidget->bonesConf.clear();
-	glWidget->bonesGeometry.clear();
+	//glWidget->bonesConf.clear();
+	//glWidget->bonesGeometry.clear();
 
-	glWidget->model = new pf::Model3D(pf::Model3D::Cylinder, ASF_TEMPLATE_PATH, "tmpDatFile.dat");
-	glWidget->model->loadConfig("tmpDatFile.dat", glWidget->bonesConf, glWidget->bonesGeometry);
+	glWidget->model = new pf::Model3D(pf::Model3D::Cylinder, asfFile.toUtf8().constData() , "tmpDatFile.dat");
+	//glWidget->model->loadConfig("tmpDatFile.dat", bonesConf, bonesGeometry);
 
 	std::remove("tmpDatFile.dat");
 
-	glWidget->updateModelStateFromMap(glWidget->modelState, glWidget->bonesRotations, glWidget->bonesConf);
-	glWidget->model->updateModelState(glWidget->modelState[0]);
+	//glWidget->updateModelStateFromMap(glWidget->modelState, glWidget->bonesRotations, glWidget->bonesConf);
+	//glWidget->model->updateModelState(glWidget->modelState[0]);
 }

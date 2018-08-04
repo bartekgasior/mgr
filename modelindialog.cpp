@@ -41,10 +41,10 @@ void ModelInDialog::setGLWidget(vector<vector<float>> modelState, pf::Model3D *m
 	tmpGLWidget->bonesRotations = glWidget->bonesRotations;*/
 	tmpGLWidget->isInMainWindow = false;
 	tmpGLWidget->model = model;
-	tmpGLWidget->modelState = modelState;
+//	tmpGLWidget->modelState = modelState;
 	tmpGLWidget->idxBonesMap = idxBonesMap;
-	tmpGLWidget->bonesConf = boneConfig;
-	tmpGLWidget->bonesGeometry = boneGeometry;
+//	tmpGLWidget->bonesConf = boneConfig;
+	//tmpGLWidget->bonesGeometry = boneGeometry;
 	gridLayout->addWidget(tmpGLWidget, 0, 0, 20, 20);
 }
 

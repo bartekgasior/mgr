@@ -33,6 +33,7 @@ public:
 	/*wybrany typ kamery*/
 	QVector<int> cameraType;
 
+	QVector<bool> useQuat;
 	/*czy zaakceptowano zmiany*/
 	bool okClicked = false;
 	bool firstTime = true;

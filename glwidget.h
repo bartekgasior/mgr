@@ -13,12 +13,14 @@
 #include <QGLWidget>
 #include <QDir>
 #include <QFileDialog>
-
+#include <QMouseEvent>
 #include <QMessageBox>
+
 #include <iostream>
 #include <fstream>
 #include <cstring>
 
+#include "qmimedata.h"
 #include "avihzdialog.h"
 #include "Camera.h"
 #include "ModelHandler.h"
@@ -37,6 +39,14 @@ public:
 	~GLWidget();
 
 	int mode = 1;
+	/*promien rysowanego stawu*/
+	int jointRadius = 30;
+	/*czy rysowac staw*/
+	bool drawJoints = true;
+	/*zmienne do skalowania klatki*/
+	bool scaleFrame = false;
+	int frameWidth = 0;
+	int frameHeight = 0;
 
 	QVector<Bone> skeletonBones;
 	cv::Point3f p;
@@ -78,25 +88,27 @@ public:
 	int cameraID = 0;
 	pf::Camera *camera;
 
-	vector<vector<float>> modelState;//stany modelu
-	vector<pf::range2> limits;// vector zawieraj¹cy limity rotacji poszczególnych koœci
-	vector<float> velocity;
-	vector<pf::Matrixf> rotations;//rotacje
+	//vector<vector<float>> modelState;//stany modelu
+	//vector<pf::range2> limits;// vector zawieraj¹cy limity rotacji poszczególnych koœci
+	//vector<float> velocity;
+	//vector<pf::Matrixf> rotations;//rotacje
 	vector<string> usedBones;//nazwy wykorzystanych kosci
-	vector<string> allBones;//nazwy wszystkich kosci
+	//vector<string> allBones;//nazwy wszystkich kosci
 	vector<pf::ASFBone> asfBones;//kosci
 	map<string, int> idxBonesMap;
-	vector<pf::boneConfig> bonesConf;//parametry kosci
-	vector<pf::boneGeometry> bonesGeometry;
+	//vector<pf::boneConfig> bonesConf;//parametry kosci
+	//vector<pf::boneGeometry> bonesGeometry;
+	vector<vector<pf::Vec3f>> vertices;
+	vector<vector<float>> radiusVec;
 
 	/*wektor o rozmiarze modelState, gdy true zapisuje konfiguracje*/
-	vector<bool> saveModelState;
+	//vector<bool> saveModelState;
 
 	/*obroty wszystkich kosci wraz z nazwa*/
-	vector<map<string, pf::Vec3f>> bonesRotations;
+	//vector<map<string, pf::Vec3f>> bonesRotations;
 
 	/*przesuniecie modelu*/
-	vector<vector<float>> modelTranslation;
+	//vector<vector<float>> modelTranslation;
 
 	/*###############################################*/
 	/* metody */
@@ -117,21 +129,17 @@ public:
     void drawSkeleton();
 
 	//obrot modelu
-	void rotate(string boneName, float direction, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame);
+	void rotate(string boneName, float direction, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame, vector<vector<float>> &modelState);
+
+	void rotate(string boneName, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame, vector<vector<float>> &modelState);
 
 	/*przesuniecie modelu*/
-	void translate(float direction, pf::Vec3 vect, int value, int frame);
+	void translate(float direction, pf::Vec3 vect, int value, int frame, vector<vector<float>> &modelTranslation, vector<vector<float>> &modelState);
+
+	void translate(pf::Vec3 vect, int value, int frame, vector<vector<float>> &modelTranslation, vector<vector<float>> &modelState);
 
 	/*skalowanie wszystkich kosci modelu*/
 	void scale(float direction, int value);	
-
-	/*zapis rotacji do mapy bonesRotations*/
-	void saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<pf::boneConfig> bonesConfig);
-
-	void saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<string> allBones);
-
-	/*aktualizacja wektora modelState po zmianie ilosci kosci modelu*/
-	void updateModelStateFromMap(vector<vector<float>> &mState, vector<map<string, pf::Vec3f>> bonesRotations, vector<pf::boneConfig> bonesConfig);
 
 	void updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig> bonesConfig);
 
@@ -145,10 +153,12 @@ public:
 	/*wczytanie zdjêæ z wybranej œcie¿ki*/
 	void loadFiles();
 
+	void loadFiles(QString fileName);
+
 	/*Wczytanie pliku .avi*/
 	void loadAviFile();
 
-	void loadAviFile(string path, int hz);
+	void loadAviFile(QString path);
 
 	/*zapisanie konfiguracji z jednego modelu do drugiego*/
 	void copyConfigToGlWidget(GLWidget *&dest, GLWidget *source);
@@ -156,13 +166,20 @@ public:
 	void setGLWidgetCamera(pf::Camera *cam);
 
 	/*po wczytaniu tla funkcja tworzy wektor model state o rozmiarze rownym ilosci zaladowanych klatek*/
-	void updateModelStateVector(int frames);
+	//void updateModelStateVector(int frames);
 
 	/*ustawienie aktualnego modelState modelu*/
-	void setGLWidgetModelState(int i);
+	void setGLWidgetModelState(int i, vector<vector<float>> modelState);
+
+	/*ustawienie wektorow verticies oraz radiusVec*/
+	void setRadiusVertices(vector<vector<pf::Vec3f>> ver, vector<vector<float>> rad);
 
 private:
 	void checkImagesList(QString fileName);
+
+	//void dragEnterEvent(QDragEnterEvent *e);
+	//void dragLeaveEvent(QDragLeaveEvent *e);
+	//void dropEvent(QDropEvent *e);
 };
 
 #endif // GLWIDGET_H

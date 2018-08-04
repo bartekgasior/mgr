@@ -86,6 +86,9 @@
     <ClCompile Include="cameratypedialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="configdialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asf.h">
@@ -145,6 +148,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="cameratypedialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="configdialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

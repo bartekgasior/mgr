@@ -27,6 +27,7 @@
 #include "modelindialog.h"
 #include "camerasconfig.h"
 #include "selectmodelid.h"
+#include "configdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -43,13 +44,33 @@ private:
     int addFrameButtonCounter = 0;
 	bool isAvi = false;
 	bool cameraFirstTime = true;
+
+	/*################# config dialog ##################*/
 	/*czy usunięto okno (klatkę)*/
 	bool frameDeleted = true;
+
 	/*sprawdzenei czy po uruchomieniu aplikacji nie zostaly wprowadzone zmiany modelu*/
 	bool justLaunched = true;
+
+	int timerValue = 2000;
+
+	/*czy zmieniac rozmiar tla*/
+	bool resizeBackground = false;
+	int backgroundWidth = 1900;
+	int backgroundHeight = 1200;
+	/*###################################*/
+
+
+	/*zmienne do wczytywania modelu*/
+	bool amcLoaded = false; //czy zaladowano plik amc
+	QString amcPath;
+	bool datLoaded = false;
+	QString datPath;
+	bool asfLoaded = false;
+	QString asfPath;
 	// Human 3D Model
 	pf::Model3D* mainModel;
-	ModelHandler modelHandler;
+	//ModelHandler* modelHandler;
 
 	/*#################################################*/
 	// zmienne modelu 3D
@@ -77,6 +98,14 @@ private:
 	/*radius -> LeftLeg, topRadius1, topRadius2, bottomRadius1, bottomRadius2*/
 	map<string, vector<float>> modelRadius;
 
+	/*wektor o rozmiarze modelState, gdy true zapisuje konfiguracje*/
+	vector<bool> saveModelState;
+
+	/*obroty wszystkich kosci wraz z nazwa*/
+	vector<map<string, pf::Vec3f>> bonesRotations;
+
+	/*przesuniecie modelu*/
+	vector<vector<float>> modelTranslation;
 	/*#################################################*/
 
 	/*menu*/
@@ -89,6 +118,9 @@ private:
 	/*odczyt, zaspis plikow*/
 	QAction *saveDatAction;
 	QAction *loadDatAction;
+
+	QAction *loadAsfAction;
+	QAction *saveAsfAction;
 
 	QAction *loadFromAmcAction;
 	QAction *saveAllAmcSequenceAction;
@@ -105,13 +137,24 @@ private:
 
 	/*Help - About*/
 	QAction *helpAction;
+
+	/*config*/
+	QAction *configAction;
 	/*signalmapper dla przyciskow obslugujacych iteracje tla kazdej z klatek*/
 	//QSignalMapper *increaseButtonSignalMapper;
 
     QFileInfoList list;
-    QSlider *globalSlider;
+    
     QPushButton *addFrameButton;
+	
 	QLabel *selectFrameLabel;
+	QComboBox *comboBoxFrameSelector;
+	QPushButton *setIteratorButton;//ustawienie numeru klatki wybranego okna dla wszystkich pozostalych
+	
+	QHBoxLayout *sliderLayout;
+	QSlider *globalSlider;
+	QPushButton *increaseGlobalSlider;
+	QPushButton *reduceGlobalSlider;
 
     QGridLayout *gridLayout;//głowny layout aplikacji
     QVBoxLayout *vboxRotateLayout; //boczny panel - rotacja modelu
@@ -129,19 +172,27 @@ private:
 	QTabWidget *sideManuTabWidget; //widget zawierajacy menu poszczegolnych klatek
 	QPushButton *saveCurrentModelStateToVector;//po wcisnieciu przycisku wartosc elementu wektora przechowujacego zmienne wymagane do zapisu klatek (false - nie zapisuj, true - zapisz) zostaje zmieniona na true
 	//lista pozwalajaca wybrac numer klatki, na ktorej model bedzie modyfikowany
-	QComboBox *comboBoxFrameSelector;
 
 	/*wektor kamer*/
 	QVector<pf::Camera*> cameras;
+	QVector<bool> useQuat;
 	ModelInDialog *modelInDialog;
 
 	/*golden ratio*/
+	QGroupBox *goldenRatioGroupBox;
 	QPushButton *setGoldenRatioButton;
 	QCheckBox *setGoldenRatioCheckBox;
-	QHBoxLayout *goldenRatioLayout;
+	QHBoxLayout *goldenRatio1RowLayout;
+	QHBoxLayout *goldenRatio2RowLayout;
+	QVBoxLayout *goldenRatioLayout;
+	QLabel *goldenRatioHeightLabel;
+	QDoubleSpinBox *goldenRatioSpinBox;
 
 	//interfejs klatek
     QVector<GLWidget*> glWidgetsVector; //glWidget
+	QVector<QHBoxLayout*> glWidgetLayoutVector; //layout glWidgetu - potrzebny do scrollowania
+	QVector<QScrollArea*> glWidgetScrollAreaVector; //obszar scrollowania widgedu
+	QVector<QWidget*> glWidgetsWidgetVector; //widget przechowujacy 2 powyzsze elementy
 	QVector<QWidget*> bordersWidgetsVector; //ramka interfejsu
 	QVector<QLabel*> frameIDVector; //indeks okna
 	QVector<QHBoxLayout*> horizontalGLWidgetMenuVector; //layout przechowujacy wszystkie elementy menu znajdujacego sie pod obiektem glwidget
@@ -158,9 +209,11 @@ private:
     QVector<int> imagesListIterator; //aktualny indeks
 	QVector<QPushButton*> menuButtonsVector; //przycisk rozwijajacy menu
 	QVector<QHBoxLayout*> menuButtonsLayoutVector; //layout umozliwiajacy dodanie spacerow do przycisku
+
 	QVector<QMenu*> frameScrollingMenu; //rozwijane menu
 	QVector<QMenu*> selectBackgroundMenuVector; //wybor tla
 	QVector<QMenu*> selectCameraMenuVector; //wybor kamery
+	QVector<QMenu*> resizeGLWidgetVector; //rozmiar glwidget
 	QVector<QAction*> showModelInDialogVector; //model w osobnym oknie
 	QVector<QAction*> selectAviBackgroundVector; //wybor sciezki tla z avi
 	QVector<QAction*> selectImagesBackgroundVector; //wybor sciezki tla z folderu zdjec
@@ -169,6 +222,8 @@ private:
 	QVector<QAction*> deleteFrameMenuVector; //usuniecie okna wybranej klatki
 	QVector<QVector<QAction*>> selectCameraActionVector; //dostepne kamery
 	QVector<QTimer*> backgroundTimersVector; //timer sluzacy do automatycznego przewijania tla okna
+	QVector<QAction*> resizeDownActionVector; //pomniejsz glwidget
+	QVector<QAction*> resizeUpActionVector; //powieksz glwidget
 
 	/*qSignalMappers dla przyciskow*/
 	/*menu kazdego okna*/
@@ -186,10 +241,19 @@ private:
 	QVector<QSignalMapper*> setConfigToAllModelsMapperVector;
 	QVector<QSignalMapper*> sliderMapperVector;
 	QVector<QVector<QSignalMapper*>> selectCameraMapperVector;
+	QVector<QSignalMapper*> resizeDownGLWidgetMapperVector;
+	QVector<QSignalMapper*> resizeUpGLWidgetMapperVector;
+
 	/*boczne menu*/
 	QVector<QSignalMapper*> rotateMapperVector;
+	QVector<QSignalMapper*> rotateFromLineEditMapperVector;
 	QVector<QSignalMapper*> lengthMapperVector;
+	QVector<QSignalMapper*> lengthFromLineEditMapperVector;
 	QVector<QSignalMapper*> geometryMapperVector;
+	QVector<QSignalMapper*> geometryLengthFromLineEditMapperVector;
+	QVector<QSignalMapper*> geometryTopRadiusFromLineEditMapperVector;
+	QVector<QSignalMapper*> geometryBottomRadiusFromLineEditMapperVector;
+	QVector<QSignalMapper*> translateFromLineEditMapperVector;
 
 	//wektory zawierajace elementy bocznego menu rotacji
 	QVector<QLabel*> sideRotateMenuLabelsVector; 
@@ -299,6 +363,15 @@ private:
 	/*dodanie zdjec do przyskow bocznego menu*/
 	void addSideMenuButtonsImages(QPushButton *substractButton, QPushButton *addButton);
 
+	/*zdjecia do przyciskow slidera*/
+	void addGlobalSliderButtonsImages(QPushButton *reduceButton, QPushButton *increaseButton);
+
+	/*po wczytaniu klatek tla do okna nr 0 - ustaw wielkosc wektora modelState na rowna liczbie klatek*/
+	void updateModelStateVectorSize(int frames);
+
+	/*odswiezenie modelu na glwidget*/
+	void updateGLWidgetDrawning(int i);
+
     void mapIncreaseButtonSlot(int i);
     void mapReduceButtonSlot(int i);
     void mapMaxButtonSlot(int i);
@@ -312,6 +385,19 @@ private:
 	void mapSetConfigToAllModels(int i);
 	void mapDeleteFrame(int i);
 	void mapTimerSlot(int i);
+	void mapResizeDownGLWidget(int i);
+	void mapResizeUpGLWidget(int i);
+
+	/*zaladowanie tla zdjec po 'wrzuceniu' pliku*/
+	void loadImagesBackgroundDropped(int i);
+	void loadAviDropped(int i);
+	void loadDatDropped(QString str);
+	void loadFromDroppedAMC(QString str);
+	void loadFromDroppedASF(QString str);
+
+	void dragEnterEvent(QDragEnterEvent *e);
+	void dragLeaveEvent(QDragLeaveEvent *e);
+	void dropEvent(QDropEvent *e);
 
 private slots:
 
@@ -330,6 +416,11 @@ private slots:
 	/*Wczytanie pliku amc*/
 	void loadFromAmc();
 
+	void saveAsfToFile();
+
+	/*wczytanie pliku asf*/
+	void loadFromASF();
+
 	/*edycja kosci modelu*/
 	void manageBonesPressed();
 
@@ -341,6 +432,9 @@ private slots:
 
 	/*odczyt pliku kamer*/
 	void loadCamerasPressed();
+
+	/*config*/
+	void configPressed();
 
 	/*kalibracja glownego modelu aplikacji*/
 	void setModelPressed();
@@ -358,6 +452,8 @@ private slots:
 	*/
 	void rotate(QString str);
 
+	void setRotate(QString str);
+
 	/*zmiana dlugosci kosci
 	string w postaci "boneName;direction;qLineEditID;qSpinBoxID"
 	direction = 1.0 || direction = -1.0
@@ -366,17 +462,31 @@ private slots:
 	*/
 	void updateBoneLength(QString str);
 
+	/*ustaw dlugosc kosci na podstawie wartosci lineedit o id i
+	str:
+	boneName
+	id
+	*/
+	void setBoneLengthFromLineEdit(QString str);
+
 	void updateBoneLengthGeometry(QString str);
+
+	void setBoneLengthGeometryFromLineEdit(QString str);
 
 	void updateBoneTopRadius(QString str);
 
+	void setBoneTopRadiusFromLineEdit(QString str);
+
 	void updateBoneBottomRadius(QString str);
+
+	void setBoneBottomRadiusFromLineEdit(QString str);
 
 	/*translacja modelu
 	string w postaci "direction;axis;qLineEditID;qSpinBoxID
 	*/
 	void translate(QString str);
 
+	void setTranslate(QString str);
 	/*skalowanie modelu
 	string w postaci "direction;qSpinBoxID
 	*/
@@ -401,6 +511,9 @@ private slots:
 	void selectAviBackgroundPressed(int i);
 	void setConfigFromModelPressed(int i);
 	void setConfigToAllModelsPressed(int i);
+	void resizeDownGLWidgetPressed(int i);
+	void resizeUpGLWidgetPressed(int i);
+
 
 	/*usuniecie okna*/
 	void deleteFramePressed(int i);
@@ -451,6 +564,16 @@ private slots:
 
 	/*stosunek dlugosci kosci = golden ratio*/
 	void setGoldenRatio();
+
+	/*po zmianie wysokosci modelu - ustaw nowy stosunek golden ratio*/
+	void setGoldenRatioFromSpinBox();
+
+	/*ustawienie aktualnej klatki dla pozostalych okien*/
+	void setIteratorToFrames();
+
+	void reduceGlobalSliderPressed();
+
+	void increaseGlobalSliderPressed();
 };
 
 #endif // MAINWINDOW_H

@@ -20,6 +20,8 @@ public:
 	/*wczytanie startowego pliku amc, wartosci rotacji i translacji równe 0*/
 	vector<vector<float>> getAMCTemplate(pf::Model3D * model);
 
+	vector<vector<float>> getAMCFile(pf::Model3D * model, QString amcPath);
+
 	/*zapis pliku amc - stan jednego modelu, nazwy wszystkich kosci,wykorzystane kosci, nazwa pliku*/
 	void saveAMCToFile(vector<float> modelState, vector<string> allBones, vector<string> usedBones, QString amcFileName);
 
@@ -58,6 +60,8 @@ public:
 	* @param bonesGeometry[out] - vector with bones geometry configuration
 	*/
 	void loadDatFromFile(pf::Model3D *&model, string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry);
+
+	void loadDatFromFile(pf::Model3D *&model, string datFileName, vector<pf::boneConfig> &bonesConf, vector<pf::boneGeometry> &bonesGeometry, QString asfFile);
 
 	/*Sciezka do folderu zdjec tla, zapisana w danym pliku - helperFile.dat*/
 	QString getImagesFolderPath(QString helperFileName);
@@ -110,7 +114,7 @@ public:
 	bool isBoneChecked(string name, vector<string> allBonesNames);
 
 	/* funkcja wykorzystywana w sytuacji, gdy modelState po zmianie konfiguracji ma inny rozmiar niz wczytany w modelu */
-	void reloadParams(GLWidget *&glWidget, vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry);
+	void reloadParams(GLWidget *&glWidget, vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry, QString asfFile);
 
 private:
 	/*zapis wartosci label w pliku .dat*/

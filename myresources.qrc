@@ -9,4 +9,9 @@
         <file>ETC/buttonImages/pause.png</file>
         <file>ETC/buttonImages/play.png</file>
     </qresource>
+    <qresource prefix="/modelFiles">
+        <file>ETC/modelTemplate.amc</file>
+        <file>ETC/modelTemplate.asf</file>
+        <file>ETC/modelTemplate.dat</file>
+    </qresource>
 </RCC>
