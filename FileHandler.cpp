@@ -4,7 +4,6 @@ FileHandler::FileHandler()
 {
 }
 
-
 FileHandler::~FileHandler()
 {
 }
@@ -46,7 +45,7 @@ void FileHandler::saveAMCToFile(vector<float> modelState, vector<string> allBone
 				}
 			}
 			if (!flag) {}
-				//plik << allBones[i] << " " << 0 << " " << 0 << " " << 0 << endl;
+				//throw MyException(";
 		}
 
 		plik.close();
@@ -318,22 +317,24 @@ vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<stri
 			}
 			//if (tmpModelState.size() > 0)
 			//	states.push_back(tmpModelState);
-			if (usedFramesTMP.size() > 1) {
-				int bonesCount = bones.size() / usedFramesTMP.size();
-				bones.erase(bones.begin(), bones.begin() + bonesCount);
-			}
-
-			pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), bones, states);
-
-			usedFrames.clear();
-			int lastID = usedFramesTMP[usedFramesTMP.size() - 1];
-			
-			for (int i = 1; i < lastID + 1; i++) {
-				if (std::find(usedFramesTMP.begin(), usedFramesTMP.end(), i) != usedFramesTMP.end()) {
-					usedFrames.push_back(true);
+			if (usedFramesTMP.size() > 0) {
+				if (usedFramesTMP.size() > 1) {
+					int bonesCount = bones.size() / usedFramesTMP.size();
+					bones.erase(bones.begin(), bones.begin() + bonesCount);
 				}
-				else {
-					usedFrames.push_back(false);
+
+				pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), bones, states);
+
+				usedFrames.clear();
+				int lastID = usedFramesTMP[usedFramesTMP.size() - 1];
+
+				for (int i = 1; i < lastID + 1; i++) {
+					if (std::find(usedFramesTMP.begin(), usedFramesTMP.end(), i) != usedFramesTMP.end()) {
+						usedFrames.push_back(true);
+					}
+					else {
+						usedFrames.push_back(false);
+					}
 				}
 			}
 			//usedFrames = usedFramesTMP;
@@ -349,12 +350,6 @@ vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<stri
 			
 			states.clear();
 		}
-
-		if(!states.empty())
-		QMessageBox::information(NULL, QObject::tr("app"),
-			QObject::tr("Loaded successfully."),
-			QMessageBox::Cancel,
-			QMessageBox::Cancel);
 	}
 
 	return states;
@@ -740,14 +735,20 @@ bool FileHandler::isBoneChecked(string name, vector<string> allBonesNames) {
 void FileHandler::reloadParams(GLWidget *&glWidget, vector<pf::boneConfig> bonesConf, vector<pf::boneGeometry> bonesGeometry, QString asfFile) {
 	saveDATToFile(bonesConf, bonesGeometry, "tmpDatFile.dat");
 
-	//glWidget->bonesConf.clear();
-	//glWidget->bonesGeometry.clear();
-
-	glWidget->model = new pf::Model3D(pf::Model3D::Cylinder, asfFile.toUtf8().constData() , "tmpDatFile.dat");
-	//glWidget->model->loadConfig("tmpDatFile.dat", bonesConf, bonesGeometry);
+	try {
+		glWidget->model = new pf::Model3D(pf::Model3D::Cylinder, asfFile.toUtf8().constData(), "tmpDatFile.dat");
+	}
+	catch (std::exception& e) {
+		QMessageBox::critical(NULL, "Error", e.what(), QMessageBox::Ok);
+		cerr << e.what() << endl;
+		exit(-1);
+	}
+	catch (pf::Exception& e) {
+		
+		cerr << e.what() << endl;
+		QMessageBox::critical(NULL, "Error", e.what(), QMessageBox::Ok);
+		exit(-1);
+	}
 
 	std::remove("tmpDatFile.dat");
-
-	//glWidget->updateModelStateFromMap(glWidget->modelState, glWidget->bonesRotations, glWidget->bonesConf);
-	//glWidget->model->updateModelState(glWidget->modelState[0]);
 }

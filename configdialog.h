@@ -38,11 +38,13 @@ private:
 	QVBoxLayout *mainLayout;
 	
 	QHBoxLayout *jointsRadiusLayout;
+	QGroupBox *jointsRadiusGroupBox;
 	QCheckBox *jointsRadiusCheckBox;
 	QLabel *jointsRadiusLabel;
 	QSpinBox *jointRadiusSpinBox;
 
 	QHBoxLayout *timerLayout;
+	QGroupBox *timerGroupBox;
 	QLabel *timerLabel;
 	QSpinBox *timerSpinBox;
 

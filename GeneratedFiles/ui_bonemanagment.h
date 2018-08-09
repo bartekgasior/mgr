@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'bonemanagment.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.1
+** Created by: Qt User Interface Compiler version 5.9.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -35,7 +35,7 @@ public:
 
     void retranslateUi(QWidget *BoneManagment)
     {
-        BoneManagment->setWindowTitle(QApplication::translate("BoneManagment", "BoneManagment", nullptr));
+        BoneManagment->setWindowTitle(QApplication::translate("BoneManagment", "BoneManagment", Q_NULLPTR));
     } // retranslateUi
 
 };

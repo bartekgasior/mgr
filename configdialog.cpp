@@ -20,8 +20,8 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	addWidgetsToTimerLayout();
 	addWidgetsToBackgroundResolutionLayout();
 
-	mainLayout->addLayout(jointsRadiusLayout);
-	mainLayout->addLayout(timerLayout);
+	mainLayout->addWidget(jointsRadiusGroupBox);
+	mainLayout->addWidget(timerGroupBox);
 	mainLayout->addWidget(backgroundResolutionGroupBox);
 	mainLayout->addWidget(okButton);
 	mainLayout->setAlignment(Qt::AlignCenter);
@@ -43,6 +43,7 @@ void ConfigDialog::okButtonRejected() {
 }
 
 void ConfigDialog::addWidgetsToJointsLayout() {
+	jointsRadiusGroupBox = new QGroupBox("Joints", this);
 	jointsRadiusCheckBox = new QCheckBox(this);
 	jointsRadiusLabel = new QLabel("Joints radius: ",this);
 	jointRadiusSpinBox = new QSpinBox(this);
@@ -51,14 +52,16 @@ void ConfigDialog::addWidgetsToJointsLayout() {
 	connect(jointsRadiusCheckBox, SIGNAL(stateChanged(int)), this, SLOT(drawJoints()));
 	//jointsRadiusCheckBox->setChecked(true);
 
-	jointsRadiusLayout->addWidget(jointsRadiusLabel);
 	jointsRadiusLayout->addWidget(jointsRadiusCheckBox);
+	jointsRadiusLayout->addWidget(jointsRadiusLabel);
 	jointsRadiusLayout->addWidget(jointRadiusSpinBox);
 
 	jointsRadiusLayout->setAlignment(Qt::AlignLeft);
+	jointsRadiusGroupBox->setLayout(jointsRadiusLayout);
 }
 
 void ConfigDialog::addWidgetsToTimerLayout() {
+	timerGroupBox = new QGroupBox("Timers", this);
 	timerLabel = new QLabel("Set timer ticks:", this);
 	timerSpinBox = new QSpinBox(this);
 	timerSpinBox->setMinimum(0);
@@ -67,6 +70,8 @@ void ConfigDialog::addWidgetsToTimerLayout() {
 	timerLayout->addWidget(timerLabel);
 	timerLayout->addWidget(timerSpinBox);
 	timerLayout->setAlignment(Qt::AlignLeft);
+
+	timerGroupBox->setLayout(timerLayout);
 }
 
 void ConfigDialog::addWidgetsToBackgroundResolutionLayout() {

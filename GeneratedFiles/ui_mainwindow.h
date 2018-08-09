@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.1
+** Created by: Qt User Interface Compiler version 5.9.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -115,15 +115,15 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", nullptr));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
         label_pic1->setText(QString());
         button_min->setText(QString());
         button_reduce->setText(QString());
         button_increase->setText(QString());
         button_max->setText(QString());
         label_imgCounter->setText(QString());
-        rootXPosLabel->setText(QApplication::translate("MainWindow", "model X position", nullptr));
-        button_addFrame->setText(QApplication::translate("MainWindow", "Dodaj okno", nullptr));
+        rootXPosLabel->setText(QApplication::translate("MainWindow", "model X position", Q_NULLPTR));
+        button_addFrame->setText(QApplication::translate("MainWindow", "Dodaj okno", Q_NULLPTR));
     } // retranslateUi
 
 };

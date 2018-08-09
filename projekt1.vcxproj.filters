@@ -47,12 +47,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="asf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="glwidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -89,14 +83,11 @@
     <ClCompile Include="configdialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MyException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="asf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bone.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <QtMoc Include="glwidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -107,6 +98,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModelHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -814,6 +814,7 @@ void ModelHandler::clearBonesLengthMap(map<string, float> &bonesLength) {
 }
 
 void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float direction, float value) {
+	bool found = false;
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
@@ -824,12 +825,16 @@ void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bo
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
 			model->updateBoneLength(boneName, bonesGeometry[i].length);
+			found = true;
 			break;
 		}
 	}
+	if (!found)
+		throw MyException("DAT file is incompatbile with ASF file");
 }
 
 void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float value) {
+	bool found = false;
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
@@ -840,12 +845,16 @@ void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bo
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
 			model->updateBoneLength(boneName, bonesGeometry[i].length);
+			found = true;
 			break;
 		}
 	}
+	if (!found)
+		throw MyException("DAT file is incompatbile with ASF file");
 }
 
 void ModelHandler::updateTopRadius(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float direction, float value) {
+	bool found = false;
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
@@ -859,12 +868,16 @@ void ModelHandler::updateTopRadius(pf::Model3D *model, vector<pf::boneGeometry> 
 				bonesGeometry[i].topRadius2 = 0;
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			found = true;
 			break;
 		}
 	}
+	if (!found)
+		throw MyException("DAT file is incompatbile with ASF file");
 }
 
 void ModelHandler::updateTopRadius(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float value) {
+	bool found = false;
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
@@ -878,12 +891,16 @@ void ModelHandler::updateTopRadius(pf::Model3D *model, vector<pf::boneGeometry> 
 				bonesGeometry[i].topRadius2 = 0;
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			found = true;
 			break;
 		}
 	}
+	if (!found)
+		throw MyException("DAT file is incompatbile with ASF file");
 }
 
 void ModelHandler::updateBottomRadius(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float direction, float value) {
+	bool found = false;
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
@@ -897,12 +914,16 @@ void ModelHandler::updateBottomRadius(pf::Model3D *model, vector<pf::boneGeometr
 				bonesGeometry[i].bottomRadius2 = 0;
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			found = true;
 			break;
 		}
 	}
+	if (!found)
+		throw MyException("DAT file is incompatbile with ASF file");
 }
 
 void ModelHandler::updateBottomRadius(pf::Model3D *model, vector<pf::boneGeometry> &bonesGeometry, string boneName, float value) {
+	bool found = false;
 	for (int i = 0; i < bonesGeometry.size(); i++) {
 		if (bonesGeometry[i].name == boneName) {
 
@@ -916,9 +937,12 @@ void ModelHandler::updateBottomRadius(pf::Model3D *model, vector<pf::boneGeometr
 				bonesGeometry[i].bottomRadius2 = 0;
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
+			found = true;
 			break;
 		}
 	}
+	if (!found)
+		throw MyException("DAT file is incompatbile with ASF file");
 }
 
 float ModelHandler::getBoneLength(vector<pf::boneGeometry> bonesGeometry, string boneName) {
@@ -1042,198 +1066,279 @@ void ModelHandler::setVelocityVector(vector<float> &velocity, vector<pf::boneCon
 }
 
 void ModelHandler::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<pf::boneConfig> bonesConfig) {
-	for (int i = 0; i < bonesConfig.size(); i++) {
-		int j = i + 1;
-		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
-		bonesRotations.at(bonesConfig[i].name) = vec;
+	try {
+		for (int i = 0; i < bonesConfig.size(); i++) {
+			int j = i + 1;
+			pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
+			bonesRotations.at(bonesConfig[i].name) = vec;
+		}
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
 	}
 }
 
 void ModelHandler::saveModelStateToMap(map<string, pf::Vec3f> &bonesRotations, vector<float> mState, vector<string> allBones) {
-	for (int i = 0; i < allBones.size(); i++) {
-		int j = i + 1;
-		pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
-		bonesRotations.at(allBones[i]) = vec;
+	try {
+		for (int i = 0; i < allBones.size(); i++) {
+			int j = i + 1;
+			pf::Vec3f vec(mState[j * 3], mState[j * 3 + 1], mState[j * 3 + 2]);
+			bonesRotations.at(allBones[i]) = vec;
+		}
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
 	}
 }
 
 void ModelHandler::saveBonesLengthToMap(map<string, float> &bonesLength, vector<pf::boneGeometry> boneGeometry) {
-	for (int i = 0; i < boneGeometry.size(); i++) {
-		bonesLength.at(boneGeometry[i].name) = boneGeometry[i].length;
+	try {
+		for (int i = 0; i < boneGeometry.size(); i++) {
+			bonesLength.at(boneGeometry[i].name) = boneGeometry[i].length;
+		}
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
 	}
 }
 
 void ModelHandler::updateBonesLengthMap(map<string, float> &bonesLength, string boneName, float value) {
+	try {
 		bonesLength.at(boneName) = value;
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
+	}
 }
 
 void ModelHandler::saveRadiusToMap(map<string, vector<float>> &bonesRadius, vector<pf::boneGeometry> boneGeometry) {
-	for (int i = 0; i < boneGeometry.size(); i++) {
-		vector<float> tmp;
-		tmp.push_back(boneGeometry[i].topRadius1);
-		tmp.push_back(boneGeometry[i].topRadius2);
-		tmp.push_back(boneGeometry[i].bottomRadius1);
-		tmp.push_back(boneGeometry[i].bottomRadius2);
-		bonesRadius.at(boneGeometry[i].name) = tmp;
+	try {
+		for (int i = 0; i < boneGeometry.size(); i++) {
+			vector<float> tmp;
+			tmp.push_back(boneGeometry[i].topRadius1);
+			tmp.push_back(boneGeometry[i].topRadius2);
+			tmp.push_back(boneGeometry[i].bottomRadius1);
+			tmp.push_back(boneGeometry[i].bottomRadius2);
+			bonesRadius.at(boneGeometry[i].name) = tmp;
+		}
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
 	}
 }
 
 void ModelHandler::saveDOFToMap(map<string, vector<bool>> &bonesDOF, vector<pf::boneConfig> boneConfig) {
+	try {
+		for (int i = 0; i < boneConfig.size(); i++) {
+			vector<bool> tmp;
+			if (boneConfig[i].isRotX)
+				tmp.push_back(1);
+			else tmp.push_back(0);
 
-	for (int i = 0; i < boneConfig.size(); i++) {
-		vector<bool> tmp;
-		if (boneConfig[i].isRotX)
-			tmp.push_back(1);
-		else tmp.push_back(0);
+			if (boneConfig[i].isRotY)
+				tmp.push_back(1);
+			else tmp.push_back(0);
 
-		if (boneConfig[i].isRotY)
-			tmp.push_back(1);
-		else tmp.push_back(0);
+			if (boneConfig[i].isRotZ)
+				tmp.push_back(1);
+			else tmp.push_back(0);
 
-		if (boneConfig[i].isRotZ)
-			tmp.push_back(1);
-		else tmp.push_back(0);
-
-		bonesDOF.at(boneConfig[i].name) = tmp;
+			bonesDOF.at(boneConfig[i].name) = tmp;
+		}
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
 	}
 }
 
-void ModelHandler::saveLimitsToMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> boneConfig) {
-	for (int i = 0; i < boneConfig.size(); i++) {
-		vector<int> tmp;
-		if (boneConfig[i].name == "root") {
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			tmp.push_back(-360);
-			tmp.push_back(360);
-			modelLimits.at(boneConfig[i].name) = tmp;
+void ModelHandler::saveLimitsToMap(map<string, vector<int>> &modelLimits, vector<pf::boneConfig> boneConfig) {
+	try {
+		for (int i = 0; i < boneConfig.size(); i++) {
+			vector<int> tmp;
+			if (boneConfig[i].name == "root") {
+				tmp.push_back(-360);
+				tmp.push_back(360);
+				tmp.push_back(-360);
+				tmp.push_back(360);
+				tmp.push_back(-360);
+				tmp.push_back(360);
+				tmp.push_back(-360);
+				tmp.push_back(360);
+				tmp.push_back(-360);
+				tmp.push_back(360);
+				tmp.push_back(-360);
+				tmp.push_back(360);
+				modelLimits.at(boneConfig[i].name) = tmp;
+			}
+			else {
+				tmp.push_back(boneConfig[i].minRotX);
+				tmp.push_back(boneConfig[i].maxRotX);
+				tmp.push_back(boneConfig[i].minRotY);
+				tmp.push_back(boneConfig[i].maxRotY);
+				tmp.push_back(boneConfig[i].minRotZ);
+				tmp.push_back(boneConfig[i].maxRotZ);
+				modelLimits.at(boneConfig[i].name) = tmp;
+			}
+			//vector<int>().swap(tmp);
 		}
-		else {
-			tmp.push_back(boneConfig[i].minRotX);
-			tmp.push_back(boneConfig[i].maxRotX);
-			tmp.push_back(boneConfig[i].minRotY);
-			tmp.push_back(boneConfig[i].maxRotY);
-			tmp.push_back(boneConfig[i].minRotZ);
-			tmp.push_back(boneConfig[i].maxRotZ);
-			modelLimits.at(boneConfig[i].name) = tmp;
-		}
-		//vector<int>().swap(tmp);
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
 	}
 }
 
-void ModelHandler::saveVelocityToMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> boneConfig) {
-	for (int i = 0; i < boneConfig.size(); i++) {
-		vector<float> tmp;
-		if (boneConfig[i].name == "root") {
-			tmp.push_back(160);
-			tmp.push_back(160);
-			tmp.push_back(120);
-			tmp.push_back(10);
-			tmp.push_back(10);
-			tmp.push_back(10);
-			modelVelocity.at(boneConfig[i].name) = tmp;
+void ModelHandler::saveVelocityToMap(map<string, vector<float>> &modelVelocity, vector<pf::boneConfig> boneConfig) {
+	try {
+		for (int i = 0; i < boneConfig.size(); i++) {
+			vector<float> tmp;
+			if (boneConfig[i].name == "root") {
+				tmp.push_back(160);
+				tmp.push_back(160);
+				tmp.push_back(120);
+				tmp.push_back(10);
+				tmp.push_back(10);
+				tmp.push_back(10);
+				modelVelocity.at(boneConfig[i].name) = tmp;
+			}
+			else {
+				tmp.push_back(boneConfig[i].vRotX);
+				tmp.push_back(boneConfig[i].vRotY);
+				tmp.push_back(boneConfig[i].vRotZ);
+				modelVelocity.at(boneConfig[i].name) = tmp;
+			}
 		}
-		else {
-			tmp.push_back(boneConfig[i].vRotX);
-			tmp.push_back(boneConfig[i].vRotY);
-			tmp.push_back(boneConfig[i].vRotZ);
-			modelVelocity.at(boneConfig[i].name) = tmp;
-		}
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
 	}
 }
 
 void ModelHandler::updateModelStateFromMap(vector<vector<float>> &mState, vector<map<string, pf::Vec3f>> bonesRotations, vector<pf::boneConfig> bonesConfig, vector<vector<float>> modelTranslation) {
-	mState.clear();
-	for (int j = 0; j < bonesRotations.size(); j++) {
-		vector<float> newModelState;
+	try {
+		mState.clear();
+		for (int j = 0; j < bonesRotations.size(); j++) {
+			vector<float> newModelState;
 
-		newModelState.push_back(modelTranslation[j][0]);
-		newModelState.push_back(modelTranslation[j][1]); // ############################# przesuniecie root
-		newModelState.push_back(modelTranslation[j][2]);
+			newModelState.push_back(modelTranslation[j][0]);
+			newModelState.push_back(modelTranslation[j][1]); // ############################# przesuniecie root
+			newModelState.push_back(modelTranslation[j][2]);
 
-		//cout << endl;
-
-		for (int i = 0; i < bonesConfig.size(); i++) {
-			pf::Vec3f vec = bonesRotations[j].at(bonesConfig[i].name);
-			//cout << vec.x() << " " << vec.y() << " " << vec.z() << endl;
-			newModelState.push_back(vec.x());
-			newModelState.push_back(vec.y());
-			newModelState.push_back(vec.z());
+			for (int i = 0; i < bonesConfig.size(); i++) {
+				pf::Vec3f vec = bonesRotations[j].at(bonesConfig[i].name);
+				//cout << vec.x() << " " << vec.y() << " " << vec.z() << endl;
+				newModelState.push_back(vec.x());
+				newModelState.push_back(vec.y());
+				newModelState.push_back(vec.z());
+			}
+			mState.push_back(newModelState);
 		}
-		mState.push_back(newModelState);
 	}
-	//vector<float>().swap(newModelState);
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
+	}
 }
 
 void ModelHandler::updateBonesLengthFromMap(map<string, float> bonesLength, vector<pf::boneGeometry> &boneGeometry) {
-	for (int i = 0; i < boneGeometry.size(); i++)
-		boneGeometry[i].length = bonesLength.find(boneGeometry[i].name)->second;
+	for (int i = 0; i < boneGeometry.size(); i++) {
+		auto it = bonesLength.find(boneGeometry[i].name);
+		if (it != bonesLength.end())
+			boneGeometry[i].length = bonesLength.find(boneGeometry[i].name)->second;
+	}
 }
 
 void ModelHandler::updateBonesRadiusFromMap(map<string, vector<float>> bonesRadius, vector<pf::boneGeometry> &boneGeometry) {
 	for (int i = 0; i < boneGeometry.size(); i++) {
-		boneGeometry[i].topRadius1 = bonesRadius.find(boneGeometry[i].name)->second[0];
-		boneGeometry[i].topRadius2 = bonesRadius.find(boneGeometry[i].name)->second[1];
-		boneGeometry[i].bottomRadius1 = bonesRadius.find(boneGeometry[i].name)->second[2];
-		boneGeometry[i].bottomRadius2 = bonesRadius.find(boneGeometry[i].name)->second[3];
+		auto it = bonesRadius.find(boneGeometry[i].name);
+		if (it != bonesRadius.end()) {
+			boneGeometry[i].topRadius1 = bonesRadius.find(boneGeometry[i].name)->second[0];
+			boneGeometry[i].topRadius2 = bonesRadius.find(boneGeometry[i].name)->second[1];
+			boneGeometry[i].bottomRadius1 = bonesRadius.find(boneGeometry[i].name)->second[2];
+			boneGeometry[i].bottomRadius2 = bonesRadius.find(boneGeometry[i].name)->second[3];
+		}
 	}
 }
 
 void ModelHandler::updateBonesDOFMap(map<string, vector<bool>> &bonesDOF, string boneName, vector<bool> dofs) {
-	bonesDOF.at(boneName) = dofs;
+	try {
+		bonesDOF.at(boneName) = dofs;
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
+	}
 }
 
 void ModelHandler::updateDOFFromMap(map<string, vector<bool>> bonesDOF, vector<pf::boneConfig> &bonesConfig) {
 	for (int i = 0; i < bonesConfig.size(); i++) {
-		vector<bool> dof;
-		dof = bonesDOF.find(bonesConfig[i].name)->second;
-		if (dof[0])
-			bonesConfig[i].isRotX = true;
-		else
-			bonesConfig[i].isRotX = false;
+		auto it = bonesDOF.find(bonesConfig[i].name);
+		if (it != bonesDOF.end()) {
+			vector<bool> dof;
+			dof = bonesDOF.find(bonesConfig[i].name)->second;
+			if (dof[0])
+				bonesConfig[i].isRotX = true;
+			else
+				bonesConfig[i].isRotX = false;
 
-		if (dof[1])
-			bonesConfig[i].isRotY = true;
-		else
-			bonesConfig[i].isRotY = false;
+			if (dof[1])
+				bonesConfig[i].isRotY = true;
+			else
+				bonesConfig[i].isRotY = false;
 
-		if (dof[2])
-			bonesConfig[i].isRotZ = true;
-		else
-			bonesConfig[i].isRotZ = false;
+			if (dof[2])
+				bonesConfig[i].isRotZ = true;
+			else
+				bonesConfig[i].isRotZ = false;
 
+		}
 		//vector<bool>().swap(dof);
 	}
 }
 
 void ModelHandler::updateLimitsFromMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> &bonesConfig) {
 	for (int i = 0; i < bonesConfig.size(); i++) {
-		vector<int> limits = modelLimits.find(bonesConfig[i].name)->second;
+		auto it = modelLimits.find(bonesConfig[i].name);
+		if (it != modelLimits.end()) {
+			vector<int> limits = modelLimits.find(bonesConfig[i].name)->second;
 
-		bonesConfig[i].minRotX = limits[0];
-		bonesConfig[i].maxRotX = limits[1];
-		bonesConfig[i].minRotY = limits[2];
-		bonesConfig[i].maxRotY = limits[3];
-		bonesConfig[i].minRotZ = limits[4];
-		bonesConfig[i].maxRotZ = limits[5];
+			bonesConfig[i].minRotX = limits[0];
+			bonesConfig[i].maxRotX = limits[1];
+			bonesConfig[i].minRotY = limits[2];
+			bonesConfig[i].maxRotY = limits[3];
+			bonesConfig[i].minRotZ = limits[4];
+			bonesConfig[i].maxRotZ = limits[5];
+		}
 	}
 }
 
 void ModelHandler::updateVelocityFromMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> &bonesConfig) {
 	for (int i = 0; i < bonesConfig.size(); i++) {
-		vector<float> velocity = modelVelocity.find(bonesConfig[i].name)->second;
+		auto it = modelVelocity.find(bonesConfig[i].name);
+		if (it != modelVelocity.end()) {
+			vector<float> velocity = modelVelocity.find(bonesConfig[i].name)->second;
 
-		bonesConfig[i].vRotX = velocity[0];
-		bonesConfig[i].vRotY = velocity[1];
-		bonesConfig[i].vRotZ = velocity[2];
+			bonesConfig[i].vRotX = velocity[0];
+			bonesConfig[i].vRotY = velocity[1];
+			bonesConfig[i].vRotZ = velocity[2];
+		}
 	}
 }
 
@@ -1335,40 +1440,47 @@ void ModelHandler::setGoldenRatio(map<string, float> &bonesLength, float height)
 	//width = rightHand_dum2 + rightForeArm + rightArm + rightShoulder + leftHand_dum2 + leftForeArm + leftArm + leftShoulder;
 	//cout << width << endl;
 	//cout << endl;
-	/*zapis do mapy*/
-	bonesLength.at("Head") = head;
-	bonesLength.at("Neck") = neck;
-	bonesLength.at("Spine1_dum1") = spine1_dum1;
-	bonesLength.at("Spine") = spine;
-	bonesLength.at("LeftUpLeg_dum") = leftUpLeg_dum;
-	bonesLength.at("LeftUpLeg") = leftUpLeg;
-	bonesLength.at("LeftLeg") = leftLeg;
-	bonesLength.at("RightUpLeg_dum") = rightUpLeg_dum;
-	bonesLength.at("RightUpLeg") = rightUpLeg;
-	bonesLength.at("RightLeg") = rightLeg;
-	bonesLength.at("LeftShoulder") = leftShoulder;
-	bonesLength.at("LeftArm") = leftArm;
-	bonesLength.at("LeftForeArm") = leftForeArm;
-	bonesLength.at("LeftHand_dum2") = leftHand_dum2;
-	bonesLength.at("RightShoulder") = rightShoulder;
-	bonesLength.at("RightArm") = rightArm;
-	bonesLength.at("RightForeArm") = rightForeArm;
-	bonesLength.at("RightHand_dum2") = rightHand_dum2;
-	bonesLength.at("LeftFoot") = leftFoot;
-	bonesLength.at("RightFoot") = rightFoot;
+	try {
+		/*zapis do mapy*/
+		bonesLength.at("Head") = head;
+		bonesLength.at("Neck") = neck;
+		bonesLength.at("Spine1_dum1") = spine1_dum1;
+		bonesLength.at("Spine") = spine;
+		bonesLength.at("LeftUpLeg_dum") = leftUpLeg_dum;
+		bonesLength.at("LeftUpLeg") = leftUpLeg;
+		bonesLength.at("LeftLeg") = leftLeg;
+		bonesLength.at("RightUpLeg_dum") = rightUpLeg_dum;
+		bonesLength.at("RightUpLeg") = rightUpLeg;
+		bonesLength.at("RightLeg") = rightLeg;
+		bonesLength.at("LeftShoulder") = leftShoulder;
+		bonesLength.at("LeftArm") = leftArm;
+		bonesLength.at("LeftForeArm") = leftForeArm;
+		bonesLength.at("LeftHand_dum2") = leftHand_dum2;
+		bonesLength.at("RightShoulder") = rightShoulder;
+		bonesLength.at("RightArm") = rightArm;
+		bonesLength.at("RightForeArm") = rightForeArm;
+		bonesLength.at("RightHand_dum2") = rightHand_dum2;
+		bonesLength.at("LeftFoot") = leftFoot;
+		bonesLength.at("RightFoot") = rightFoot;
 
-	bonesLength.at("LeftToeBase") = 0.0;
-	bonesLength.at("Spine_dum") = 0.0;
-	bonesLength.at("RightToeBase") = 0.0;
-	bonesLength.at("Spine1") = 0.0;
-	bonesLength.at("Spine1_dum2") = 0.0;
-	bonesLength.at("Spine1_dum3") = 0.0;
-	bonesLength.at("LeftHand") = 0.0;
-	bonesLength.at("LeftHand_dum1") = 0.0;
-	bonesLength.at("LeftHandThumb") = 0.0;
-	bonesLength.at("RightHand") = 0.0;
-	bonesLength.at("RightHand_dum1") = 0.0;
-	bonesLength.at("RightHandThumb") = 0.0;
+		bonesLength.at("LeftToeBase") = 0.0;
+		bonesLength.at("Spine_dum") = 0.0;
+		bonesLength.at("RightToeBase") = 0.0;
+		bonesLength.at("Spine1") = 0.0;
+		bonesLength.at("Spine1_dum2") = 0.0;
+		bonesLength.at("Spine1_dum3") = 0.0;
+		bonesLength.at("LeftHand") = 0.0;
+		bonesLength.at("LeftHand_dum1") = 0.0;
+		bonesLength.at("LeftHandThumb") = 0.0;
+		bonesLength.at("RightHand") = 0.0;
+		bonesLength.at("RightHand_dum1") = 0.0;
+		bonesLength.at("RightHandThumb") = 0.0;
+	}
+	catch (const std::out_of_range& oor) {
+		std::cerr << "Out of Range error: " << oor.what() << '\n';
+		QMessageBox::critical(NULL, "Error", "Plik ASF jest niezgodny z plikiem DAT", QMessageBox::Ok);
+		exit(-1);
+	}
 }
 
 float ModelHandler::getModelHeightFromMap(map<string, float> &bonesLength) {

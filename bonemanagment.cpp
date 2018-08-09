@@ -8,6 +8,7 @@ BoneManagment::BoneManagment(QWidget *parent)
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 	dialog->setWindowTitle("Zarz¹dzaj modelem");
 	treeWidget = new QTreeWidget();
+	/*nazwa, checkbox*/
 	treeWidget->setColumnCount(2);
 	treeWidget->setColumnWidth(0, 350);
 
@@ -90,15 +91,22 @@ vector<int> BoneManagment::getUsedBonesIDs(vector<pf::boneGeometry> bonesGeometr
 }
 
 int BoneManagment::getTreeItemID(vector<int> bonesIDs, int parentID) {
-	int result;
-
-	for (int i = 0; i < bonesIDs.size(); i++) {
-		if (bonesIDs[i] == parentID) {
-			result = i;
-			break;
+	int result = -1;
+	try {
+		for (int i = 0; i < bonesIDs.size(); i++) {
+			if (bonesIDs[i] == parentID) {
+				result = i;
+				break;
+			}
+		}
+		if (result == -1) {
+			throw MyException("Something went wrong while processing ASF file!");
 		}
 	}
-
+	catch (MyException& e) {
+		cerr << e.what() << endl;
+		throw MyException("My very own message");
+	}
 	return result;
 }
 

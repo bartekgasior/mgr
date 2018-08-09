@@ -2,7 +2,7 @@
 
 #include "Model3D.h"
 #include "glWidget.h"
-
+#include "MyException.h"
 #include <iostream>
 #include <map>
 #include <string>
@@ -69,9 +69,9 @@ public:
 
 	void saveDOFToMap(map<string, vector<bool>> &bonesDOF, vector<pf::boneConfig> boneConfig);
 
-	void saveLimitsToMap(map<string, vector<int>> modelLimits, vector<pf::boneConfig> boneConfig);
+	void saveLimitsToMap(map<string, vector<int>> &modelLimits, vector<pf::boneConfig> boneConfig);
 
-	void saveVelocityToMap(map<string, vector<float>> modelVelocity, vector<pf::boneConfig> boneConfig);
+	void saveVelocityToMap(map<string, vector<float>> &modelVelocity, vector<pf::boneConfig> boneConfig);
 	
 	/*aktualizacja map po edycji kosci*/
 	void updateModelStateFromMap(vector<vector<float>> &mState, vector<map<string, pf::Vec3f>> bonesRotations, vector<pf::boneConfig> bonesConfig, vector<vector<float>> modelTranslation);

@@ -31,7 +31,7 @@ void CamerasConfig::prepareLayout() {
 
 	cameraTypeComboBox = new QComboBox(this);
 	//connect(cameraTypeComboBox, SIGNAL(activated(int)), this, SLOT(setCameraType()));
-	addNewCamera = new QPushButton("Dodaj kamere");
+	addNewCamera = new QPushButton("Add camera");
 	connect(addNewCamera, SIGNAL(released()), this, SLOT(buttonAddCameraPressed()));
 
 	hBoxLayout->addWidget(cameraComboBox);
@@ -418,7 +418,7 @@ void CamerasConfig::addPerspectiveTab() {
 	}
 	for (int i = 0; i < 2; i++) {
 		perspectiveSpinBoxes[i]->setFixedWidth(125);
-		perspectiveSpinBoxes[i]->setDecimals(1);
+		perspectiveSpinBoxes[i]->setDecimals(0);
 		perspectiveSpinBoxes[i]->setMinimum(0);
 		perspectiveSpinBoxes[i]->setMaximum(1111111);
 	}
@@ -735,6 +735,11 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 		tsai2SpinBoxes[15]->setValue(tsai2Params[13]);
 	}
 	else if (cameraTypeID == 2) {
+		if (useQuat[cameraID])
+			perspectiveQuatCB->setChecked(true);
+		else
+			perspectiveQuatCB->setChecked(false);
+
 		perspectiveParams.push_back(cameras[cameraID]->getEye().x());
 		perspectiveParams.push_back(cameras[cameraID]->getEye().y());
 		perspectiveParams.push_back(cameras[cameraID]->getEye().z());
@@ -747,9 +752,8 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 		perspectiveParams.push_back(cameras[cameraID]->getBeta()*RAD_TO_DEG);
 		perspectiveParams.push_back(cameras[cameraID]->getGama()*RAD_TO_DEG);
 		perspectiveParams.push_back(cameras[cameraID]->getFovy());
-		cout << "value: " << perspectiveSpinBoxes[0]->value() << endl;
-		cout << "W: " << w << endl;
-		/*perspectiveSpinBoxes[0]->setValue(w);
+
+		perspectiveSpinBoxes[0]->setValue(w);
 		perspectiveSpinBoxes[1]->setValue(h);
 		perspectiveSpinBoxes[2]->setValue(perspectiveParams[0]);
 		perspectiveSpinBoxes[3]->setValue(perspectiveParams[1]);
@@ -779,9 +783,14 @@ void CamerasConfig::setCameraParametersToSpinBoxes() {
 		else
 			perspectiveSpinBoxes[11]->setValue(perspectiveParams[10]);
 
-		perspectiveSpinBoxes[12]->setValue(perspectiveParams[11]);*/
+		perspectiveSpinBoxes[12]->setValue(perspectiveParams[11]);
 	}
 	else if (cameraTypeID == 3) {
+		if (useQuat[cameraID])
+			perspectiveDisortionQuatCB->setChecked(true);
+		else
+			perspectiveDisortionQuatCB->setChecked(false);
+
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getEye().x());
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getEye().y());
 		perspectiveDisortionParams.push_back(cameras[cameraID]->getEye().z());
@@ -911,9 +920,6 @@ void CamerasConfig::saveCameraParametersFromSB() {
 	int cameraID = cameraComboBox->currentIndex();
 	int cameraTypeID = cameraType[cameraID];
 
-	//width = widthSpinBox->value();
-	//height = heightSpinBox->value();
-
 	if (cameraTypeID == 0) {
 		pf::TSAI1Camera tsai1Camera;
 		int w = tsai1SpinBoxes[0]->value();
@@ -974,9 +980,9 @@ void CamerasConfig::saveCameraParametersFromSB() {
 		float quat_y = perspectiveSpinBoxes[6]->value();
 		float quat_z = perspectiveSpinBoxes[7]->value();
 		float quat_w = perspectiveSpinBoxes[8]->value();
-		float rot_x = perspectiveSpinBoxes[9]->value() * DEG_TO_RAD;
-		float rot_y = perspectiveSpinBoxes[10]->value()* DEG_TO_RAD;
-		float rot_z = perspectiveSpinBoxes[11]->value()* DEG_TO_RAD;
+		float rot_x = perspectiveSpinBoxes[9]->value();
+		float rot_y = perspectiveSpinBoxes[10]->value();
+		float rot_z = perspectiveSpinBoxes[11]->value();
 		float fovy = perspectiveSpinBoxes[12]->value();
 
 		pf::Camera *camTmp;
@@ -1001,9 +1007,9 @@ void CamerasConfig::saveCameraParametersFromSB() {
 		float quat_y = perspectiveDisortionsSpinBoxes[6]->value();
 		float quat_z = perspectiveDisortionsSpinBoxes[7]->value();
 		float quat_w = perspectiveDisortionsSpinBoxes[8]->value();
-		float rot_x = perspectiveDisortionsSpinBoxes[9]->value()* DEG_TO_RAD;
-		float rot_y = perspectiveDisortionsSpinBoxes[10]->value()* DEG_TO_RAD;
-		float rot_z = perspectiveDisortionsSpinBoxes[11]->value()* DEG_TO_RAD;
+		float rot_x = perspectiveDisortionsSpinBoxes[9]->value();
+		float rot_y = perspectiveDisortionsSpinBoxes[10]->value();
+		float rot_z = perspectiveDisortionsSpinBoxes[11]->value();
 		float fovy = perspectiveDisortionsSpinBoxes[12]->value();
 		pf::disortions dis;
 		dis.K1 = perspectiveDisortionsSpinBoxes[13]->value();
@@ -1221,9 +1227,9 @@ void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
 			float quat_y = cams[i]->getOrientation().y();
 			float quat_z = cams[i]->getOrientation().z();
 			float quat_w = cams[i]->getOrientation().w();
-			float rot_x = RAD_TO_DEG*cams[i]->getAlpha();
-			float rot_y = RAD_TO_DEG*cams[i]->getBeta();
-			float rot_z = RAD_TO_DEG*cams[i]->getGama();
+			float rot_x = cams[i]->getAlpha();
+			float rot_y = cams[i]->getBeta();
+			float rot_z = cams[i]->getGama();
 			float fovy = cams[i]->getFovy();
 
 			pf::Camera *camTmp;
@@ -1246,9 +1252,9 @@ void CamerasConfig::getCamerasFromMainWindow(QVector<pf::Camera*> cams) {
 			float quat_y = cams[i]->getOrientation().y();
 			float quat_z = cams[i]->getOrientation().z();
 			float quat_w = cams[i]->getOrientation().w();
-			float rot_x = RAD_TO_DEG*cams[i]->getAlpha();
-			float rot_y = RAD_TO_DEG*cams[i]->getBeta();
-			float rot_z = RAD_TO_DEG*cams[i]->getGama();
+			float rot_x = cams[i]->getAlpha();
+			float rot_y = cams[i]->getBeta();
+			float rot_z = cams[i]->getGama();
 			float fovy = cams[i]->getFovy();
 
 			pf::disortions dis;

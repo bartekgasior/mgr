@@ -7,7 +7,7 @@
 #include <QGridLayout>
 #include <QDialogButtonBox>
 #include "Model3D.h"
-
+#include "MyException.h"
 using namespace std;
 
 class BoneManagment : public QDialog
@@ -25,7 +25,7 @@ public:
 	/*lista pozwalajaca na wybor kosci w modelu*/
 	void setUsedBones(vector<pf::ASFBone> asfBones, vector<int> usedBones);
 
-	/*indeksy uzytych kosci*/
+	/*indeksy uzytych w modelu kosci*/
 	vector<int> getUsedBonesIDs(vector<pf::boneGeometry> bonesGeometry, vector<string> allBones);
 	
 	/*funkcja zamienia kolejnosc elementow w wektorach, aby pokrywala sie ona z plikiem asf*/
@@ -43,6 +43,7 @@ public:
 private:
 	/*wektor zawierajacy id kosci tworzacych QTreeWidget*/
 	vector<int> bonesIDs;
+
 	/*wektor zawierajacy nazwy kosci tworzacych QTreeWidget*/
 	vector<QString> bonesNames;
 

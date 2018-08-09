@@ -1,8 +1,6 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
-#include "bone.h"
-#include "asf.h"
 #include "Model3D.h"
 
 #include <opencv2/core/core.hpp>
@@ -38,6 +36,7 @@ public:
     explicit GLWidget(QWidget *parent = 0);
 	~GLWidget();
 
+	/*1 - cylinder*/
 	int mode = 1;
 	/*promien rysowanego stawu*/
 	int jointRadius = 30;
@@ -48,8 +47,6 @@ public:
 	int frameWidth = 0;
 	int frameHeight = 0;
 
-	QVector<Bone> skeletonBones;
-	cv::Point3f p;
 	int yRot, w, h;
 	GLfloat ar;
 
@@ -57,6 +54,7 @@ public:
 	QString loadedImagesFolderPath;
 	//sciezka do pliku avi
 	QString aviFilePath;
+	//wektor mat wczytanego pliku avi
 	QVector<cv::Mat> aviFrames;
 
 	/*pliki wybranego folderu*/
@@ -77,38 +75,26 @@ public:
 	/*czy wczytane tlo jest zdjeciem czy klatka pliku avi*/
 	bool isAvi = false;
 
+	/*czy wczytaæ wszystkie klatki, Hz, czesc*/
+	int aviMode = -1;
+	int aviHz = -1;
+	int aviLower = -1;
+	int aviHigher = -1;
 	/*czy dodac tlo*/
 	bool drawBckg = false;
 	
-	/*czestotliwosc wczytywania klatek z avi - wykorzystywana do zapisu i odczytu z pliku*/
-	//int hz = 0;
-
 	/*czy wykorzystywac kamere*/
 	bool cast = false;
-	int cameraID = 0;
+	int cameraID = -1;
 	pf::Camera *camera;
 
-	//vector<vector<float>> modelState;//stany modelu
-	//vector<pf::range2> limits;// vector zawieraj¹cy limity rotacji poszczególnych koœci
-	//vector<float> velocity;
 	//vector<pf::Matrixf> rotations;//rotacje
 	vector<string> usedBones;//nazwy wykorzystanych kosci
-	//vector<string> allBones;//nazwy wszystkich kosci
 	vector<pf::ASFBone> asfBones;//kosci
 	map<string, int> idxBonesMap;
-	//vector<pf::boneConfig> bonesConf;//parametry kosci
-	//vector<pf::boneGeometry> bonesGeometry;
 	vector<vector<pf::Vec3f>> vertices;
 	vector<vector<float>> radiusVec;
 
-	/*wektor o rozmiarze modelState, gdy true zapisuje konfiguracje*/
-	//vector<bool> saveModelState;
-
-	/*obroty wszystkich kosci wraz z nazwa*/
-	//vector<map<string, pf::Vec3f>> bonesRotations;
-
-	/*przesuniecie modelu*/
-	//vector<vector<float>> modelTranslation;
 
 	/*###############################################*/
 	/* metody */
@@ -122,13 +108,9 @@ public:
 
 	/* tworzenie tla dla wczytanego pliku .avi */
 	void drawBackground(cv::Mat mat);
-	/*BG, funkcja nie uzywana*/
-    void drawBone(Bone *bone, cv::Point3f);
-
-	/*BG,funkcja nie uzywana*/
-    void drawSkeleton();
 
 	//obrot modelu
+	/*nazwa kosci, kierunek obrotu, os, wartosc obrotu, bonesConfig, limity, numer klatki, modelState*/
 	void rotate(string boneName, float direction, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame, vector<vector<float>> &modelState);
 
 	void rotate(string boneName, pf::Vec3 vect, int rotVal, vector<pf::boneConfig> bConf, vector<pf::range2> limitsVector, int frame, vector<vector<float>> &modelState);
@@ -138,9 +120,10 @@ public:
 
 	void translate(pf::Vec3 vect, int value, int frame, vector<vector<float>> &modelTranslation, vector<vector<float>> &modelState);
 
-	/*skalowanie wszystkich kosci modelu*/
-	void scale(float direction, int value);	
-
+	/*skalowanie obrazow tla dla plikow avi - zdjecia sa skalowane przy wyswietlaniu*/
+	QVector<cv::Mat> scaleAviBackground();
+	
+	/*aktualizacja uzywanych kosci*/
 	void updateUsedBones(vector<string> &usedBones, vector<pf::boneConfig> bonesConfig);
 
 	// draw skeleton model 
@@ -160,13 +143,9 @@ public:
 
 	void loadAviFile(QString path);
 
-	/*zapisanie konfiguracji z jednego modelu do drugiego*/
-	void copyConfigToGlWidget(GLWidget *&dest, GLWidget *source);
+	void loadAviFile(QString path, int mode, int aviHz, int lower, int higher);
 
 	void setGLWidgetCamera(pf::Camera *cam);
-
-	/*po wczytaniu tla funkcja tworzy wektor model state o rozmiarze rownym ilosci zaladowanych klatek*/
-	//void updateModelStateVector(int frames);
 
 	/*ustawienie aktualnego modelState modelu*/
 	void setGLWidgetModelState(int i, vector<vector<float>> modelState);
@@ -175,11 +154,8 @@ public:
 	void setRadiusVertices(vector<vector<pf::Vec3f>> ver, vector<vector<float>> rad);
 
 private:
+	/*wczytaj pliki od danego id w dol*/
 	void checkImagesList(QString fileName);
-
-	//void dragEnterEvent(QDragEnterEvent *e);
-	//void dragLeaveEvent(QDragLeaveEvent *e);
-	//void dropEvent(QDropEvent *e);
 };
 
 #endif // GLWIDGET_H
