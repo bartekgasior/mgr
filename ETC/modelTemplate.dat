@@ -1,101 +1,100 @@
 # File created by Model3D module
 # Model configuration file
-# Data/Time: Mon Feb 27 10:21:50 2012
-#--------------------------------------------------------
+# Data/Time: 02/02/16 18:32:10#--------------------------------------------------------
 :movingBones
    begin
       name root
       dof tx ty tz rx ry rz 
       rot 0 0 0
-      limits -360 360 -360 360 -360 360
-      velocity 160 160 120 10 10 10
+      limits -360 360 -360 360 -60 15
+      velocity 300 30 30 4 4 8
    end
    begin
       name LeftUpLeg
       dof rx rz 
       rot 0 0 0
-      limits -95 50 0 0 -35 50
-      velocity 32 0 10
+      limits -10 110 0 0 -90 170
+      velocity 12 0 20
    end
    begin
       name LeftLeg
-      dof rx 
+      dof rx rz 
       rot 0 0 0
-      limits 0 140 0 0 0 0
-      velocity 25 0 0
+      limits -75 75 0 0 -160 5
+      velocity 12 0 16
    end
    begin
       name RightUpLeg
       dof rx rz 
       rot 0 0 0
-      limits -95 50 0 0 -50 35
-      velocity 32 0 10
+      limits -110 10 0 0 -90 170
+      velocity 12 0 20
    end
    begin
       name RightLeg
-      dof rx 
+      dof rx rz 
       rot 0 0 0
-      limits 0 140 0 0 0 0
-      velocity 25 0 0
+      limits -75 75 0 0 -160 5
+      velocity 12 0 16
    end
    begin
       name Spine1
-      dof rx ry rz 
+      dof rz 
       rot 0 0 0
-      limits -15 25 -25 25 -25 25
-      velocity 10 10 10
+      limits 0 0 0 0 -25 25
+      velocity 0 0 8
    end
    begin
       name Head
-      dof rx ry rz 
+      dof rz 
       rot 0 0 0
-      limits -50 95 -95 95 -50 50
-      velocity 10 10 10
+      limits 0 0 0 0 -50 50
+      velocity 0 0 5
    end
    begin
       name LeftArm
       dof rx ry rz 
       rot 0 0 0
-      limits -150 180 -150 180 -150 180
-      velocity 25 15 25
+      limits -20 50 -40 40 -120 120
+      velocity 5 4 6
    end
    begin
       name LeftForeArm
-      dof ry 
+      dof rz 
       rot 0 0 0
-      limits 0 0 -140 0 0 0
-      velocity 0 15 0
+      limits 0 0 0 0 0 120
+      velocity 0 0 6
    end
    begin
       name RightArm
       dof rx ry rz 
       rot 0 0 0
-      limits -180 150 -180 150 -180 150
-      velocity 25 15 25
+      limits -50 20 -40 40 -120 120
+      velocity 5 4 6
    end
    begin
       name RightForeArm
-      dof ry 
+      dof rz 
       rot 0 0 0
-      limits 0 0 0 140 0 0
-      velocity 0 15 0
+      limits 0 0 0 0 0 120
+      velocity 0 0 6
    end
 # bone name, topRadius1, topRadius2, bottomRadius1, bottomRadius2, length, label.r, label.g, label.b
 :geometry
    begin
-      LeftUpLeg 125 125 135 135 434 150 150 150
-      LeftLeg 85 85 120 120 406 150 150 150
-      LeftFoot 50 50 100 100 167 150 150 150
-      RightUpLeg 125 125 135 135 434 140 140 140
-      RightLeg 85 85 120 120 406 140 140 140
-      RightFoot 50 50 100 100 167 140 140 140
-      Spine 275 275 285 285 212 255 255 255
-      Spine1_dum1 260 260 270 270 260 255 255 255
-      Head 180 140 180 140 139 255 255 255
-      LeftArm 70 70 80 80 284 200 200 200
-      LeftForeArm 50 50 70 70 218 200 200 200
-      LeftHand_dum2 80 80 50 50 99.8 200 200 200
-      RightArm 70 70 80 80 284 190 190 190
-      RightForeArm 50 50 70 70 218 190 190 190
-      RightHand_dum2 80 80 50 50 99.8 190 190 190
+      LeftUpLeg 135 135 155 155 514 150 150 150
+      LeftLeg 90 90 135 135 481 150 150 150
+      LeftFoot 50 50 100 100 177 150 150 150
+      RightUpLeg 135 135 155 155 514 140 140 140
+      RightLeg 90 90 135 135 481 140 140 140
+      RightFoot 50 50 100 100 177 140 140 140
+      Spine 260 260 265 265 212 255 255 255
+      Spine1_dum1 255 255 260 260 330 255 255 255
+      Head 180 140 180 180 179 255 255 255
+      LeftArm 80 80 85 85 314 200 200 200
+      LeftForeArm 75 75 80 80 293 200 200 200
+      LeftHand_dum2 80 80 60 60 114 200 200 200
+      RightArm 80 80 85 85 314 190 190 190
+      RightForeArm 75 75 80 80 293 190 190 190
+      RightHand_dum2 80 80 60 60 114 190 190 190
    end

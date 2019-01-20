@@ -107,29 +107,54 @@ void GLWidget::drawSkeletonModel(vector<vector<pf::Vec3f> > modelVertices)
 		
 		pf::Vec3 ver(modelVertices[i][0].x(), modelVertices[i][0].y(), -modelVertices[i][0].z());
 		pf::Vec3 ver1(modelVertices[i][1].x(), modelVertices[i][1].y(), -modelVertices[i][1].z());
-
+		//pf::Vec3 ver(-modelVertices[i][0].z(), modelVertices[i][0].y(), modelVertices[i][0].x());
+		//pf::Vec3 ver1(-modelVertices[i][1].z(), modelVertices[i][1].y(), modelVertices[i][1].x());
 		if (cast == true) {
 			ver = camera->cast(ver);
 			ver1 = camera->cast(ver1);
+			//cout << "id - " << id << endl;
+			//cout << ver.x() << " " << ver.y() << " " << ver.z() << endl;
+			//cout << ver1.x() << " " << ver1.y() << " " << ver1.z() << endl;
+			//cout << endl;
 		}
+		glPushMatrix();
+		glLoadIdentity();
+		//glViewport(0, 0, 1920, 1200);
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, 1920, 0, 1200, -1, 1);
+		cout << "id - " << id << endl;
+		cout << this->width() << endl;
+		cout << this->height() << endl;
+		cout << endl;
+		glMatrixMode(GL_MODELVIEW);
 		if (drawJoints) {
 			glPushMatrix();
 			glColor3f(255.0f, 0.0f, 0.0f);
-			glTranslatef(ver.x(), ver.y(), -ver.z());
+			glTranslatef(ver.x(), ver.y(), ver.z());
 			gluSphere(sphere, jointRadius, 100, 100);
-			glPopMatrix();
 
-			glPushMatrix();
 			glColor3f(255.0f, 0.0f, 0.0f);
-			glTranslatef(ver1.x(), ver1.y(), -ver1.z());
+			glTranslatef(ver1.x(), ver1.y(), ver1.z());
 			gluSphere(sphere, jointRadius, 100, 100);
 			glPopMatrix();
 		}
+		//glTranslatef(0, -400, 0);
+		//glRotatef(360, 1, 0, 0);
 		glBegin(GL_LINES);
+		if(i==0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else
 			glColor3f(1.0f, 1.0f, 1.0f);
-			glVertex3f(ver.x(), ver.y(), -ver.z());
-			glVertex3f(ver1.x(), ver1.y(), -ver1.z());
+			glVertex3f(ver.x(), ver.y(), ver.z());
+			glVertex3f(ver1.x(), ver1.y(), ver1.z());
 		glEnd();
+		
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
 	}
 	gluDeleteQuadric(sphere);
 }
@@ -509,12 +534,17 @@ void GLWidget::drawBackground(cv::Mat mat) {
 
 		glDisable(GL_BLEND);
 		glEnable(GL_TEXTURE_2D);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0, 1920, 0, 1200, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1350, -1000, 1000);
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(1350, -1000, 1000);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(1350, 1000, 1000);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1350, 1000, 1000);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(0, 0, -0.5);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(1920, 0, -0.5);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(1920, 1200, -0.5);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(0, 1200, -0.5);
 		glEnd();
 
 		glDisable(GL_TEXTURE_2D);
@@ -631,7 +661,7 @@ void GLWidget::loadAviFile() {
 						}
 						if (scaleFrame)
 							cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-						std::cout << "." << endl;
+						//std::cout << "." << endl;
 						aviFrames.push_back(frame.clone());
 						i++;
 
@@ -657,7 +687,7 @@ void GLWidget::loadAviFile() {
 						if (i%hz == 0) {
 							if (scaleFrame)
 								cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-							std::cout << "." << endl;
+							//std::cout << "." << endl;
 							aviFrames.push_back(frame.clone());
 						}
 						i++;
@@ -686,7 +716,7 @@ void GLWidget::loadAviFile() {
 						if (i >= lower && i <= higher) {
 							if (scaleFrame)
 								cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-							std::cout << "." << endl;
+							//std::cout << "." << endl;
 							aviFrames.push_back(frame.clone());
 						}
 						i++;
@@ -699,7 +729,7 @@ void GLWidget::loadAviFile() {
 		}
 		delete aviDialog;
 	}
-	cout << aviFilePath.toUtf8().constData() << endl;
+	//cout << aviFilePath.toUtf8().constData() << endl;
 }
 
 void GLWidget::loadAviFile(QString path) {
@@ -743,7 +773,7 @@ void GLWidget::loadAviFile(QString path) {
 						}
 						if(scaleFrame)
 							cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-						std::cout << "." << endl;
+						//std::cout << "." << endl;
 						aviFrames.push_back(frame.clone());
 						i++;
 
@@ -769,7 +799,7 @@ void GLWidget::loadAviFile(QString path) {
 						if (i%hz == 0) {
 							if (scaleFrame)
 							   cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-							std::cout << "."  << " " << i << endl;
+							//std::cout << "."  << " " << i << endl;
 							aviFrames.push_back(frame.clone());
 						}
 						i++;
@@ -798,7 +828,7 @@ void GLWidget::loadAviFile(QString path) {
 						if (i >= lower && i <= higher) {
 							if (scaleFrame)
 								cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-							std::cout << "." << endl;
+							//std::cout << "." << endl;
 							aviFrames.push_back(frame.clone());
 						}
 						i++;
@@ -811,7 +841,7 @@ void GLWidget::loadAviFile(QString path) {
 		}
 		delete aviDialog;
 	}
-	cout << aviFilePath.toUtf8().constData() << endl;
+	//cout << aviFilePath.toUtf8().constData() << endl;
 }
 
 void GLWidget::loadAviFile(QString path, int mode, int aviHz, int lower, int higher) {
@@ -827,7 +857,11 @@ void GLWidget::loadAviFile(QString path, int mode, int aviHz, int lower, int hig
 					QMessageBox::Cancel);
 			}
 			else {
-				aviFilePath = path;
+				this->aviMode = mode;
+				this->aviHz = aviHz;
+				this->aviLower = lower;
+				this->aviHigher = higher;
+				this->aviFilePath = path;
 				if (mode == 0) {
 					list.clear();
 					aviFrames.clear();
@@ -845,7 +879,7 @@ void GLWidget::loadAviFile(QString path, int mode, int aviHz, int lower, int hig
 						}
 						if (scaleFrame)
 							cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-						std::cout << "." << endl;
+						//std::cout << "." << endl;
 						aviFrames.push_back(frame.clone());
 						i++;
 
@@ -869,7 +903,7 @@ void GLWidget::loadAviFile(QString path, int mode, int aviHz, int lower, int hig
 					if (i%aviHz == 0) {
 						if (scaleFrame)
 							cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-						std::cout << "." << " " << i << endl;
+						//std::cout << "." << " " << i << endl;
 						aviFrames.push_back(frame.clone());
 					}
 					i++;
@@ -877,7 +911,6 @@ void GLWidget::loadAviFile(QString path, int mode, int aviHz, int lower, int hig
 				}
 			}
 			if (mode == 2) {
-
 
 				list.clear();
 				aviFrames.clear();
@@ -896,7 +929,7 @@ void GLWidget::loadAviFile(QString path, int mode, int aviHz, int lower, int hig
 					if (i >= lower && i <= higher) {
 						if (scaleFrame)
 							cv::resize(frame, frame, cv::Size(frameWidth, frameHeight), 0, 0, CV_INTER_LINEAR);
-						std::cout << "." << endl;
+						//std::cout << "." << endl;
 						aviFrames.push_back(frame.clone());
 					}
 					i++;
@@ -932,6 +965,25 @@ void GLWidget::setGLWidgetCamera(pf::Camera *cam) {
 
 		this->camera = new pf::Camera(tsai1Camera, cam->getWidth(), cam->getHeight());
 	}
+	if (cam->getType() == pf::Camera::TSAI2Rodrigues) {
+		pf::TSAI2Camera tsai2Camera;
+		tsai2Camera.trans.x = cam->getTSAI2Param().trans.x;
+		tsai2Camera.trans.y = cam->getTSAI2Param().trans.y;
+		tsai2Camera.trans.z = cam->getTSAI2Param().trans.z;
+		tsai2Camera.rot.x = cam->getTSAI2Param().rot.x;
+		tsai2Camera.rot.y = cam->getTSAI2Param().rot.y;
+		tsai2Camera.rot.z = cam->getTSAI2Param().rot.z;
+		tsai2Camera.focal1 = cam->getTSAI2Param().focal1;
+		tsai2Camera.focal2 = cam->getTSAI2Param().focal2;
+		tsai2Camera.c.x = cam->getTSAI2Param().c.x;
+		tsai2Camera.c.y = cam->getTSAI2Param().c.y;
+		tsai2Camera.K1 = cam->getTSAI2Param().K1;
+		tsai2Camera.K2 = cam->getTSAI2Param().K2;
+		tsai2Camera.P1 = cam->getTSAI2Param().P1;
+		tsai2Camera.P2 = cam->getTSAI2Param().P2;
+
+		this->camera = new pf::Camera(tsai2Camera, cam->getWidth(), cam->getHeight(), true);
+	}
 	if (cam->getType() == pf::Camera::TSAI2) {
 		pf::TSAI2Camera tsai2Camera;
 		tsai2Camera.trans.x = cam->getTSAI2Param().trans.x;
@@ -949,7 +1001,7 @@ void GLWidget::setGLWidgetCamera(pf::Camera *cam) {
 		tsai2Camera.P1 = cam->getTSAI2Param().P1;
 		tsai2Camera.P2 = cam->getTSAI2Param().P2;
 
-		this->camera = new pf::Camera(tsai2Camera, cam->getWidth(), cam->getHeight());
+		this->camera = new pf::Camera(tsai2Camera, cam->getWidth(), cam->getHeight(), false);
 	}
 	if (cam->getType() == pf::Camera::Perspective) {
 		pf::Camera camTmp;
@@ -1017,12 +1069,12 @@ void GLWidget::checkImagesList(QString fileName) {
 	for (int i = 0; i < list.size(); i++) {
 		if (list[i].baseName().mid(0, prefix.length()) == prefix) {
 			if (list[i].baseName().right(prefix.length()).toInt() >= sufix.toInt()) {
-				cout << list[i].baseName().toUtf8().constData() << endl;
+				//cout << list[i].baseName().toUtf8().constData() << endl;
 				listTMP.push_back(list[i]);
 			}
 		}
 	}
-	cout << endl;
+	//cout << endl;
 	list.clear();
 	list = listTMP;
 }

@@ -824,7 +824,7 @@ void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bo
 				bonesGeometry[i].length = 0;
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
-			model->updateBoneLength(boneName, bonesGeometry[i].length);
+			//model->updateBoneLength(boneName, bonesGeometry[i].length);
 			found = true;
 			break;
 		}
@@ -844,7 +844,7 @@ void ModelHandler::updateLength(pf::Model3D *model, vector<pf::boneGeometry> &bo
 				bonesGeometry[i].length = 0;
 
 			model->updateBoneGeometry(boneName, bonesGeometry[i]);
-			model->updateBoneLength(boneName, bonesGeometry[i].length);
+			//model->updateBoneLength(boneName, bonesGeometry[i].length);
 			found = true;
 			break;
 		}

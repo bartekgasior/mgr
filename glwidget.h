@@ -36,6 +36,8 @@ public:
     explicit GLWidget(QWidget *parent = 0);
 	~GLWidget();
 
+	int id = -1;
+
 	/*1 - cylinder*/
 	int mode = 1;
 	/*promien rysowanego stawu*/

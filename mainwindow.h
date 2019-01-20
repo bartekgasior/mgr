@@ -427,6 +427,7 @@ private:
 	void loadImagesBackgroundDropped(int i);
 	void loadAviDropped(int i);
 	void loadDatDropped(QString str);
+	void loadProjectDropped(QString fileName);
 
 	/*wczytanie plikow konfiguracyjnych po wrzuceniue do aplikacji*/
 	void loadFromDroppedAMC(QString str);
@@ -441,6 +442,9 @@ private:
 	void loadDAT(QString fileName);
 	void loadASF(QString filaName);
 	void loadAMC(QString fileName);
+
+	/*sprawdzenie czy wczytano kamery czy projekt*/
+	int checkINIFile(QString fileName);
 
 private slots:
 
@@ -491,6 +495,9 @@ private slots:
 
 	/*config - rodzielczosc tla, timer, rozmiar stawow*/
 	void configPressed();
+
+	/*help*/
+	void helpPressed();
 
 	/*wcisniecie przycisku powoduje zapis true do wektora sprawdzajacego czy zapisac dana konfiguracje modelu*/
 	void saveModelStateToBoolVector();

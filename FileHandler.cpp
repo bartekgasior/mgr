@@ -256,8 +256,6 @@ vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<stri
 
 	else {
 		if (QFileInfo(fileName).exists()) {
-			//pf::Model3D model3D = pf::Model3D(pf::Model3D::Cylinder, asfPaths[i].toUtf8().constData(), datPaths[i].toUtf8().constData());
-			//pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), allBones, states);
 			bones.clear();
 
 			//vector<float> tmpModelState;
@@ -272,63 +270,36 @@ vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<stri
 			if (!inputFile.is_open())
 				cout << "Cannot open file: " << inputFilename << endl;
 
-			/*pominac 2 pierwsze linie*/
-			//getline(inputFile, str);
-			//getline(inputFile, str);
-
 			while (getline(inputFile, str)) {
-				cout << str << endl;
 				if (str.at(0) != '#' && str.at(0) != ':'){
 					if (isdigit(str.at(0))) {
-						usedFramesTMP.push_back(str.at(0) - '0');
-						//if (tmpModelState.size() > 0)
-						//	states.push_back(tmpModelState);
-						//tmpModelState.clear();
+						int id = 0;
+						for (int j = 0; j < str.length(); j++) {
+							id = str.at(j) - '0' + 10 * id;
+						}
+						usedFramesTMP.push_back(id);
 					}
 					else {
-						/*istringstream iss(str);
-						std::string bone;
-						iss >> bone;*/
 						
 						int strpos = str.find(" ");
 						std::string bone = str.substr(0, strpos);
-						
-						/*if (bone == "root") {
-							float x1, x2, x3, x4, x5, x6;
-							iss >> x1 >> x2 >> x3 >> x4 >> x5 >> x6;
-							tmpModelState.push_back(x1);
-							tmpModelState.push_back(x2);
-							tmpModelState.push_back(x3);
-							tmpModelState.push_back(x4);
-							tmpModelState.push_back(x5);
-							tmpModelState.push_back(x6);
-						}
-						else {
-							float x1, x2, x3;
-							iss >> x1 >> x2 >> x3;
-							tmpModelState.push_back(x1);
-							tmpModelState.push_back(x2);
-							tmpModelState.push_back(x3);
-						}*/
 						bones.push_back(bone);
 						continue;
 					}
 				}
 			}
-			//if (tmpModelState.size() > 0)
-			//	states.push_back(tmpModelState);
 			if (usedFramesTMP.size() > 0) {
 				if (usedFramesTMP.size() > 1) {
 					int bonesCount = bones.size() / usedFramesTMP.size();
-					bones.erase(bones.begin(), bones.begin() + bonesCount);
+					bones.erase(bones.begin(), bones.begin() + (bonesCount * (usedFramesTMP.size()-1)));
 				}
 
 				pf::MotionData::loadStateVectorFromAMC(fileName.toUtf8().constData(), bones, states);
-
+				int mainGLWidgetWindowFrames = usedFrames.size();
 				usedFrames.clear();
 				int lastID = usedFramesTMP[usedFramesTMP.size() - 1];
 
-				for (int i = 1; i < lastID + 1; i++) {
+				for (int i = 1; i < mainGLWidgetWindowFrames + 1; i++) {
 					if (std::find(usedFramesTMP.begin(), usedFramesTMP.end(), i) != usedFramesTMP.end()) {
 						usedFrames.push_back(true);
 					}
@@ -337,7 +308,7 @@ vector<vector<float>> FileHandler::loadAmcFromFile(QString fileName, vector<stri
 					}
 				}
 			}
-			//usedFrames = usedFramesTMP;
+
 			inputFile.close();
 
 		}
